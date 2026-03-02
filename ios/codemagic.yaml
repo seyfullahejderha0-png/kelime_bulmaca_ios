@@ -1,0 +1,16 @@
+workflows:
+  ios-workflow:
+    name: LibGDX iOS Build
+    environment:
+      xcode: latest
+      java: 17
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.BURAYA_SENIN_BUNDLE_ID
+    scripts:
+      - name: Grant permission
+        script: chmod +x gradlew
+      - name: Build iOS IPA
+        script: ./gradlew ios:createIPA
+    artifacts:
+      - ios/build/robovm/**/*.ipa
