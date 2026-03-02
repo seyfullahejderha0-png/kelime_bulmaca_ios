@@ -44,8 +44,8 @@ public class IOSLauncher extends IOSApplication.Delegate {
     public static final String IAP_PACK_JUMBO            = "studioyes.wordconnect.pack.jumbo";
 
     // App Store destek e-postası
-    public static final String SUPPORT_EMAIL             = "support@studioyes.com";
-    public static final String APP_STORE_ID              = "XXXXXXXXXX"; // App Store'daki numeric ID
+    public static final String SUPPORT_EMAIL             = "destek@biequiz.com";
+    public static final String APP_STORE_ID              = "6759913485"; // App Store'daki numeric ID
 
     // -----------------------------------------------------------------------
 
