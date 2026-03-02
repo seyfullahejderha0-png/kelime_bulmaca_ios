@@ -6,7 +6,7 @@ workflows:
       java: 17
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.BURAYA_SENIN_BUNDLE_ID
+        bundle_identifier: com.studioyes.wordconnect
     scripts:
       - name: Grant permission
         script: chmod +x gradlew
