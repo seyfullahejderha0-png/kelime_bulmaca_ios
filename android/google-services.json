@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1039381769137",
+    "project_id": "word-puzzle-3a586",
+    "storage_bucket": "word-puzzle-3a586.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1039381769137:android:c5c38456a4bc21ccbd6b90",
+        "android_client_info": {
+          "package_name": "studioyes.kelimedunyasi.android.worderful"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1039381769137-qlg7rut5g1opd32hu6gf52i7a0nlddl3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbbiF1lr29VrPABB9fFGoxk54ZUa4mXfA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1039381769137-qlg7rut5g1opd32hu6gf52i7a0nlddl3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      },
+      "admob_app_id": "ca-app-pub-8670933603778284~3051396526"
+    }
+  ],
+  "configuration_version": "1"
+}

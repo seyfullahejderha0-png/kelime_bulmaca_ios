@@ -1,0 +1,21 @@
+apply plugin: "robovm"
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+sourceSets.main.java.srcDirs = ["src/"]
+
+eclipse.project {
+    name = appName + "-ios"
+}
+
+robovm {
+    archs = "thumbv7:arm64"
+}
+
+dependencies {
+    implementation project(":core")
+    api "com.badlogicgames.gdx:gdx-backend-robovm:$gdxVersion"
+    api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-ios"
+    api "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-ios"
+    implementation 'org.jsoup:jsoup:1.21.2'
+}

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Word Connect</string>
+
+    <bool name="IMMERSIVE_MODE">true</bool>
+
+    <string name="ADMOB_APP_ID" translatable="false">ca-app-pub-8670933603778284~3051396526</string>
+    <string name="ADMOB_REWARDED_AD_UNIT_ID" translatable="false">ca-app-pub-8670933603778284/8982202443</string>
+    <string name="ADMOB_INTERSTITIAL_AD_UNIT_ID" translatable="false">ca-app-pub-8670933603778284/3646270817</string>
+    <string name="ADMOB_BANNER_ID" translatable="false">ca-app-pub-8670933603778284/1595915136</string>
+
+    <bool name="ADMOB_IS_INTERSTITIAL_AD_ENABLED">true</bool>
+    <bool name="ADMOB_IS_REWARDED_AD_ENABLED_TO_EARN_COINS">true</bool>
+    <bool name="ADMOB_IS_REWARDED_AD_ENABLED_TO_SPIN_LUCKY_WHEEL">true</bool>
+    <bool name="ADMOB_IS_REWARDED_AD_ENABLED_TO_SonrakiSeviye">true</bool>
+
+    <bool name="ADMOB_IS_REWARDED_AD_ENABLED_TO_EARN_MOVES">true</bool>
+
+    <integer name="ADMOB_INTERVAL_BETWEEN_REWARDED_ADS_IN_SECONDS">0</integer>
+
+    <bool name="ADMOB_IS_TESTING_ADS">true</bool>
+
+    <bool name="ADMOB_IS_TESTING_GDPR">false</bool>
+
+    <bool name="IAP_ENABLED">true</bool>
+
+    <string name="IAP_ITEM_remove_ads" translatable="false">001</string>
+    <string name="IAP_ITEM_pack_jumbo" translatable="false">005</string>
+    <string name="IAP_ITEM_pack_large" translatable="false">004</string>
+    <string name="IAP_ITEM_pack_medium" translatable="false">003</string>
+    <string name="IAP_ITEM_pack_mini" translatable="false">002</string>
+    <string name="IAP_ITEM_coin_13440" translatable="false">011</string>
+    <string name="IAP_ITEM_coin_6240" translatable="false">010</string>
+    <string name="IAP_ITEM_coin_2940" translatable="false">009</string>
+    <string name="IAP_ITEM_coin_1340" translatable="false">008</string>
+    <string name="IAP_ITEM_coin_760" translatable="false">007</string>
+    <string name="IAP_ITEM_coin_240" translatable="false">006</string>
+
+    <string name="email" translatable="false">seyfullahejderha0@gmail.com</string>
+
+
+</resources>

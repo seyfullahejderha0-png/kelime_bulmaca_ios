@@ -1,0 +1,27 @@
+
+atlas5_hd.png
+size: 512, 256
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+hint_nextlevel_down
+  rotate: false
+  xy: 203, 99
+  size: 108, 108
+  orig: 108, 108
+  offset: 0, 0
+  index: -1
+hint_nextlevel_up
+  rotate: false
+  xy: 313, 99
+  size: 108, 108
+  orig: 108, 108
+  offset: 0, 0
+  index: -1
+next_coins
+  rotate: false
+  xy: 2, 2
+  size: 199, 205
+  orig: 199, 205
+  offset: 0, 0
+  index: -1

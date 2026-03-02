@@ -1,0 +1,27 @@
+
+atlas5_sd.png
+size: 256, 128
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+hint_nextlevel_down
+  rotate: false
+  xy: 104, 51
+  size: 54, 54
+  orig: 54, 54
+  offset: 0, 0
+  index: -1
+hint_nextlevel_up
+  rotate: false
+  xy: 160, 51
+  size: 54, 54
+  orig: 54, 54
+  offset: 0, 0
+  index: -1
+next_coins
+  rotate: false
+  xy: 2, 2
+  size: 100, 103
+  orig: 100, 103
+  offset: 0, 0
+  index: -1

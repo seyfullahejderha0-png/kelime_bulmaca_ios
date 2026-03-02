@@ -1,0 +1,123 @@
+buildscript {
+    
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url "https://plugins.gradle.org/m2/" }
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        gradlePluginPortal()
+        google()
+    }
+    dependencies {
+        classpath 'org.wisepersist:gwt-gradle-plugin:1.1.19'
+        classpath 'com.android.tools.build:gradle:8.13.2'
+        classpath 'com.google.gms:google-services:4.4.4'
+        classpath "com.mobidevelop.robovm:robovm-gradle-plugin:$roboVMVersion"
+
+    }
+}
+
+allprojects {
+    apply plugin: "eclipse"
+
+    version = '1.0'
+    ext {
+        appName = "Word Connect"
+        gdxVersion = '1.13.5'
+        roboVMVersion = '2.3.23'
+        box2DLightsVersion = '1.5'
+        ashleyVersion = '1.9.0'
+        aiVersion = '1.9.0'
+    }
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        gradlePluginPortal()
+        google()
+        maven { url "https://maven.google.com" }
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+    }
+}
+
+project(":desktop") {
+    apply plugin: "java-library"
+
+
+    dependencies {
+        implementation project(":core")
+        api "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
+        api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+        api "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
+        implementation 'org.jsoup:jsoup:1.21.2'
+        
+    }
+}
+
+project(":android") {
+    apply plugin: "android"
+
+    configurations { natives }
+
+    dependencies {
+        implementation project(":core")
+        api "com.badlogicgames.gdx:gdx-backend-android:$gdxVersion"
+        natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi-v7a"
+        natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-arm64-v8a"
+        natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86"
+        natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86_64"
+        api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
+        natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-armeabi-v7a"
+        natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-arm64-v8a"
+        natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-x86"
+        natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-x86_64"
+
+        implementation 'org.jsoup:jsoup:1.21.2'
+        implementation "com.google.android.gms:play-services-ads:24.7.0"
+        implementation 'com.google.android.ump:user-messaging-platform:3.2.0'
+        implementation 'com.android.billingclient:billing:7.1.0'
+        implementation platform('com.google.firebase:firebase-bom:32.8.1')
+        implementation 'com.google.firebase:firebase-analytics'
+        implementation 'com.google.firebase:firebase-messaging'
+        implementation 'com.android.support:multidex:1.0.3'
+        // Unity Ads Mediation Adapter burayı yeni ekledin
+        implementation 'com.google.ads.mediation:unity:4.16.5.0'
+        implementation "com.google.android.play:app-update:2.1.0"
+        implementation "com.google.android.play:app-update-ktx:2.1.0"
+
+
+
+
+        //bunu yeni kapattık
+  //      constraints.implementation 'androidx.fragment:fragment:1.8.9'
+
+        implementation "com.badlogicgames.gdx-controllers:gdx-controllers-android:2.2.4"
+    }
+}
+
+
+
+project(":ios") {
+    apply plugin: "robovm"
+
+    dependencies {
+        implementation project(":core")
+        api "com.badlogicgames.gdx:gdx-backend-robovm:$gdxVersion"
+        api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-ios"
+        api "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-ios"
+        implementation 'org.jsoup:jsoup:1.21.2'
+    }
+}
+
+project(":core") {
+    apply plugin: "java-library"
+
+
+    dependencies {
+        api "com.badlogicgames.gdx:gdx:$gdxVersion"
+        api "com.badlogicgames.gdx:gdx-box2d:3.1.1-0"
+        
+    }
+}
