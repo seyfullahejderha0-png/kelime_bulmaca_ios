@@ -6,8 +6,11 @@ workflows:
       xcode: latest
       java: 17
       ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.studioyes.wordconnect
+        certificates:
+          - SEYFULLAH EJDERHA
+ # certificate adı (UI'daki adı birebir)
+        provisioning_profiles:
+          - WordConnect_AppStore_Profile  # profile adı birebir
 
     scripts:
       - name: Grant permission
