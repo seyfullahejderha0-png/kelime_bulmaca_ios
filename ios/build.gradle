@@ -3,8 +3,7 @@ apply plugin: "robovm"
 
 robovm {
     archs = "thumbv7:arm64"
-
-
+    iosSignIdentity = "Apple Distribution"
 }
 
 dependencies {
