@@ -6,11 +6,6 @@ workflows:
       xcode: latest
       java: 17
 
-    ios_signing:
-      certificates:
-        - global
-      provisioning_profiles:
-        - word connect
 
     scripts:
       - name: Grant permission
