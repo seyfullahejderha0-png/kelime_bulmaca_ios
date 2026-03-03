@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
-    <executable>WordConnect</executable>
-    <id>com.studioyes.wordconnect</id>
+    <executableName>WordConnect</executableName>
     <os>ios</os>
     <arch>thumbv7:arm64</arch>
     <ios>
