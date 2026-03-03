@@ -1,14 +1,14 @@
-<config xmlns="http://www.robovm.org/config/1.0">
-    <executableName>WordConnect</executableName>
-    <mainClass>com.yourpackage.IOSLauncher</mainClass>
+apply plugin: "java-library"
+apply plugin: "robovm"
 
-    <ios>
-        <bundleIdentifier>com.studioyes.wordconnect</bundleIdentifier>
-    </ios>
+robovm {
+    archs = "thumbv7:arm64"
+}
 
-    <resources>
-        <resource>
-            <directory>../android/assets</directory>
-        </resource>
-    </resources>
-</config>
+dependencies {
+    implementation project(":core")
+    api "com.badlogicgames.gdx:gdx-backend-robovm:$gdxVersion"
+    api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-ios"
+    api "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-ios"
+    implementation 'org.jsoup:jsoup:1.21.2'
+}
