@@ -2,7 +2,6 @@
 <config>
     <executableName>WordConnect</executableName>
     <os>ios</os>
-    <arch>thumbv7:arm64</arch>
     <ios>
         <infoPlists>
             <infoList>Info.plist</infoList>
