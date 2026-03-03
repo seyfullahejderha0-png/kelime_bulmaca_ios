@@ -3,6 +3,9 @@ apply plugin: "robovm"
 
 robovm {
     archs = "thumbv7:arm64"
+      iosSignIdentity = "iPhone Distribution"
+    iosProvisioningProfile = "WordConnect_AppStore_Profile"
+    bundleId = "com.studioyes.wordconnect"
 }
 
 dependencies {
