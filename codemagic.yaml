@@ -10,7 +10,7 @@ workflows:
           - Apple Distribution
  # certificate adı (UI'daki adı birebir)
         provisioning_profiles:
-          - WordConnect_AppStore_Profile  # profile adı birebir
+          - word connect  # profile adı birebir
 
     scripts:
       - name: Grant permission
