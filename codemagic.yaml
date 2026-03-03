@@ -6,39 +6,14 @@ workflows:
       xcode: latest
       java: 17
       ios_signing:
-        certificates:
-          - wordconnect_distribution
-        provisioning_profiles:
-          - wordconnect_profile
+        distribution_type: app_store
+        bundle_identifier: com.studioyes.wordconnect
 
     scripts:
       - name: Grant permission
         script: chmod +x gradlew
 
-      - name: List signing identities
-        script: security find-identity -v -p codesigning
-
-      - name: Locate provisioning profile
-        script: |
-          PROFILE_PATH=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | head -n 1)
-          echo "Using profile: $PROFILE_PATH"
-          echo "PROFILE_PATH=$PROFILE_PATH" >> $CM_ENV
-
-      - name: Print profile UUID
-        script: |
-          security cms -D -i "$PROFILE_PATH" | grep -A2 UUID
-
-      - name: Print profile certificate SHA1
-        script: |
-          security cms -D -i "$PROFILE_PATH" > profile.plist
-          /usr/libexec/PlistBuddy -c "Print :DeveloperCertificates:0" profile.plist > cert.der
-          openssl x509 -inform der -in cert.der -noout -fingerprint -sha1
-
-      - name: Print profile application identifier
-        script: |
-          /usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" profile.plist
-
-      - name: Build iOS IPA
+      - name: Build unsigned IPA
         script: ./gradlew ios:createIPA
 
     artifacts:
