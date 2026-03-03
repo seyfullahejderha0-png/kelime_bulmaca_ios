@@ -6,12 +6,14 @@ workflows:
       xcode: latest
       java: 17
 
-      groups:
-        - ios_credentials
+    ios_signing:
+      distribution_type: app_store
+      bundle_identifier: com.studioyes.wordconnect
 
     scripts:
       - name: Grant permission
         script: chmod +x gradlew
+
       - name: Build iOS IPA
         script: ./gradlew ios:createIPA
 
