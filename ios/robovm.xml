@@ -1,25 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
-    <executableName>${app.executable}</executableName>
-    <bundleId>com.studioyes.wordconnect</bundleId>
+    <executable>WordConnect</executable>
+    <id>com.studioyes.wordconnect</id>
     <os>ios</os>
     <arch>thumbv7:arm64</arch>
     <ios>
         <infoPlists>
             <infoList>Info.plist</infoList>
         </infoPlists>
-        <resourceRules>
-            <resourceRule>
-                <pattern>.*</pattern>
-                <omit>true</omit>
-                <weight>10</weight>
-            </resourceRule>
-            <resourceRule>
-                <pattern>^(.*\.lproj/.*|.*\.xcassets/.*|.*\.js|.*\.map|.*\.ttf|.*\.otf|.*\.png|.*\.jpg|.*\.wav|.*\.mp3|.*\.ogg|.*\.atlas|.*\.fnt|.*\.skin|.*\.json|.*\.pack|.*\.txt|.*\.bin|.*\.tmx|.*\.glsl|.*\.vert|.*\.frag)$</pattern>
-                <omit>false</omit>
-                <weight>20</weight>
-            </resourceRule>
-        </resourceRules>
         <minimumOSVersion>14.0</minimumOSVersion>
         <deviceFamily>iphone:ipad</deviceFamily>
         <frameworks>
