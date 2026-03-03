@@ -1,5 +1,7 @@
 buildscript {
-    
+    ext {
+        roboVMVersion = '2.3.23'
+    }
 
     repositories {
         mavenLocal()
