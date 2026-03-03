@@ -4,10 +4,13 @@ workflows:
     environment:
       xcode: latest
       java: 17
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.studioyes.wordconnect
     scripts:
       - name: Grant permission
         script: chmod +x gradlew
-      - name: Build iOS
-        script: ./gradlew ios:build
+      - name: Build iOS IPA
+        script: ./gradlew ios:createIPA
     artifacts:
       - ios/build/robovm/**/*.ipa
