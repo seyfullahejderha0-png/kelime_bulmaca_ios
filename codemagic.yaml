@@ -5,10 +5,8 @@ workflows:
     environment:
       xcode: latest
       java: 17
-
-    ios_signing:
-      distribution_type: app_store
-      bundle_identifier: com.studioyes.wordconnect
+      groups:
+        - ios_credentials
 
     scripts:
       - name: Grant permission
