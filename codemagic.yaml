@@ -7,9 +7,9 @@ workflows:
       java: 17
       ios_signing:
         certificates:
-          - Apple Distribution
+          - wordconnect_distribution
         provisioning_profiles:
-          - word connect
+          - wordconnect_profile
 
     scripts:
       - name: Grant permission
