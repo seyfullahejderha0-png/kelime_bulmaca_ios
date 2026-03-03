@@ -18,11 +18,21 @@ workflows:
       - name: List signing identities
         script: security find-identity -v -p codesigning
 
-      - name: List provisioning profiles
-        script: ls -la ~/Library/MobileDevice/Provisioning\ Profiles
+      - name: Locate provisioning profile
+        script: |
+          PROFILE_PATH=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | head -n 1)
+          echo "Using profile: $PROFILE_PATH"
+          echo "PROFILE_PATH=$PROFILE_PATH" >> $CM_ENV
 
       - name: Print profile UUID
-        script: security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | grep UUID
+        script: |
+          security cms -D -i "$PROFILE_PATH" | grep -A2 UUID
+
+      - name: Extract profile certificate SHA1
+        script: |
+          security cms -D -i "$PROFILE_PATH" > profile.plist
+          /usr/libexec/PlistBuddy -c "Print :DeveloperCertificates:0" profile.plist > cert.der
+          openssl x509 -inform der -in cert.der -noout -fingerprint -sha1
 
       - name: Build iOS IPA
         script: ./gradlew ios:createIPA
