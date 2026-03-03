@@ -4,8 +4,9 @@ apply plugin: "robovm"
 robovm {
     archs = "thumbv7:arm64"
 
-    iosSignIdentity = "Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)"
-    iosProvisioningProfile = file("WordConnect_AppStore_Profile.mobileprovision")
+ iosSignIdentity = "Apple Distribution"
+    iosProvisioningProfile = file("${System.getenv("CM_BUILD_DIR")}/ios_profiles/WordConnect_AppStore_Profile.mobileprovision")
+
 }
 
 dependencies {
