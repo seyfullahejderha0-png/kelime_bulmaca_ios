@@ -7,7 +7,7 @@ workflows:
       java: 17
       ios_signing:
         certificates:
-          - SEYFULLAH EJDERHA
+          - Apple Distribution
  # certificate adı (UI'daki adı birebir)
         provisioning_profiles:
           - WordConnect_AppStore_Profile  # profile adı birebir
