@@ -11,3 +11,8 @@ workflows:
         script: ./gradlew ios:createIPA
     artifacts:
       - ios/build/robovm/**/*.ipa
+    ios_signing:
+      certificates:
+        - ios_distribution_barberapp
+      provisioning_profiles:
+        - WordConnect_AppStore_Profile
