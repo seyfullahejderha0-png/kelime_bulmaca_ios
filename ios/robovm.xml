@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
     <executableName>WordConnect</executableName>
-    <bundleIdentifier>com.studioyes.wordconnect</bundleIdentifier>
     <mainClass>studioyes.kelimedunyasi.IOSLauncher</mainClass>
     <os>ios</os>
+
+    <infoPList>Info.plist</infoPList>
 
     <frameworks>
         <framework>UIKit</framework>
