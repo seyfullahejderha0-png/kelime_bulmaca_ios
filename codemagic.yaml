@@ -5,18 +5,8 @@ workflows:
     environment:
       xcode: latest
       java: 17
-      groups:
-        - ios_credentials
 
     scripts:
-      - name: Import certificate
-        script: |
-          security create-keychain -p "" build.keychain
-          security import $CM_CERTIFICATE_PATH -k build.keychain -P $CM_CERTIFICATE_PASSWORD -T /usr/bin/codesign
-          security list-keychains -s build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "" build.keychain
-
       - name: Grant permission
         script: chmod +x gradlew
 
