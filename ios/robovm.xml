@@ -25,10 +25,7 @@
     </weakFrameworks>
     <resources>
         <resource>
-            <type>classpath</type>
-            <includes>
-                <include>data/**</include>
-            </includes>
+            <directory>../android/assets</directory>
         </resource>
         <resource>
             <path>GoogleService-Info.plist</path>
