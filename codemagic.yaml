@@ -5,10 +5,18 @@ workflows:
     environment:
       xcode: latest
       java: 17
-   
+      ios_signing:
+        certificates:
+          - Apple Distribution
+        provisioning_profiles:
+          - word connect
+
     scripts:
       - name: Grant permission
         script: chmod +x gradlew
+
+      - name: List signing identities (debug)
+        script: security find-identity -v -p codesigning
 
       - name: Build iOS IPA
         script: ./gradlew ios:createIPA
