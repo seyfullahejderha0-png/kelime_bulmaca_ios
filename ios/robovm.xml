@@ -3,7 +3,6 @@
     <executableName>WordConnect</executableName>
     <mainClass>studioyes.kelimedunyasi.IOSLauncher</mainClass>
     <os>ios</os>
-    <iosInfoPListFile>Info.plist</iosInfoPListFile>
     <frameworks>
         <framework>UIKit</framework>
         <framework>OpenGLES</framework>
