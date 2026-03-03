@@ -15,8 +15,14 @@ workflows:
       - name: Grant permission
         script: chmod +x gradlew
 
-      - name: List signing identities (debug)
+      - name: List signing identities
         script: security find-identity -v -p codesigning
+
+      - name: List provisioning profiles
+        script: ls -la ~/Library/MobileDevice/Provisioning\ Profiles
+
+      - name: Print profile UUID
+        script: security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | grep UUID
 
       - name: Build iOS IPA
         script: ./gradlew ios:createIPA
