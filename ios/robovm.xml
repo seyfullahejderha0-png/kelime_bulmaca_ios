@@ -1,35 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
     <executableName>WordConnect</executableName>
-    <os>ios</os>
-    <ios>
-        <infoPlists>
-            <infoList>Info.plist</infoList>
-        </infoPlists>
-        <minimumOSVersion>14.0</minimumOSVersion>
-        <deviceFamily>iphone:ipad</deviceFamily>
-        <frameworks>
-            <framework>UIKit</framework>
-            <framework>OpenGLES</framework>
-            <framework>QuartzCore</framework>
-            <framework>CoreGraphics</framework>
-            <framework>OpenAL</framework>
-            <framework>AudioToolbox</framework>
-            <framework>AVFoundation</framework>
-            <framework>StoreKit</framework>
-            <framework>AdSupport</framework>
-            <framework>SystemConfiguration</framework>
-            <framework>CoreMotion</framework>
-            <framework>GameKit</framework>
-            <framework>MessageUI</framework>
-            <framework>CoreTelephony</framework>
-            <framework>SafariServices</framework>
-        </frameworks>
-        <weakFrameworks>
-            <framework>AppTrackingTransparency</framework>
-        </weakFrameworks>
-    </ios>
     <mainClass>studioyes.kelimedunyasi.IOSLauncher</mainClass>
+    <os>ios</os>
+    <iosInfoPListFile>Info.plist</iosInfoPListFile>
+    <frameworks>
+        <framework>UIKit</framework>
+        <framework>OpenGLES</framework>
+        <framework>QuartzCore</framework>
+        <framework>CoreGraphics</framework>
+        <framework>OpenAL</framework>
+        <framework>AudioToolbox</framework>
+        <framework>AVFoundation</framework>
+        <framework>StoreKit</framework>
+        <framework>AdSupport</framework>
+        <framework>SystemConfiguration</framework>
+        <framework>CoreMotion</framework>
+        <framework>GameKit</framework>
+        <framework>MessageUI</framework>
+        <framework>CoreTelephony</framework>
+        <framework>SafariServices</framework>
+    </frameworks>
+    <weakFrameworks>
+        <framework>AppTrackingTransparency</framework>
+    </weakFrameworks>
     <resources>
         <resource>
             <type>classpath</type>
@@ -37,7 +31,6 @@
                 <include>data/**</include>
             </includes>
         </resource>
-        <!-- Firebase yapılandırması — app bundle'a kopyalanır -->
         <resource>
             <path>GoogleService-Info.plist</path>
         </resource>
