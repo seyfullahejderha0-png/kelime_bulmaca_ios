@@ -6,7 +6,9 @@
     <os>ios</os>
 
     <infoPList>Info.plist</infoPList>
-
+<forceLinkClasses>
+    <pattern>com.badlogic.gdx.physics.box2d.*</pattern>
+</forceLinkClasses>
     <frameworks>
         <framework>UIKit</framework>
         <framework>OpenGLES</framework>

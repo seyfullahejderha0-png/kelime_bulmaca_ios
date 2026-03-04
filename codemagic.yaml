@@ -20,6 +20,7 @@ workflows:
         script: |
           ./gradlew ios:createIPA \
           -Probovm.archs=arm64 \
+          -Probovm.debug=true \
           -Probovm.skipSigning=false \
           -x test \
           --no-daemon \
