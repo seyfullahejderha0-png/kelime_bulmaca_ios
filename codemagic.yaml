@@ -1,7 +1,7 @@
 
 
 workflows:
-ios-workflow:
+  ios-workflow:
 name: LibGDX iOS RoboVM IPA
 
 
