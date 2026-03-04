@@ -63,4 +63,4 @@ scripts:
 
 artifacts:
   - ios/build/ipa/*.ipa
-```
+
