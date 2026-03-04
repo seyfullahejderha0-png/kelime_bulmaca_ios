@@ -21,56 +21,50 @@ workflows:
           # ── Provisioning profile ──────────────────────────────────────
           PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -1)
           if [ -z "$PROFILE" ]; then echo "❌ No provisioning profile found!"; exit 1; fi
-          echo "✅ Profile: $PROFILE"
+          echo "✅ Profile path: $PROFILE"
 
-          PROFILE_UUID=$(security cms -D -i "$PROFILE" 2>/dev/null \
-            | grep -A1 '<key>UUID</key>' | tail -1 \
-            | sed 's|.*<string>\(.*\)</string>.*|\1|' | tr -d '[:space:]')
-          echo "UUID: [$PROFILE_UUID]"
-          if [ -z "$PROFILE_UUID" ]; then echo "❌ UUID extraction failed!"; exit 1; fi
+          # ── Keychain: build keychain'i DEFAULT yap ────────────────────
+          BUILD_KEYCHAIN=$(security list-keychains | grep codemagic | tr -d '" ' | head -1)
+          if [ -z "$BUILD_KEYCHAIN" ]; then
+            BUILD_KEYCHAIN=$(security list-keychains | grep -v "login\|System\|ROOT" | head -1 | tr -d '" ')
+          fi
+          echo "Build keychain: $BUILD_KEYCHAIN"
 
-          # Profildeki gerçek bundle ID'yi göster (team prefix dahil)
-          echo "=== Profile application-identifier ==="
-          security cms -D -i "$PROFILE" 2>/dev/null \
-            | grep -A2 'application-identifier' | head -5
+          security set-keychain-settings -lut 7200 "$BUILD_KEYCHAIN" || true
+          security unlock-keychain -p "" "$BUILD_KEYCHAIN" || true
+          # Default keychain ol — RoboVM buraya bakar
+          security default-keychain -s "$BUILD_KEYCHAIN" || true
+          security list-keychains -d user -s "$BUILD_KEYCHAIN" \
+            ~/Library/Keychains/login.keychain-db || true
 
-          # Fingerprint'i göster
+          echo "=== Default keychain ==="
+          security default-keychain
+
           echo "=== Signing identities ==="
           security find-identity -v -p codesigning
 
-          CERT_FINGERPRINT=$(security find-identity -v -p codesigning \
-            | grep "Apple Distribution" | head -1 \
-            | awk '{print $2}')
-          echo "Fingerprint: [$CERT_FINGERPRINT]"
-
-          # ── robovm.properties ─────────────────────────────────────────
+          # ── robovm.properties — UUID yerine TAM YOLU kullan ───────────
+          # (UUID karşılaştırması bypass, path ile doğrudan okur)
           printf 'app.id=com.studioyes.wordconnect\n' > ios/robovm.properties
           printf 'app.signingIdentity=Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)\n' >> ios/robovm.properties
-          printf 'app.provisioningProfile=%s\n' "$PROFILE_UUID" >> ios/robovm.properties
+          printf 'app.provisioningProfile=%s\n' "$PROFILE" >> ios/robovm.properties
+
           echo "=== robovm.properties ==="
           cat ios/robovm.properties
 
-          # ── robovm.xml'e doğrudan inject et ──────────────────────────
-          # (Gradle plugin bypass — compiler XML'i doğrudan okur)
-          SIGN_LINE="    <iosSignIdentity>Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)<\/iosSignIdentity>"
-          PROF_LINE="    <iosProvisioningProfile>${PROFILE_UUID}<\/iosProvisioningProfile>"
-          sed -i "" "s|</config>|${SIGN_LINE}\n${PROF_LINE}\n</config>|" ios/robovm.xml
-          echo "=== robovm.xml (son 8 satır) ==="
-          tail -8 ios/robovm.xml
+          # ── robovm.xml — sadece structural config, signing YOK ────────
+          echo "=== robovm.xml (last 5 lines) ==="
+          tail -5 ios/robovm.xml
 
           # ── createIPA ─────────────────────────────────────────────────
           echo "=== Running createIPA ==="
-          ./gradlew ios:createIPA -x test --no-daemon --info 2>&1 | tee /tmp/robovm_build.log
+          ./gradlew ios:createIPA -x test --no-daemon 2>&1 | tee /tmp/robovm_build.log
           BUILD_EXIT=${PIPESTATUS[0]}
-
-          echo "=== Key log lines ==="
-          grep -iE "sign|identity|profile|provisioningProfile|fingerprint|certificate|bundleId|ERROR|FAILED|IOException" \
-            /tmp/robovm_build.log | grep -v "^>" | tail -60 || true
 
           if [ $BUILD_EXIT -ne 0 ]; then
             echo "❌ createIPA failed (exit $BUILD_EXIT)"
-            echo "=== Build directory ==="
-            find "$WORKDIR/ios/build" 2>/dev/null | head -40
+            grep -iE "sign|identity|profile|provisioningProfile|fingerprint|certificate|bundleId|ERROR|FAILED|IOException|Element" \
+              /tmp/robovm_build.log | grep -v "^>" | grep -v "Downloading\|Resource missing" | tail -40 || true
             exit 1
           fi
 
@@ -82,7 +76,7 @@ workflows:
           fi
           mkdir -p "$WORKDIR/ios/build/ipa"
           cp "$IPA" "$WORKDIR/ios/build/ipa/WordConnect.ipa"
-          echo "✅ Done: ios/build/ipa/WordConnect.ipa"
+          echo "✅ Done: ios/build/ipa/WordConnect.ipa ($(du -h "$IPA" | cut -f1))"
 
     artifacts:
       - ios/build/ipa/*.ipa
