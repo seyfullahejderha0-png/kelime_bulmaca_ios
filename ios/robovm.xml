@@ -5,8 +5,7 @@
     <mainClass>studioyes.kelimedunyasi.IOSLauncher</mainClass>
     <os>ios</os>
 
-    <iosSignIdentity>Apple Distribution</iosSignIdentity>
-    <iosProvisioningProfile>wordconnect_profile</iosProvisioningProfile>
+
 
     <infoPList>Info.plist</infoPList>
 
