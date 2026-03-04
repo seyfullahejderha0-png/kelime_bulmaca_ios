@@ -1,6 +1,14 @@
 apply plugin: "java-library"
 apply plugin: "robovm"
 
+// RoboVM 2.3.23 requires Java 8 source compatibility.
+// Java 9+ classes (Stream, NIO Path, etc.) cause phantom class warnings
+// and a NullPointerException crash in FrameworkTarget.matches().
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
 sourceSets {
     main {
         java {
@@ -10,7 +18,7 @@ sourceSets {
 }
 
 robovm {
-    archs = "thumbv7:arm64"
+    archs = "arm64"
 }
 
 dependencies {
@@ -18,5 +26,7 @@ dependencies {
     api "com.badlogicgames.gdx:gdx-backend-robovm:$gdxVersion"
     api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-ios"
     api "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-ios"
-    implementation 'org.jsoup:jsoup:1.21.2'
+    // jsoup 1.21.2 uses Java Stream/NIO APIs internally which RoboVM cannot handle.
+    // Use an older version that is compatible with Java 8 / RoboVM.
+    implementation 'org.jsoup:jsoup:1.15.4'
 }
