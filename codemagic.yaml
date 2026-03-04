@@ -23,18 +23,9 @@ workflows:
           if [ -z "$PROFILE" ]; then echo "❌ No provisioning profile found!"; exit 1; fi
           echo "✅ Profile path: $PROFILE"
 
-          # ── Profile UUID — Python ile çıkart (en güvenilir yöntem) ───
-          PROFILE_UUID=$(python3 - <<'PYEOF'
-import subprocess, plistlib, sys, os
-profile = os.environ.get("PROFILE_PATH", "")
-try:
-    raw = subprocess.check_output(["security", "cms", "-D", "-i", profile], stderr=subprocess.DEVNULL)
-    p = plistlib.loads(raw)
-    print(p["UUID"])
-except Exception as e:
-    sys.exit(f"UUID extraction failed: {e}")
-PYEOF
-          ) || true
+          # ── Profile UUID çıkart ───────────────────────────────────────
+          # Python one-liner (YAML heredoc kullanamayız)
+          PROFILE_UUID=$(python3 -c "import subprocess,plistlib; raw=subprocess.check_output(['security','cms','-D','-i','$PROFILE'],stderr=__import__('subprocess').DEVNULL); print(plistlib.loads(raw)['UUID'])" 2>/dev/null) || true
 
           # Fallback: XML grep ile UUID çıkart
           if [ -z "$PROFILE_UUID" ]; then
