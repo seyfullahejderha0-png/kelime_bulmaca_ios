@@ -5,30 +5,20 @@ workflows:
     environment:
       xcode: latest
       java: 11
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.studioyes.wordconnect
 
     scripts:
       - name: Grant permission
         script: chmod +x gradlew
 
-      - name: Show signing environment
-        script: |
-          echo "=== Xcode version ==="
-          xcodebuild -version
-          echo "=== Certificates ==="
-          security find-identity -v -p codesigning
-          echo "=== Provisioning Profiles ==="
-          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ 2>/dev/null || echo "No profiles directory"
-          echo "=== Keychains ==="
-          security list-keychains -d user
-
-      - name: Build IPA (Skip Signing)
+      - name: Build and Sign IPA
         script: |
           set -e
           
-          # Since ios_signing is removed from codemagic.yaml, the macOS keychain is clean.
-          # We rely on the hardcoded iosSkipSigning=true in ios/build.gradle.
-          # This should produce an UNSIGNED .ipa or .app that we can inspect.
-          
+          # Now that the Codemagic UI certificate is fixed, ios_signing will correctly
+          # populate the macOS keychain. We simply run createIPA without bypasses.
           ./gradlew ios:createIPA \
             -Probovm.archs=arm64 \
             -x test \
@@ -44,7 +34,7 @@ workflows:
             exit 1
           fi
           
-          echo "createIPA succeeded! Unsigned IPA is ready."
+          echo "createIPA succeeded! Signed IPA is ready."
 
     artifacts:
       - ios/build/ipa/*.ipa
