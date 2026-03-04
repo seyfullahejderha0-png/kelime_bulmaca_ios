@@ -26,59 +26,41 @@ workflows:
           fi
           echo "✅ Profile: $PROFILE"
 
-          # UUID'yi profil içinden çıkar (path yerine UUID daha güvenilir)
+          # UUID'yi profil içinden çıkar
           PROFILE_UUID=$(security cms -D -i "$PROFILE" 2>/dev/null | \
-            /usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin 2>/dev/null || true)
+            grep -A1 '<key>UUID</key>' | tail -1 | \
+            sed 's/.*<string>\(.*\)<\/string>.*/\1/' | tr -d '[:space:]')
           echo "UUID: $PROFILE_UUID"
 
-          # ── Keychain ──────────────────────────────────────────────────
+          # ── Keychains ──────────────────────────────────────────────────
           echo "=== Keychains ==="
           security list-keychains
 
           echo "=== Signing identities ==="
           security find-identity -v -p codesigning
 
-          # Codemagic's build keychain'i bul ve unlock et
-          BUILD_KEYCHAIN=$(security list-keychains | grep -v "login\|System\|ROOT\|local" | \
-            head -1 | tr -d '" ' | xargs 2>/dev/null || true)
-          echo "Build keychain: $BUILD_KEYCHAIN"
-
-          if [ -n "$BUILD_KEYCHAIN" ] && [ -f "$BUILD_KEYCHAIN" ]; then
-            echo "Unlocking build keychain..."
-            security set-keychain-settings -lut 7200 "$BUILD_KEYCHAIN" || true
-            security unlock-keychain -p "" "$BUILD_KEYCHAIN" 2>/dev/null || true
-            # Build keychain'i search list'e ekle
-            security list-keychains -d user -s "$BUILD_KEYCHAIN" \
-              ~/Library/Keychains/login.keychain-db || true
-            echo "Keychain search list updated"
-            security list-keychains
-          fi
-
           # ── robovm.properties ─────────────────────────────────────────
-          echo "app.id=com.studioyes.wordconnect" > ios/robovm.properties
-          echo "app.signingIdentity=Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)" >> ios/robovm.properties
-
-          # UUID varsa UUID kullan, yoksa tam path kullan
-          if [ -n "$PROFILE_UUID" ]; then
-            echo "app.provisioningProfile=$PROFILE_UUID" >> ios/robovm.properties
-            echo "Using UUID: $PROFILE_UUID"
-          else
-            echo "app.provisioningProfile=$PROFILE" >> ios/robovm.properties
-            echo "UUID not extracted, using path"
-          fi
+          cat > ios/robovm.properties << EOF
+          app.id=com.studioyes.wordconnect
+          app.signingIdentity=Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)
+          app.provisioningProfile=$PROFILE_UUID
+          EOF
 
           echo "=== robovm.properties ==="
           cat ios/robovm.properties
 
           # ── createIPA ─────────────────────────────────────────────────
           echo "=== Running createIPA ==="
-          ./gradlew ios:createIPA -x test --info 2>&1 | grep -E \
-            "robovm|RoboVM|signing|identity|profile|FAILED|ERROR|Exception|ipa|IPA|SUCCESS" \
-            | head -100 || true
+          ./gradlew ios:createIPA -x test --rerun-tasks --info 2>&1 | tee /tmp/robovm_build.log
+          BUILD_EXIT=${PIPESTATUS[0]}
 
-          # Full output için (hata durumunda)
-          echo "=== Full build output tail ==="
-          ./gradlew ios:createIPA -x test 2>&1 | tail -50 || true
+          # Hata durumunda önemli satırları göster
+          grep -E "robovm|signing|identity|profile|FAILED|ERROR|Exception" /tmp/robovm_build.log | tail -50 || true
+
+          if [ $BUILD_EXIT -ne 0 ]; then
+            echo "❌ createIPA failed!"
+            exit 1
+          fi
 
           # ── IPA bul ───────────────────────────────────────────────────
           echo "=== Searching for IPA ==="
