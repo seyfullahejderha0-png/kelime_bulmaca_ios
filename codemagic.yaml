@@ -5,9 +5,6 @@ workflows:
     environment:
       xcode: latest
       java: 11
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.studioyes.wordconnect
 
     scripts:
       - name: Grant permission
@@ -24,16 +21,15 @@ workflows:
           echo "=== Keychains ==="
           security list-keychains -d user
 
-      - name: Build app binary (Simulator Bypass)
+      - name: Build IPA (Skip Signing)
         script: |
           set -e
           
-          # By setting os=ios_sim, RoboVM completely skips looking for a Provisioning Profile
-          # because simulators do not require code signing identities. 
-          # We can still extract the .app directory and sign it ourselves manually in the next step.
+          # Since ios_signing is removed from codemagic.yaml, the macOS keychain is clean.
+          # We rely on the hardcoded iosSkipSigning=true in ios/build.gradle.
+          # This should produce an UNSIGNED .ipa or .app that we can inspect.
           
-          ./gradlew ios:robovmInstall \
-            -Probovm.os=ios_sim \
+          ./gradlew ios:createIPA \
             -Probovm.archs=arm64 \
             -x test \
             --no-daemon \
@@ -48,86 +44,7 @@ workflows:
             exit 1
           fi
           
-          echo "robovmInstall succeeded in Simulator mode!"
-
-      - name: Sign and package IPA manually
-        script: |
-          set -e
-          WORKDIR=$(pwd)
-
-          # Find .app bundle
-          APP=$(find "$WORKDIR/ios/build/robovm" -name "*.app" -type d | head -1)
-          if [ -z "$APP" ]; then
-            echo "No .app found, searching wider..."
-            find "$WORKDIR/ios/build" -type d 2>/dev/null
-            exit 1
-          fi
-          echo "App bundle: $APP"
-
-          # Find provisioning profile
-          PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -1)
-          if [ -z "$PROFILE" ]; then
-            echo "No provisioning profile found!"
-            exit 1
-          fi
-          echo "Profile: $PROFILE"
-
-          # Extract UUID using security + grep only (no python multiline)
-          PROFILE_UUID=$(security cms -D -i "$PROFILE" 2>/dev/null | grep -A1 '<key>UUID</key>' | tail -1 | sed 's/.*<string>\(.*\)<\/string>.*/\1/' | tr -d '[:space:]')
-          echo "UUID: $PROFILE_UUID"
-
-          # Extract entitlements from profile
-          security cms -D -i "$PROFILE" 2>/dev/null > /tmp/profile_decoded.plist
-          /usr/libexec/PlistBuddy -x -c "Print :Entitlements" /tmp/profile_decoded.plist > /tmp/entitlements.plist 2>/dev/null || true
-          echo "Entitlements:"
-          cat /tmp/entitlements.plist || true
-
-          # Copy embedded profile
-          cp "$PROFILE" "$APP/embedded.mobileprovision"
-
-          # Find signing identity fingerprint
-          SIGN_FP=$(security find-identity -v -p codesigning \
-            | grep -E 'Apple Distribution|iPhone Distribution|Apple Development|iPhone Developer' \
-            | head -1 | awk '{print $2}')
-
-          if [ -z "$SIGN_FP" ]; then
-            # Grab any valid identity
-            SIGN_FP=$(security find-identity -v -p codesigning \
-              | grep -v "REVOKED\|EXPIRED" | grep -E "[0-9A-F]{40}" | head -1 | awk '{print $2}')
-          fi
-
-          if [ -z "$SIGN_FP" ]; then
-            echo "No signing identity found!"
-            security find-identity -v -p codesigning
-            exit 1
-          fi
-          echo "Signing with: $SIGN_FP"
-
-          # Sign frameworks if any
-          if [ -d "$APP/Frameworks" ]; then
-            for FW in "$APP/Frameworks"/*; do
-              echo "Signing framework: $FW"
-              codesign --force --sign "$SIGN_FP" "$FW" || true
-            done
-          fi
-
-          # Sign the app
-          if [ -f "/tmp/entitlements.plist" ] && [ -s "/tmp/entitlements.plist" ]; then
-            codesign --force --sign "$SIGN_FP" --entitlements /tmp/entitlements.plist --timestamp=none "$APP"
-          else
-            codesign --force --sign "$SIGN_FP" --timestamp=none "$APP"
-          fi
-
-          echo "Verifying..."
-          codesign --verify --verbose "$APP" || true
-
-          # Package as IPA
-          TMPDIR_IPA=$(mktemp -d)
-          mkdir -p "$TMPDIR_IPA/Payload"
-          cp -r "$APP" "$TMPDIR_IPA/Payload/"
-          mkdir -p "$WORKDIR/ios/build/ipa"
-          (cd "$TMPDIR_IPA" && zip -r "$WORKDIR/ios/build/ipa/WordConnect.ipa" Payload)
-          echo "IPA created: $(du -h "$WORKDIR/ios/build/ipa/WordConnect.ipa" | cut -f1)"
+          echo "createIPA succeeded! Unsigned IPA is ready."
 
     artifacts:
       - ios/build/ipa/*.ipa
