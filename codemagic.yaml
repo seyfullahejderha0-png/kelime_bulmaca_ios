@@ -17,10 +17,9 @@ scripts:
   - name: Fix keychain search path
     script: |
       echo "Adding Codemagic keychain to search list..."
-
       security list-keychains -d user -s \
-        /Users/builder/Library/codemagic-cli-tools/keychains/*.keychain-db \
-        ~/Library/Keychains/login.keychain-db
+      /Users/builder/Library/codemagic-cli-tools/keychains/*.keychain-db \
+      ~/Library/Keychains/login.keychain-db
 
       echo "Available signing identities:"
       security find-identity -v -p codesigning
@@ -28,7 +27,6 @@ scripts:
   - name: Locate provisioning profile
     script: |
       echo "Searching provisioning profile..."
-
       PROFILE_PATH=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | head -n 1)
 
       echo "Provisioning profile found:"
@@ -39,18 +37,17 @@ scripts:
   - name: Build and Sign IPA
     script: |
       set -e
-
       echo "Using provisioning profile:"
       echo $PROFILE_PATH
 
       ./gradlew ios:createIPA \
-        -Probovm.archs=arm64 \
-        -Probovm.iosSignIdentity="Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)" \
-        -Probovm.iosProvisioningProfile="$PROFILE_PATH" \
-        -x test \
-        --no-daemon \
-        --stacktrace \
-        2>&1 | tee /tmp/robovm_build.log
+      -Probovm.archs=arm64 \
+      -Probovm.iosSignIdentity="Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)" \
+      -Probovm.iosProvisioningProfile="$PROFILE_PATH" \
+      -x test \
+      --no-daemon \
+      --stacktrace \
+      2>&1 | tee /tmp/robovm_build.log
 
       BUILD_EXIT=${PIPESTATUS[0]}
 
