@@ -4,11 +4,15 @@
 
     <mainClass>studioyes.kelimedunyasi.IOSLauncher</mainClass>
     <os>ios</os>
+    <arch>arm64</arch>
 
     <infoPList>Info.plist</infoPList>
 
+    <iosSignIdentity>Apple Distribution</iosSignIdentity>
+
     <frameworks>
         <framework>UIKit</framework>
+        <framework>Foundation</framework>
         <framework>OpenGLES</framework>
         <framework>QuartzCore</framework>
         <framework>CoreGraphics</framework>

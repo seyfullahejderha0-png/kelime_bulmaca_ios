@@ -21,7 +21,7 @@ robovm {
     archs = "arm64"
     // Unconditionally skip signing during robovmInstall.
     // The actual signing will be done manually via codesign in the packaging step.
-    iosSkipSigning = true
+    //iosSkipSigning = true
 }
 
 dependencies {
