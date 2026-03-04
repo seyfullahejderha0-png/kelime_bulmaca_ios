@@ -13,41 +13,22 @@ workflows:
       - name: Grant permission
         script: chmod +x gradlew
 
-      - name: Fix keychain search path
+      - name: Build IPA (unsigned)
         script: |
-          echo "Adding Codemagic keychain to search list..."
-          security list-keychains -d user -s             /Users/builder/Library/codemagic-cli-tools/keychains/*.keychain-db             ~/Library/Keychains/login.keychain-db
+          ./gradlew ios:createIPA \
+            -Probovm.archs=arm64 \
+            -x test \
+            --no-daemon \
+            --stacktrace
 
-          echo "Available signing identities:"
-          security find-identity -v -p codesigning
-
-      - name: Locate provisioning profile
+      - name: Sign IPA
         script: |
-          echo "Searching provisioning profile..."
-          PROFILE_PATH=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | head -n 1)
+          IPA_PATH=$(find ios/build -name "*.ipa" | head -n 1)
 
-          echo "Provisioning profile found:"
-          echo $PROFILE_PATH
+          echo "IPA found:"
+          echo $IPA_PATH
 
-          echo "PROFILE_PATH=$PROFILE_PATH" >> $CM_ENV
-
-      - name: Build and Sign IPA
-        script: |
-          set -e
-          echo "Using provisioning profile:"
-          echo $PROFILE_PATH
-
-          ./gradlew ios:createIPA             -Probovm.archs=arm64             -Probovm.iosSignIdentity="Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)"             -Probovm.iosProvisioningProfile="$PROFILE_PATH"             -x test             --no-daemon             --stacktrace             2>&1 | tee /tmp/robovm_build.log
-
-          BUILD_EXIT=${PIPESTATUS[0]}
-
-          if [ $BUILD_EXIT -ne 0 ]; then
-            echo "BUILD FAILED"
-            tail -100 /tmp/robovm_build.log || true
-            exit 1
-          fi
-
-          echo "createIPA succeeded! Signed IPA is ready."
+          cp "$IPA_PATH" "$CM_BUILD_DIR/WordConnect.ipa"
 
     artifacts:
-      - ios/build/ipa/*.ipa
+      - WordConnect.ipa
