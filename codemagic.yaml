@@ -23,19 +23,32 @@ workflows:
           if [ -z "$PROFILE" ]; then echo "❌ No provisioning profile found!"; exit 1; fi
           echo "✅ Profile path: $PROFILE"
 
-          # ── Profile UUID'sini çıkart ──────────────────────────────────
-          # RoboVM, iosProvisioningProfile'ı dosya yolu değil UUID/isim olarak arar
-          PROFILE_UUID=$(/usr/bin/security cms -D -i "$PROFILE" 2>/dev/null \
-            | plutil -extract UUID raw - 2>/dev/null || true)
+          # ── Profile UUID — Python ile çıkart (en güvenilir yöntem) ───
+          PROFILE_UUID=$(python3 - <<'PYEOF'
+import subprocess, plistlib, sys, os
+profile = os.environ.get("PROFILE_PATH", "")
+try:
+    raw = subprocess.check_output(["security", "cms", "-D", "-i", profile], stderr=subprocess.DEVNULL)
+    p = plistlib.loads(raw)
+    print(p["UUID"])
+except Exception as e:
+    sys.exit(f"UUID extraction failed: {e}")
+PYEOF
+          ) || true
+
+          # Fallback: XML grep ile UUID çıkart
           if [ -z "$PROFILE_UUID" ]; then
-            # fallback: binary grep
-            PROFILE_UUID=$(grep -a 'UUID' "$PROFILE" -A2 \
-              | grep -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}' \
-              | head -1)
+            PROFILE_UUID=$(security cms -D -i "$PROFILE" 2>/dev/null \
+              | grep -A1 '<key>UUID</key>' | tail -1 \
+              | sed 's/.*<string>\(.*\)<\/string>.*/\1/' | tr -d '[:space:]')
+          fi
+
+          if [ -z "$PROFILE_UUID" ]; then
+            echo "❌ Could not extract UUID from provisioning profile!"; exit 1
           fi
           echo "✅ Profile UUID: $PROFILE_UUID"
 
-          # ── Keychain: build keychain'i DEFAULT yap ────────────────────
+          # ── Keychain ──────────────────────────────────────────────────
           BUILD_KEYCHAIN=$(security list-keychains | grep codemagic | tr -d '" ' | head -1)
           if [ -z "$BUILD_KEYCHAIN" ]; then
             BUILD_KEYCHAIN=$(security list-keychains | grep -v "login\|System\|ROOT" | head -1 | tr -d '" ')
@@ -54,7 +67,7 @@ workflows:
           echo "=== Signing identities ==="
           security find-identity -v -p codesigning
 
-          # ── Sign identity'yi keychaindan otomatik bul ─────────────────
+          # ── Sign identity ─────────────────────────────────────────────
           SIGN_ID=$(security find-identity -v -p codesigning "$BUILD_KEYCHAIN" \
             | grep "Apple Distribution" | head -1 \
             | sed 's/.*"\(.*\)".*/\1/')
@@ -65,28 +78,33 @@ workflows:
           fi
           echo "✅ Sign identity: $SIGN_ID"
 
-          # ── createIPA — UUID ile ──────────────────────────────────────
+          echo "=== Passing to RoboVM ==="
+          echo "  iosSignIdentity      = $SIGN_ID"
+          echo "  iosProvisioningProfile = $PROFILE_UUID"
+
+          # ── createIPA ─────────────────────────────────────────────────
           echo "=== Running createIPA ==="
           ./gradlew ios:createIPA \
             -Probovm.iosSignIdentity="$SIGN_ID" \
             -Probovm.iosProvisioningProfile="$PROFILE_UUID" \
             -x test \
             --no-daemon \
+            --info \
             2>&1 | tee /tmp/robovm_build.log
           BUILD_EXIT=${PIPESTATUS[0]}
 
           if [ $BUILD_EXIT -ne 0 ]; then
             echo "❌ createIPA failed (exit $BUILD_EXIT)"
             echo "--- Relevant log lines ---"
-            grep -iE "sign|identity|profile|provisioningProfile|fingerprint|certificate|bundleId|ERROR|FAILED|IOException|Element|No provisioning" \
-              /tmp/robovm_build.log | grep -v "^>" | grep -v "Downloading\|Resource missing" | tail -50 || true
+            grep -iE "sign|identity|profile|provisioningProfile|fingerprint|certificate|bundleId|ERROR|FAILED|IOException|Element|No provisioning|UUID|candidate|null" \
+              /tmp/robovm_build.log | grep -v "^>" | grep -v "Downloading\|Resource missing" | tail -60 || true
             exit 1
           fi
 
           # ── IPA bul ───────────────────────────────────────────────────
           IPA=$(find "$WORKDIR" -name "*.ipa" -not -path "*.gradle*" | head -1)
           if [ -z "$IPA" ]; then
-            echo "❌ No .ipa found — searching all:"
+            echo "❌ No .ipa found"
             find "$WORKDIR" -name "*.ipa" 2>/dev/null || true
             exit 1
           fi
