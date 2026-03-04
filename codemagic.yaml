@@ -13,42 +13,80 @@ workflows:
       - name: Grant permission
         script: chmod +x gradlew
 
-      - name: Inject profile and build IPA
+      - name: Setup keychain and build IPA
         script: |
           set -e
           WORKDIR=$(pwd)
 
-          # ── Provisioning profile bul ─────────────────────────────────
-          echo "=== Available profiles ==="
-          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ 2>/dev/null || true
-
+          # ── Provisioning profile ──────────────────────────────────────
           PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -1)
           if [ -z "$PROFILE" ]; then
             echo "❌ No provisioning profile found!"
             exit 1
           fi
-          echo "Profile: $PROFILE"
+          echo "✅ Profile: $PROFILE"
 
-          # ── robovm.properties'e yaz (echo ile, heredoc değil) ────────
+          # UUID'yi profil içinden çıkar (path yerine UUID daha güvenilir)
+          PROFILE_UUID=$(security cms -D -i "$PROFILE" 2>/dev/null | \
+            /usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin 2>/dev/null || true)
+          echo "UUID: $PROFILE_UUID"
+
+          # ── Keychain ──────────────────────────────────────────────────
+          echo "=== Keychains ==="
+          security list-keychains
+
+          echo "=== Signing identities ==="
+          security find-identity -v -p codesigning
+
+          # Codemagic's build keychain'i bul ve unlock et
+          BUILD_KEYCHAIN=$(security list-keychains | grep -v "login\|System\|ROOT\|local" | \
+            head -1 | tr -d '" ' | xargs 2>/dev/null || true)
+          echo "Build keychain: $BUILD_KEYCHAIN"
+
+          if [ -n "$BUILD_KEYCHAIN" ] && [ -f "$BUILD_KEYCHAIN" ]; then
+            echo "Unlocking build keychain..."
+            security set-keychain-settings -lut 7200 "$BUILD_KEYCHAIN" || true
+            security unlock-keychain -p "" "$BUILD_KEYCHAIN" 2>/dev/null || true
+            # Build keychain'i search list'e ekle
+            security list-keychains -d user -s "$BUILD_KEYCHAIN" \
+              ~/Library/Keychains/login.keychain-db || true
+            echo "Keychain search list updated"
+            security list-keychains
+          fi
+
+          # ── robovm.properties ─────────────────────────────────────────
           echo "app.id=com.studioyes.wordconnect" > ios/robovm.properties
           echo "app.signingIdentity=Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)" >> ios/robovm.properties
-          echo "app.provisioningProfile=$PROFILE" >> ios/robovm.properties
+
+          # UUID varsa UUID kullan, yoksa tam path kullan
+          if [ -n "$PROFILE_UUID" ]; then
+            echo "app.provisioningProfile=$PROFILE_UUID" >> ios/robovm.properties
+            echo "Using UUID: $PROFILE_UUID"
+          else
+            echo "app.provisioningProfile=$PROFILE" >> ios/robovm.properties
+            echo "UUID not extracted, using path"
+          fi
 
           echo "=== robovm.properties ==="
           cat ios/robovm.properties
 
-          # ── createIPA çalıştır ────────────────────────────────────────
+          # ── createIPA ─────────────────────────────────────────────────
           echo "=== Running createIPA ==="
-          ./gradlew ios:createIPA -x test 2>&1 | tail -200
+          ./gradlew ios:createIPA -x test --info 2>&1 | grep -E \
+            "robovm|RoboVM|signing|identity|profile|FAILED|ERROR|Exception|ipa|IPA|SUCCESS" \
+            | head -100 || true
 
-          # ── IPA'yı bul ────────────────────────────────────────────────
+          # Full output için (hata durumunda)
+          echo "=== Full build output tail ==="
+          ./gradlew ios:createIPA -x test 2>&1 | tail -50 || true
+
+          # ── IPA bul ───────────────────────────────────────────────────
           echo "=== Searching for IPA ==="
           find "$WORKDIR" -name "*.ipa" -not -path "*.gradle*" 2>/dev/null
 
           IPA=$(find "$WORKDIR" -name "*.ipa" -not -path "*.gradle*" | head -1)
           if [ -z "$IPA" ]; then
             echo "❌ No .ipa found!"
-            echo "=== ios/build tree ==="
             find "$WORKDIR/ios/build" -not -path "*.gradle*" 2>/dev/null | head -50
             exit 1
           fi
@@ -56,7 +94,7 @@ workflows:
           echo "✅ IPA: $IPA ($(du -h "$IPA" | cut -f1))"
           mkdir -p "$WORKDIR/ios/build/ipa"
           cp "$IPA" "$WORKDIR/ios/build/ipa/WordConnect.ipa"
-          echo "✅ Copied to ios/build/ipa/WordConnect.ipa"
+          echo "✅ Done: ios/build/ipa/WordConnect.ipa"
 
     artifacts:
       - ios/build/ipa/*.ipa
