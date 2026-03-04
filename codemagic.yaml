@@ -1,51 +1,70 @@
 workflows:
-  ios-workflow:
-    name: LibGDX iOS RoboVM IPA
+ios-workflow:
+name: LibGDX iOS RoboVM IPA
 
-    environment:
-      xcode: latest
-      java: 11
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.studioyes.wordconnect
+```
+environment:
+  xcode: latest
+  java: 11
+  ios_signing:
+    distribution_type: app_store
+    bundle_identifier: com.studioyes.wordconnect
 
-    scripts:
-      - name: Grant permission
-        script: chmod +x gradlew
+scripts:
+  - name: Grant permission
+    script: chmod +x gradlew
 
-      # 🔧 RoboVM'in Codemagic keychain'i görebilmesi için
-      - name: Fix keychain search path
-        script: |
-          echo "Adding Codemagic keychain to search list..."
-          security list-keychains -d user -s \
-            /Users/builder/Library/codemagic-cli-tools/keychains/*.keychain-db \
-            ~/Library/Keychains/login.keychain-db
+  # Codemagic keychain'i RoboVM'e görünür yap
+  - name: Fix keychain search path
+    script: |
+      echo "Adding Codemagic keychain to search list..."
 
-          echo "Available signing identities:"
-          security find-identity -v -p codesigning
+      security list-keychains -d user -s \
+        /Users/builder/Library/codemagic-cli-tools/keychains/*.keychain-db \
+        ~/Library/Keychains/login.keychain-db
 
-      - name: Build and Sign IPA
-        script: |
-          set -e
+      echo "Available signing identities:"
+      security find-identity -v -p codesigning
 
-          ./gradlew ios:createIPA \
-            -Probovm.archs=arm64 \
-            -x test \
-            --no-daemon \
-            --info \
-            --stacktrace \
-            2>&1 | tee /tmp/robovm_build.log
+  # Provisioning profile path'i bul
+  - name: Locate provisioning profile
+    script: |
+      echo "Searching provisioning profile..."
 
-          BUILD_EXIT=${PIPESTATUS[0]}
-          if [ $BUILD_EXIT -ne 0 ]; then
-            echo "BUILD FAILED"
-            tail -100 /tmp/robovm_build.log || true
-            exit 1
-          fi
+      PROFILE_PATH=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | head -n 1)
 
-          echo "createIPA succeeded! Signed IPA is ready."
+      echo "Provisioning profile found:"
+      echo $PROFILE_PATH
 
+      echo "PROFILE_PATH=$PROFILE_PATH" >> $CM_ENV
 
+  # IPA build
+  - name: Build and Sign IPA
+    script: |
+      set -e
 
-    artifacts:
-      - ios/build/ipa/*.ipa
+      echo "Using provisioning profile:"
+      echo $PROFILE_PATH
+
+      ./gradlew ios:createIPA \
+        -Probovm.archs=arm64 \
+        -Probovm.iosSignIdentity="Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)" \
+        -Probovm.iosProvisioningProfile="$PROFILE_PATH" \
+        -x test \
+        --no-daemon \
+        --stacktrace \
+        2>&1 | tee /tmp/robovm_build.log
+
+      BUILD_EXIT=${PIPESTATUS[0]}
+
+      if [ $BUILD_EXIT -ne 0 ]; then
+        echo "BUILD FAILED"
+        tail -100 /tmp/robovm_build.log || true
+        exit 1
+      fi
+
+      echo "createIPA succeeded! Signed IPA is ready."
+
+artifacts:
+  - ios/build/ipa/*.ipa
+```
