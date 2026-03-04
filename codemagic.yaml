@@ -13,6 +13,18 @@ workflows:
       - name: Grant permission
         script: chmod +x gradlew
 
+      - name: Inspect provisioning profile
+        script: |
+          PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | head -1)
+          echo "=== Profile file: $PROFILE ==="
+          security cms -D -i "$PROFILE" > /tmp/profile.plist
+          echo "=== Bundle ID in profile ==="
+          /usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" /tmp/profile.plist
+          echo "=== UUID ==="
+          /usr/libexec/PlistBuddy -c "Print :UUID" /tmp/profile.plist
+          echo "=== Team ID ==="
+          /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" /tmp/profile.plist
+
       - name: Inject signing into robovm.properties
         script: |
           PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | head -1)
