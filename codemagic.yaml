@@ -13,54 +13,49 @@ workflows:
       - name: Grant permission
         script: chmod +x gradlew
 
-      - name: Inject provisioning profile into robovm.properties
+      - name: Inject profile and build IPA
         script: |
           set -e
+          WORKDIR=$(pwd)
 
-          echo "=== Available provisioning profiles ==="
-          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ 2>/dev/null
+          # ── Provisioning profile bul ─────────────────────────────────
+          echo "=== Available profiles ==="
+          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ 2>/dev/null || true
 
           PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -1)
-
           if [ -z "$PROFILE" ]; then
             echo "❌ No provisioning profile found!"
             exit 1
           fi
+          echo "Profile: $PROFILE"
 
-          echo "✅ Profile: $PROFILE"
-
-          # robovm.properties'e tam yolu yaz
-          # Bu sayede RoboVM profil EŞLEŞTIRME adımını atlar (2.3.23 bug bypass)
-          cat > ios/robovm.properties << EOF
-          app.id=com.studioyes.wordconnect
-          app.signingIdentity=Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)
-          app.provisioningProfile=${PROFILE}
-          EOF
+          # ── robovm.properties'e yaz (echo ile, heredoc değil) ────────
+          echo "app.id=com.studioyes.wordconnect" > ios/robovm.properties
+          echo "app.signingIdentity=Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)" >> ios/robovm.properties
+          echo "app.provisioningProfile=$PROFILE" >> ios/robovm.properties
 
           echo "=== robovm.properties ==="
           cat ios/robovm.properties
 
-      - name: Build IPA with createIPA
-        script: |
-          set -e
+          # ── createIPA çalıştır ────────────────────────────────────────
+          echo "=== Running createIPA ==="
           ./gradlew ios:createIPA -x test 2>&1 | tail -200
 
-          echo ""
+          # ── IPA'yı bul ────────────────────────────────────────────────
           echo "=== Searching for IPA ==="
-          find . -name "*.ipa" -not -path "*.gradle*" 2>/dev/null
+          find "$WORKDIR" -name "*.ipa" -not -path "*.gradle*" 2>/dev/null
 
-          IPA=$(find . -name "*.ipa" -not -path "*.gradle*" | head -1)
+          IPA=$(find "$WORKDIR" -name "*.ipa" -not -path "*.gradle*" | head -1)
           if [ -z "$IPA" ]; then
-            echo "❌ No .ipa found! Looking for .app as fallback..."
-            find . -name "*.app" -not -path "*dSYM*" -not -path "*.gradle*" 2>/dev/null
-            # build dir tree
-            find ./ios/build -type d 2>/dev/null | head -40
+            echo "❌ No .ipa found!"
+            echo "=== ios/build tree ==="
+            find "$WORKDIR/ios/build" -not -path "*.gradle*" 2>/dev/null | head -50
             exit 1
           fi
 
-          echo "✅ IPA found: $IPA ($(du -h "$IPA" | cut -f1))"
-          mkdir -p ios/build/ipa
-          cp "$IPA" ios/build/ipa/WordConnect.ipa
+          echo "✅ IPA: $IPA ($(du -h "$IPA" | cut -f1))"
+          mkdir -p "$WORKDIR/ios/build/ipa"
+          cp "$IPA" "$WORKDIR/ios/build/ipa/WordConnect.ipa"
           echo "✅ Copied to ios/build/ipa/WordConnect.ipa"
 
     artifacts:
