@@ -13,11 +13,15 @@ workflows:
       - name: Grant permission
         script: chmod +x gradlew
 
-      - name: Show signing identity
-        script: security find-identity -v -p codesigning | head -5
-
-      - name: Show provisioning profiles
-        script: ls ~/Library/MobileDevice/Provisioning\ Profiles/ 2>/dev/null || echo "No profiles"
+      - name: Inject signing into robovm.properties
+        script: |
+          PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | head -1)
+          UUID=$(security cms -D -i "$PROFILE" | grep -A1 "<key>UUID</key>" | grep "<string>" | sed 's/.*<string>\(.*\)<\/string>.*/\1/')
+          echo "app.id=com.studioyes.wordconnect" > ios/robovm.properties
+          echo "app.signingIdentity=Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)" >> ios/robovm.properties
+          echo "app.provisioningProfile=$UUID" >> ios/robovm.properties
+          echo "--- robovm.properties ---"
+          cat ios/robovm.properties
 
       - name: Build iOS IPA
         script: ./gradlew ios:createIPA
