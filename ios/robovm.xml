@@ -4,6 +4,7 @@
     <executableName>WordConnect</executableName>
     <mainClass>studioyes.kelimedunyasi.IOSLauncher</mainClass>
     <os>ios</os>
+    <target>ios</target>
 
     <infoPList>Info.plist</infoPList>
 <forceLinkClasses>
