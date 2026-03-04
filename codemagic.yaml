@@ -17,20 +17,16 @@ workflows:
         script: |
           echo "=== Xcode version ==="
           xcodebuild -version
-          echo ""
-          echo "=== Certificates in ALL keychains ==="
+          echo "=== Certificates ==="
           security find-identity -v -p codesigning
-          echo ""
           echo "=== Provisioning Profiles ==="
           ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ 2>/dev/null || echo "No profiles directory"
-          echo ""
-          echo "=== All keychains ==="
+          echo "=== Keychains ==="
           security list-keychains -d user
 
       - name: Build app binary (skip signing)
         script: |
           set -e
-          echo "=== Building with iosSkipSigning=true ==="
           ./gradlew ios:robovmInstall \
             -Probovm.iosSkipSigning=true \
             -Probovm.archs=arm64 \
@@ -39,108 +35,91 @@ workflows:
             --stacktrace \
             2>&1 | tee /tmp/robovm_build.log
           BUILD_EXIT=${PIPESTATUS[0]}
-
           if [ $BUILD_EXIT -ne 0 ]; then
-            echo "❌ robovmInstall failed (exit $BUILD_EXIT)"
-            echo "--- Last 100 lines ---"
+            echo "BUILD FAILED"
             tail -100 /tmp/robovm_build.log || true
             exit 1
           fi
-          echo "✅ robovmInstall succeeded"
+          echo "robovmInstall succeeded"
 
       - name: Sign and package IPA manually
         script: |
           set -e
           WORKDIR=$(pwd)
 
-          # ── Find .app ────────────────────────────────────────────────
+          # Find .app bundle
           APP=$(find "$WORKDIR/ios/build/robovm" -name "*.app" -type d | head -1)
           if [ -z "$APP" ]; then
-            echo "❌ No .app bundle found!"
-            find "$WORKDIR/ios/build" -type d 2>/dev/null || true
+            echo "No .app found, searching wider..."
+            find "$WORKDIR/ios/build" -type d 2>/dev/null
             exit 1
           fi
-          echo "✅ App bundle: $APP"
+          echo "App bundle: $APP"
 
-          # ── Provisioning profile ─────────────────────────────────────
-          PROFILE_DIR=~/Library/MobileDevice/Provisioning\ Profiles
-          PROFILE=$(ls "$PROFILE_DIR"/*.mobileprovision 2>/dev/null | head -1)
+          # Find provisioning profile
+          PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -1)
           if [ -z "$PROFILE" ]; then
-            echo "❌ No provisioning profile found!"
+            echo "No provisioning profile found!"
             exit 1
           fi
-          echo "✅ Profile: $PROFILE"
+          echo "Profile: $PROFILE"
 
-          # ── Profile UUID ─────────────────────────────────────────────
-          PROFILE_UUID=$(python3 -c "
-import subprocess, plistlib, sys
-try:
-    raw = subprocess.check_output(['security','cms','-D','-i','${PROFILE}'], stderr=subprocess.DEVNULL)
-    print(plistlib.loads(raw)['UUID'])
-except Exception as e:
-    print('', end='')
-" 2>/dev/null)
-          echo "✅ UUID: $PROFILE_UUID"
+          # Extract UUID using security + grep only (no python multiline)
+          PROFILE_UUID=$(security cms -D -i "$PROFILE" 2>/dev/null | grep -A1 '<key>UUID</key>' | tail -1 | sed 's/.*<string>\(.*\)<\/string>.*/\1/' | tr -d '[:space:]')
+          echo "UUID: $PROFILE_UUID"
 
-          # ── Copy profile into .app ────────────────────────────────────
+          # Extract entitlements from profile
+          security cms -D -i "$PROFILE" 2>/dev/null > /tmp/profile_decoded.plist
+          /usr/libexec/PlistBuddy -x -c "Print :Entitlements" /tmp/profile_decoded.plist > /tmp/entitlements.plist 2>/dev/null || true
+          echo "Entitlements:"
+          cat /tmp/entitlements.plist || true
+
+          # Copy embedded profile
           cp "$PROFILE" "$APP/embedded.mobileprovision"
 
-          # ── Create entitlements from profile ─────────────────────────
-          python3 -c "
-import subprocess, plistlib, sys
-raw = subprocess.check_output(['security','cms','-D','-i','${PROFILE}'], stderr=subprocess.DEVNULL)
-pl = plistlib.loads(raw)
-ent = pl.get('Entitlements', {})
-with open('/tmp/entitlements.plist', 'wb') as f:
-    plistlib.dump(ent, f)
-print('Entitlements written to /tmp/entitlements.plist')
-"
-
-          # ── Find signing identity (by fingerprint first) ─────────────
-          SIGN_FINGERPRINT=$(security find-identity -v -p codesigning \
+          # Find signing identity fingerprint
+          SIGN_FP=$(security find-identity -v -p codesigning \
             | grep -E 'Apple Distribution|iPhone Distribution|Apple Development|iPhone Developer' \
             | head -1 | awk '{print $2}')
 
-          # Fallback: grab any valid identity
-          if [ -z "$SIGN_FINGERPRINT" ]; then
-            SIGN_FINGERPRINT=$(security find-identity -v -p codesigning \
-              | grep -v "REVOKED\|EXPIRED" | grep "[0-9A-F]\{40\}" | head -1 | awk '{print $2}')
+          if [ -z "$SIGN_FP" ]; then
+            # Grab any valid identity
+            SIGN_FP=$(security find-identity -v -p codesigning \
+              | grep -v "REVOKED\|EXPIRED" | grep -E "[0-9A-F]{40}" | head -1 | awk '{print $2}')
           fi
 
-          if [ -z "$SIGN_FINGERPRINT" ]; then
-            echo "❌ No signing identity found!"
+          if [ -z "$SIGN_FP" ]; then
+            echo "No signing identity found!"
             security find-identity -v -p codesigning
             exit 1
           fi
-          echo "✅ Sign fingerprint: $SIGN_FINGERPRINT"
+          echo "Signing with: $SIGN_FP"
 
-          # ── Frameworks içini de sign et ───────────────────────────────
+          # Sign frameworks if any
           if [ -d "$APP/Frameworks" ]; then
             for FW in "$APP/Frameworks"/*; do
               echo "Signing framework: $FW"
-              codesign --force --sign "$SIGN_FINGERPRINT" \
-                --entitlements /tmp/entitlements.plist "$FW" || true
+              codesign --force --sign "$SIGN_FP" "$FW" || true
             done
           fi
 
-          # ── Ana app'i sign et ─────────────────────────────────────────
-          echo "=== Signing $APP ==="
-          codesign --force --sign "$SIGN_FINGERPRINT" \
-            --entitlements /tmp/entitlements.plist \
-            --timestamp=none \
-            "$APP"
+          # Sign the app
+          if [ -f "/tmp/entitlements.plist" ] && [ -s "/tmp/entitlements.plist" ]; then
+            codesign --force --sign "$SIGN_FP" --entitlements /tmp/entitlements.plist --timestamp=none "$APP"
+          else
+            codesign --force --sign "$SIGN_FP" --timestamp=none "$APP"
+          fi
 
-          echo "=== Verifying signature ==="
+          echo "Verifying..."
           codesign --verify --verbose "$APP" || true
 
-          # ── IPA paketi oluştur ────────────────────────────────────────
-          TMPDIR=$(mktemp -d)
-          mkdir -p "$TMPDIR/Payload"
-          cp -r "$APP" "$TMPDIR/Payload/"
-          IPA_PATH="$WORKDIR/ios/build/ipa/WordConnect.ipa"
-          mkdir -p "$(dirname "$IPA_PATH")"
-          (cd "$TMPDIR" && zip -r "$IPA_PATH" Payload)
-          echo "✅ IPA created: $IPA_PATH ($(du -h "$IPA_PATH" | cut -f1))"
+          # Package as IPA
+          TMPDIR_IPA=$(mktemp -d)
+          mkdir -p "$TMPDIR_IPA/Payload"
+          cp -r "$APP" "$TMPDIR_IPA/Payload/"
+          mkdir -p "$WORKDIR/ios/build/ipa"
+          (cd "$TMPDIR_IPA" && zip -r "$WORKDIR/ios/build/ipa/WordConnect.ipa" Payload)
+          echo "IPA created: $(du -h "$WORKDIR/ios/build/ipa/WordConnect.ipa" | cut -f1)"
 
     artifacts:
       - ios/build/ipa/*.ipa
