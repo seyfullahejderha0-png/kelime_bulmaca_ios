@@ -80,15 +80,14 @@ workflows:
             -Probovm.iosProvisioningProfile="$PROFILE_UUID" \
             -x test \
             --no-daemon \
-            --info \
+            --stacktrace \
             2>&1 | tee /tmp/robovm_build.log
           BUILD_EXIT=${PIPESTATUS[0]}
 
           if [ $BUILD_EXIT -ne 0 ]; then
             echo "❌ createIPA failed (exit $BUILD_EXIT)"
-            echo "--- Relevant log lines ---"
-            grep -iE "sign|identity|profile|provisioningProfile|fingerprint|certificate|bundleId|ERROR|FAILED|IOException|Element|No provisioning|UUID|candidate|null" \
-              /tmp/robovm_build.log | grep -v "^>" | grep -v "Downloading\|Resource missing" | tail -60 || true
+            echo "--- Last 80 lines of build log ---"
+            tail -80 /tmp/robovm_build.log || true
             exit 1
           fi
 
