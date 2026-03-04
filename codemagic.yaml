@@ -24,16 +24,36 @@ workflows:
           echo "=== Keychains ==="
           security list-keychains -d user
 
-      - name: Build app binary (skip signing)
+      - name: Build app binary
         script: |
           set -e
+          
+          # Find provisioning profile
+          PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -1)
+          if [ -n "$PROFILE" ]; then
+            PROFILE_UUID=$(security cms -D -i "$PROFILE" 2>/dev/null | grep -A1 '<key>UUID</key>' | tail -1 | sed 's/.*<string>\(.*\)<\/string>.*/\1/' | tr -d '[:space:]')
+            echo "Found Profile UUID: $PROFILE_UUID"
+          else
+            PROFILE_UUID=""
+          fi
+
+          # Find signing identity
+          SIGN_FP=$(security find-identity -v -p codesigning | grep -E 'Apple Distribution|iPhone Distribution' | head -1 | awk '{print $2}')
+          if [ -z "$SIGN_FP" ]; then
+            SIGN_FP=$(security find-identity -v -p codesigning | grep -v "REVOKED\|EXPIRED" | grep -E "[0-9A-F]{40}" | head -1 | awk '{print $2}')
+          fi
+          echo "Found Signing Identity: $SIGN_FP"
+          
           ./gradlew ios:robovmInstall \
-            -Drobovm.iosSkipSigning=true \
+            -Probovm.iosSignIdentity="$SIGN_FP" \
+            -Probovm.iosProvisioningProfile="$PROFILE_UUID" \
             -Probovm.archs=arm64 \
             -x test \
             --no-daemon \
+            --info \
             --stacktrace \
             2>&1 | tee /tmp/robovm_build.log
+            
           BUILD_EXIT=${PIPESTATUS[0]}
           if [ $BUILD_EXIT -ne 0 ]; then
             echo "BUILD FAILED"
