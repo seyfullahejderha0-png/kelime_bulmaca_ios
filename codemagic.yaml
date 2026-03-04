@@ -13,12 +13,21 @@ workflows:
       - name: Grant permission
         script: chmod +x gradlew
 
+      # 🔧 RoboVM'in Codemagic keychain'i görebilmesi için
+      - name: Fix keychain search path
+        script: |
+          echo "Adding Codemagic keychain to search list..."
+          security list-keychains -d user -s \
+            /Users/builder/Library/codemagic-cli-tools/keychains/*.keychain-db \
+            ~/Library/Keychains/login.keychain-db
+
+          echo "Available signing identities:"
+          security find-identity -v -p codesigning
+
       - name: Build and Sign IPA
         script: |
           set -e
-          
-          # Now that the Codemagic UI certificate is fixed, ios_signing will correctly
-          # populate the macOS keychain. We simply run createIPA without bypasses.
+
           ./gradlew ios:createIPA \
             -Probovm.archs=arm64 \
             -x test \
@@ -26,14 +35,14 @@ workflows:
             --info \
             --stacktrace \
             2>&1 | tee /tmp/robovm_build.log
-            
+
           BUILD_EXIT=${PIPESTATUS[0]}
           if [ $BUILD_EXIT -ne 0 ]; then
             echo "BUILD FAILED"
             tail -100 /tmp/robovm_build.log || true
             exit 1
           fi
-          
+
           echo "createIPA succeeded! Signed IPA is ready."
 
     artifacts:
