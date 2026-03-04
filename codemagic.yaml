@@ -24,26 +24,31 @@ workflows:
           echo "=== Keychains ==="
           security list-keychains -d user
 
-      - name: Initialize Keychain
+      - name: Initialize Keychain and Load UI Certificates
         script: |
+          # 1. Initialize keychain
           keychain initialize
-
-      - name: Fetch and Install Code Signing Files
-        script: |
-          app-store-connect fetch-signing-files "com.studioyes.wordconnect" --type IOS_APP_STORE --create
+          # 2. Add certificates that were uploaded via Codemagic UI
           keychain add-certificates
+          # 3. Apply the downloaded UI provisioning profiles
+          xcode-project use-profiles
           
-      - name: Show signing environment (Post-Install)
-        script: |
-          echo "=== Certificates ==="
-          security find-identity -v -p codesigning
-          echo "=== Provisioning Profiles ==="
-          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ 2>/dev/null || echo "No profiles directory"
-
       - name: Build app binary
         script: |
           set -e
+          
+          # Find the provisioning profile Codemagic just installed
+          PROFILE=$(find ~/Library/MobileDevice/Provisioning\ Profiles -name "*.mobileprovision" 2>/dev/null | head -1)
+          if [ -n "$PROFILE" ]; then
+            PROFILE_UUID=$(security cms -D -i "$PROFILE" 2>/dev/null | grep -A1 '<key>UUID</key>' | tail -1 | sed 's/.*<string>\(.*\)<\/string>.*/\1/' | tr -d '[:space:]')
+            echo "Found Profile UUID: $PROFILE_UUID"
+          else
+            echo "WARNING: No provisioning profile found even after xcode-project use-profiles!"
+            PROFILE_UUID=""
+          fi
+          
           ./gradlew ios:robovmInstall \
+            -Probovm.iosProvisioningProfile="$PROFILE_UUID" \
             -Probovm.archs=arm64 \
             -x test \
             --no-daemon \
