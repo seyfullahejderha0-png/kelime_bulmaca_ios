@@ -1,6 +1,6 @@
 workflows:
   ios-workflow:
-    name: LibGDX iOS RoboVM IPA (Native Signing)
+    name: LibGDX iOS RoboVM IPA
 
     environment:
       xcode: latest
@@ -13,112 +13,55 @@ workflows:
       - name: Grant permission
         script: chmod +x gradlew
 
-      - name: Show environment info
-        script: |
-          echo "=== Xcode ==="
-          xcodebuild -version
-
-          echo "=== Java ==="
-          java -version 2>&1
-
-          echo "=== Signing certificates ==="
-          security find-identity -v -p codesigning
-
-          echo "=== Provisioning profiles ==="
-          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ 2>/dev/null || echo "No profiles"
-
-      - name: Build iOS binary (unsigned)
+      - name: Inject provisioning profile into robovm.properties
         script: |
           set -e
-          ./gradlew ios:build -x test --info 2>&1 | tail -150
 
-          echo ""
-          echo "=== Build complete. Searching for .app ==="
-          find . -name "*.app" -not -path "*dSYM*" -not -path "*.gradle*" 2>/dev/null
+          echo "=== Available provisioning profiles ==="
+          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ 2>/dev/null
 
-      - name: Sign and package IPA
-        script: |
-          set -e
-          WORKDIR=$(pwd)
-          echo "Working dir: $WORKDIR"
-
-          # ── 1. .app bul ───────────────────────────────────────────────
-          echo "=== Searching for .app ==="
-          find "$WORKDIR" -name "*.app" -not -path "*dSYM*" -not -path "*.gradle*" 2>/dev/null
-
-          APP=$(find "$WORKDIR" -name "*.app" -not -path "*dSYM*" -not -path "*.gradle*" | head -1)
-
-          if [ -z "$APP" ]; then
-            echo "❌ ERROR: .app bundle not found!"
-            echo "=== ios/build directory tree ==="
-            find "$WORKDIR/ios/build" -type d 2>/dev/null || echo "ios/build does not exist"
-            find "$WORKDIR/ios" -type d 2>/dev/null | head -40
-            exit 1
-          fi
-
-          echo "✅ Found .app: $APP"
-          ls -la "$APP"
-
-          # ── 2. Provisioning profile bul ───────────────────────────────
           PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -1)
+
           if [ -z "$PROFILE" ]; then
-            echo "❌ ERROR: No .mobileprovision found!"
+            echo "❌ No provisioning profile found!"
             exit 1
           fi
+
           echo "✅ Profile: $PROFILE"
 
-          # ── 3. Signing identity bul ───────────────────────────────────
-          SIGNING_ID=$(security find-identity -v -p codesigning | grep "Apple Distribution" | head -1 | awk -F'"' '{print $2}')
-          if [ -z "$SIGNING_ID" ]; then
-            echo "❌ ERROR: No Apple Distribution certificate found!"
-            security find-identity -v -p codesigning
+          # robovm.properties'e tam yolu yaz
+          # Bu sayede RoboVM profil EŞLEŞTIRME adımını atlar (2.3.23 bug bypass)
+          cat > ios/robovm.properties << EOF
+          app.id=com.studioyes.wordconnect
+          app.signingIdentity=Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)
+          app.provisioningProfile=${PROFILE}
+          EOF
+
+          echo "=== robovm.properties ==="
+          cat ios/robovm.properties
+
+      - name: Build IPA with createIPA
+        script: |
+          set -e
+          ./gradlew ios:createIPA -x test 2>&1 | tail -200
+
+          echo ""
+          echo "=== Searching for IPA ==="
+          find . -name "*.ipa" -not -path "*.gradle*" 2>/dev/null
+
+          IPA=$(find . -name "*.ipa" -not -path "*.gradle*" | head -1)
+          if [ -z "$IPA" ]; then
+            echo "❌ No .ipa found! Looking for .app as fallback..."
+            find . -name "*.app" -not -path "*dSYM*" -not -path "*.gradle*" 2>/dev/null
+            # build dir tree
+            find ./ios/build -type d 2>/dev/null | head -40
             exit 1
           fi
-          echo "✅ Signing with: $SIGNING_ID"
 
-          # ── 4. Entitlements ───────────────────────────────────────────
-          security cms -D -i "$PROFILE" > /tmp/profile.plist
-          /usr/libexec/PlistBuddy -x -c "Print :Entitlements" /tmp/profile.plist > /tmp/entitlements.plist
-          echo "=== Entitlements ==="
-          cat /tmp/entitlements.plist
-
-          # ── 5. Provisioning profile embed ─────────────────────────────
-          cp "$PROFILE" "$APP/embedded.mobileprovision"
-          echo "✅ embedded.mobileprovision copied"
-
-          # ── 6. Frameworks imzala (varsa) ──────────────────────────────
-          if [ -d "$APP/Frameworks" ]; then
-            echo "Signing frameworks..."
-            find "$APP/Frameworks" -name "*.framework" -exec \
-              codesign --force --sign "$SIGNING_ID" {} \; 2>/dev/null || true
-          fi
-
-          # ── 7. .app imzala ────────────────────────────────────────────
-          codesign --force --sign "$SIGNING_ID" \
-            --entitlements /tmp/entitlements.plist \
-            --timestamp \
-            "$APP"
-          echo "✅ App signed"
-
-          # ── 8. Verify ─────────────────────────────────────────────────
-          codesign --verify --deep --strict "$APP"
-          echo "✅ Signing verified"
-
-          # ── 9. IPA oluştur ────────────────────────────────────────────
-          rm -rf /tmp/Payload
-          mkdir -p /tmp/Payload
-          cp -r "$APP" /tmp/Payload/
-          echo "Payload contents:"
-          ls -la /tmp/Payload/
-
-          cd /tmp
-          zip -qr WordConnect.ipa Payload/
-          echo "IPA size: $(du -h WordConnect.ipa | cut -f1)"
-
-          mkdir -p "$WORKDIR/ios/build/ipa"
-          cp /tmp/WordConnect.ipa "$WORKDIR/ios/build/ipa/"
-          echo "✅ IPA created: ios/build/ipa/WordConnect.ipa"
-          ls -lh "$WORKDIR/ios/build/ipa/"
+          echo "✅ IPA found: $IPA ($(du -h "$IPA" | cut -f1))"
+          mkdir -p ios/build/ipa
+          cp "$IPA" ios/build/ipa/WordConnect.ipa
+          echo "✅ Copied to ios/build/ipa/WordConnect.ipa"
 
     artifacts:
       - ios/build/ipa/*.ipa
