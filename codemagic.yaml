@@ -14,7 +14,6 @@ scripts:
   - name: Grant permission
     script: chmod +x gradlew
 
-  # Codemagic keychain'i RoboVM'e görünür yap
   - name: Fix keychain search path
     script: |
       echo "Adding Codemagic keychain to search list..."
@@ -26,7 +25,6 @@ scripts:
       echo "Available signing identities:"
       security find-identity -v -p codesigning
 
-  # Provisioning profile path'i bul
   - name: Locate provisioning profile
     script: |
       echo "Searching provisioning profile..."
@@ -38,7 +36,6 @@ scripts:
 
       echo "PROFILE_PATH=$PROFILE_PATH" >> $CM_ENV
 
-  # IPA build
   - name: Build and Sign IPA
     script: |
       set -e
