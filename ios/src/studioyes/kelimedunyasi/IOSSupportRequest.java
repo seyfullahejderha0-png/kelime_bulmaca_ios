@@ -3,9 +3,9 @@ package studioyes.kelimedunyasi;
 import com.badlogic.gdx.Gdx;
 import org.robovm.apple.foundation.NSError;
 import org.robovm.apple.foundation.NSURL;
-import org.robovm.apple.messageuikit.MFMailComposeResult;
-import org.robovm.apple.messageuikit.MFMailComposeViewController;
-import org.robovm.apple.messageuikit.MFMailComposeViewControllerDelegateAdapter;
+import org.robovm.apple.messageui.MFMailComposeResult;
+import org.robovm.apple.messageui.MFMailComposeViewController;
+import org.robovm.apple.messageui.MFMailComposeViewControllerDelegateAdapter;
 import org.robovm.apple.uikit.UIApplication;
 
 import studioyes.kelimedunyasi.util.SupportRequest;

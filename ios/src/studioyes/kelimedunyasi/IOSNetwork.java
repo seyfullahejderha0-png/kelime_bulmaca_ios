@@ -15,7 +15,7 @@ public class IOSNetwork implements Network {
     @Override
     public boolean isConnected() {
         try {
-            SCNetworkReachability reachability = SCNetworkReachability.createWithHostName("8.8.8.8");
+            SCNetworkReachability reachability = new SCNetworkReachability("8.8.8.8");
             if (reachability == null) return false;
             SCNetworkReachabilityFlags flags = reachability.getFlags();
             if (flags == null) return false;
