@@ -1,9 +1,17 @@
 apply plugin: "java-library"
 apply plugin: "robovm"
 
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+    }
+}
+
 robovm {
     archs = "thumbv7:arm64"
-    }
+}
 
 dependencies {
     implementation project(":core")
