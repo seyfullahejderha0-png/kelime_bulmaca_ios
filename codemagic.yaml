@@ -13,37 +13,57 @@ workflows:
       - name: Grant permission
         script: chmod +x gradlew
 
-      - name: Inspect provisioning profile
+      - name: Build iOS binary (no signing)
+        script: ./gradlew ios:build
+
+      - name: Find .app bundle
         script: |
+          APP=$(find ios/build -name "*.app" -not -path "*dSYM*" | head -1)
+          echo "Found app: $APP"
+          ls -la "$APP" || echo "App not found, listing build dir:"
+          find ios/build -type d | head -20
+
+      - name: Sign and package IPA
+        script: |
+          # Find .app bundle
+          APP=$(find ios/build -name "*.app" -not -path "*dSYM*" | head -1)
+          echo "Signing: $APP"
+
+          # Get provisioning profile
           PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | head -1)
-          echo "=== Profile file: $PROFILE ==="
+          echo "Profile: $PROFILE"
+
+          # Extract entitlements from profile
           security cms -D -i "$PROFILE" > /tmp/profile.plist
-          echo "=== Bundle ID in profile ==="
-          /usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" /tmp/profile.plist
-          echo "=== UUID ==="
-          /usr/libexec/PlistBuddy -c "Print :UUID" /tmp/profile.plist
-          echo "=== Team ID ==="
-          /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" /tmp/profile.plist
+          /usr/libexec/PlistBuddy -x -c "Print :Entitlements" /tmp/profile.plist > /tmp/entitlements.plist
+          echo "Entitlements:"
+          cat /tmp/entitlements.plist
 
-      - name: Inject signing into robovm.properties
-        script: |
-          PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | head -1)
-          UUID=$(security cms -D -i "$PROFILE" | grep -A1 "<key>UUID</key>" | grep "<string>" | sed 's/.*<string>\(.*\)<\/string>.*/\1/')
-          echo "app.id=com.studioyes.wordconnect" > ios/robovm.properties
-          echo "app.signingIdentity=Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)" >> ios/robovm.properties
-          echo "app.provisioningProfile=$UUID" >> ios/robovm.properties
-          echo "--- robovm.properties ---"
-          cat ios/robovm.properties
+          # Embed provisioning profile
+          cp "$PROFILE" "$APP/embedded.mobileprovision"
 
-      - name: Build iOS IPA
-        script: |
-          PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | head -1)
-          UUID=$(security cms -D -i "$PROFILE" | grep -A1 "<key>UUID</key>" | grep "<string>" | sed 's/.*<string>\(.*\)<\/string>.*/\1/')
-          echo "Using UUID: $UUID"
-          ./gradlew ios:createIPA \
-            -Probovm.signingIdentity="Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)" \
-            -Probovm.provisioningProfile="$UUID"
+          # Sign frameworks inside .app first
+          find "$APP/Frameworks" -name "*.framework" -exec \
+            codesign --force --sign "Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)" {} \; 2>/dev/null || true
+
+          # Sign the .app
+          codesign --force --sign "Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)" \
+            --entitlements /tmp/entitlements.plist \
+            --timestamp \
+            "$APP"
+
+          # Verify signing
+          codesign --verify --deep --strict "$APP"
+          echo "Signing verified ✅"
+
+          # Package into IPA
+          mkdir -p /tmp/Payload
+          cp -r "$APP" /tmp/Payload/
+          cd /tmp
+          zip -qr WordConnect.ipa Payload/
+          mkdir -p "$OLDPWD/ios/build/ipa"
+          cp WordConnect.ipa "$OLDPWD/ios/build/ipa/"
+          echo "IPA created: ios/build/ipa/WordConnect.ipa"
 
     artifacts:
-      - ios/build/robovm/**/*.ipa
-      - ios/build/**/*.ipa
+      - ios/build/ipa/*.ipa
