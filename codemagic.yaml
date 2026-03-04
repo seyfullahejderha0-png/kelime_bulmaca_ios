@@ -24,29 +24,54 @@ workflows:
           echo "=== Keychains ==="
           security list-keychains -d user
 
-      - name: Build app binary
+      - name: Build app binary (Skip Signing workaround)
         script: |
           set -e
           
-          # Find provisioning profile
-          PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -1)
-          if [ -n "$PROFILE" ]; then
-            PROFILE_UUID=$(security cms -D -i "$PROFILE" 2>/dev/null | grep -A1 '<key>UUID</key>' | tail -1 | sed 's/.*<string>\(.*\)<\/string>.*/\1/' | tr -d '[:space:]')
-            echo "Found Profile UUID: $PROFILE_UUID"
-          else
-            PROFILE_UUID=""
-          fi
-
-          # Find signing identity
-          SIGN_FP=$(security find-identity -v -p codesigning | grep -E 'Apple Distribution|iPhone Distribution' | head -1 | awk '{print $2}')
-          if [ -z "$SIGN_FP" ]; then
-            SIGN_FP=$(security find-identity -v -p codesigning | grep -v "REVOKED\|EXPIRED" | grep -E "[0-9A-F]{40}" | head -1 | awk '{print $2}')
-          fi
-          echo "Found Signing Identity: $SIGN_FP"
+          # RoboVM crashes if no provisioning profile exists on the system at all,
+          # even if iosSkipSigning=true. We create a dummy profile to satisfy the parser.
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles/
           
+          cat << 'EOF' > ~/Library/MobileDevice/Provisioning\ Profiles/dummy.mobileprovision
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>AppIDName</key>
+            <string>Dummy</string>
+            <key>ApplicationIdentifierPrefix</key>
+            <array><string>PREFIX</string></array>
+            <key>CreationDate</key>
+            <date>2024-01-01T00:00:00Z</date>
+            <key>Platform</key>
+            <array><string>iOS</string></array>
+            <key>Entitlements</key>
+            <dict>
+              <key>application-identifier</key>
+              <string>PREFIX.com.studioyes.wordconnect</string>
+            </dict>
+            <key>ExpirationDate</key>
+            <date>2030-01-01T00:00:00Z</date>
+            <key>Name</key>
+            <string>Dummy Profile</string>
+            <key>ProvisionedDevices</key>
+            <array></array>
+            <key>TeamIdentifier</key>
+            <array><string>PREFIX</string></array>
+            <key>TeamName</key>
+            <string>Dummy Team</string>
+            <key>TimeToLive</key>
+            <integer>3650</integer>
+            <key>UUID</key>
+            <string>00000000-0000-0000-0000-000000000000</string>
+            <key>Version</key>
+            <integer>1</integer>
+          </dict>
+          </plist>
+          EOF
+
           ./gradlew ios:robovmInstall \
-            -Probovm.iosSignIdentity="$SIGN_FP" \
-            -Probovm.iosProvisioningProfile="$PROFILE_UUID" \
+            -Probovm.iosProvisioningProfile="00000000-0000-0000-0000-000000000000" \
             -Probovm.archs=arm64 \
             -x test \
             --no-daemon \
