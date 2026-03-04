@@ -36,7 +36,13 @@ workflows:
           cat ios/robovm.properties
 
       - name: Build iOS IPA
-        script: ./gradlew ios:createIPA --info 2>&1 | tail -100
+        script: |
+          PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | head -1)
+          UUID=$(security cms -D -i "$PROFILE" | grep -A1 "<key>UUID</key>" | grep "<string>" | sed 's/.*<string>\(.*\)<\/string>.*/\1/')
+          echo "Using UUID: $UUID"
+          ./gradlew ios:createIPA \
+            -Probovm.signingIdentity="Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)" \
+            -Probovm.provisioningProfile="$UUID"
 
     artifacts:
       - ios/build/robovm/**/*.ipa
