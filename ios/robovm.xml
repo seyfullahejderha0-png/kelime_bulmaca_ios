@@ -8,7 +8,6 @@
 
     <infoPList>Info.plist</infoPList>
 
-    <iosSignIdentity>Apple Distribution</iosSignIdentity>
 
     <frameworks>
         <framework>UIKit</framework>
