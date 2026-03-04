@@ -19,6 +19,9 @@ sourceSets {
 
 robovm {
     archs = "arm64"
+    if (project.hasProperty('robovm.iosSkipSigning')) {
+        iosSkipSigning = project.property('robovm.iosSkipSigning').toBoolean()
+    }
 }
 
 dependencies {

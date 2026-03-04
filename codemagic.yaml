@@ -28,7 +28,7 @@ workflows:
         script: |
           set -e
           ./gradlew ios:robovmInstall \
-            -Probovm.iosSkipSigning=true \
+            -Drobovm.iosSkipSigning=true \
             -Probovm.archs=arm64 \
             -x test \
             --no-daemon \
