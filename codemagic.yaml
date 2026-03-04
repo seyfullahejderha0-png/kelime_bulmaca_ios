@@ -26,11 +26,18 @@ workflows:
           fi
           echo "✅ Profile: $PROFILE"
 
-          # UUID'yi profil içinden çıkar
-          PROFILE_UUID=$(security cms -D -i "$PROFILE" 2>/dev/null | \
-            grep -A1 '<key>UUID</key>' | tail -1 | \
-            sed 's/.*<string>\(.*\)<\/string>.*/\1/' | tr -d '[:space:]')
-          echo "UUID: $PROFILE_UUID"
+          # UUID'yi grep/sed ile çıkar (PlistBuddy pipe problemi olmaz)
+          PROFILE_UUID=$(security cms -D -i "$PROFILE" 2>/dev/null \
+            | grep -A1 '<key>UUID</key>' \
+            | tail -1 \
+            | sed 's|.*<string>\(.*\)</string>.*|\1|' \
+            | tr -d '[:space:]')
+          echo "UUID: [$PROFILE_UUID]"
+
+          if [ -z "$PROFILE_UUID" ]; then
+            echo "❌ UUID extraction failed!"
+            exit 1
+          fi
 
           # ── Keychains ──────────────────────────────────────────────────
           echo "=== Keychains ==="
@@ -39,26 +46,25 @@ workflows:
           echo "=== Signing identities ==="
           security find-identity -v -p codesigning
 
-          # ── robovm.properties ─────────────────────────────────────────
-          cat > ios/robovm.properties << EOF
-          app.id=com.studioyes.wordconnect
-          app.signingIdentity=Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)
-          app.provisioningProfile=$PROFILE_UUID
-          EOF
+          # ── robovm.properties (printf ile yaz — heredoc indentation sorunu yok) ──
+          printf 'app.id=com.studioyes.wordconnect\n' > ios/robovm.properties
+          printf 'app.signingIdentity=Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)\n' >> ios/robovm.properties
+          printf 'app.provisioningProfile=%s\n' "$PROFILE_UUID" >> ios/robovm.properties
 
           echo "=== robovm.properties ==="
           cat ios/robovm.properties
 
-          # ── createIPA ─────────────────────────────────────────────────
+          # ── createIPA (daemon olmadan, cache bypass) ───────────────────
           echo "=== Running createIPA ==="
-          ./gradlew ios:createIPA -x test --rerun-tasks --info 2>&1 | tee /tmp/robovm_build.log
+          ./gradlew ios:createIPA -x test --rerun-tasks --no-daemon --stacktrace 2>&1 | tee /tmp/robovm_build.log
           BUILD_EXIT=${PIPESTATUS[0]}
 
-          # Hata durumunda önemli satırları göster
-          grep -E "robovm|signing|identity|profile|FAILED|ERROR|Exception" /tmp/robovm_build.log | tail -50 || true
+          echo "=== Relevant log lines ==="
+          grep -E "signing|identity|profile|provisioningProfile|ERROR|Exception|FAILED|SUCCESS|ipa" \
+            /tmp/robovm_build.log | tail -80 || true
 
           if [ $BUILD_EXIT -ne 0 ]; then
-            echo "❌ createIPA failed!"
+            echo "❌ createIPA failed (exit $BUILD_EXIT)"
             exit 1
           fi
 
