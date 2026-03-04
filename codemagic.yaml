@@ -4,7 +4,7 @@ workflows:
 
     environment:
       xcode: latest
-      java: 1.8
+      java: 17
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.studioyes.wordconnect
@@ -13,15 +13,19 @@ workflows:
       - name: Grant permission
         script: chmod +x gradlew
 
-      - name: Build IPA (unsigned)
+      - name: List signing identities
+        script: security find-identity -v -p codesigning
+
+      - name: Build IPA
         script: |
           ./gradlew ios:createIPA \
-            -Probovm.archs=arm64 \
-            -x test \
-            --no-daemon \
-            --stacktrace
+          -Probovm.archs=arm64 \
+          -Probovm.skipSigning=false \
+          -x test \
+          --no-daemon \
+          --stacktrace
 
-      - name: Sign IPA
+      - name: Locate IPA
         script: |
           IPA_PATH=$(find ios/build -name "*.ipa" | head -n 1)
 

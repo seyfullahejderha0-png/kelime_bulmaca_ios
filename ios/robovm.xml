@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
-    <executableName>WordConnect</executableName>
 
+    <executableName>WordConnect</executableName>
     <mainClass>studioyes.kelimedunyasi.IOSLauncher</mainClass>
     <os>ios</os>
-
-
 
     <infoPList>Info.plist</infoPList>
 
@@ -18,13 +16,9 @@
         <framework>AudioToolbox</framework>
         <framework>AVFoundation</framework>
         <framework>StoreKit</framework>
-        <framework>AdSupport</framework>
         <framework>SystemConfiguration</framework>
         <framework>CoreMotion</framework>
         <framework>GameKit</framework>
-        <framework>MessageUI</framework>
-        <framework>CoreTelephony</framework>
-        <framework>SafariServices</framework>
     </frameworks>
 
     <weakFrameworks>
@@ -39,4 +33,5 @@
             <path>GoogleService-Info.plist</path>
         </resource>
     </resources>
+
 </config>
