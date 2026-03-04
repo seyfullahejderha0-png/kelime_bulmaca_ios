@@ -23,6 +23,18 @@ workflows:
           if [ -z "$PROFILE" ]; then echo "❌ No provisioning profile found!"; exit 1; fi
           echo "✅ Profile path: $PROFILE"
 
+          # ── Profile UUID'sini çıkart ──────────────────────────────────
+          # RoboVM, iosProvisioningProfile'ı dosya yolu değil UUID/isim olarak arar
+          PROFILE_UUID=$(/usr/bin/security cms -D -i "$PROFILE" 2>/dev/null \
+            | plutil -extract UUID raw - 2>/dev/null || true)
+          if [ -z "$PROFILE_UUID" ]; then
+            # fallback: binary grep
+            PROFILE_UUID=$(grep -a 'UUID' "$PROFILE" -A2 \
+              | grep -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}' \
+              | head -1)
+          fi
+          echo "✅ Profile UUID: $PROFILE_UUID"
+
           # ── Keychain: build keychain'i DEFAULT yap ────────────────────
           BUILD_KEYCHAIN=$(security list-keychains | grep codemagic | tr -d '" ' | head -1)
           if [ -z "$BUILD_KEYCHAIN" ]; then
@@ -47,21 +59,17 @@ workflows:
             | grep "Apple Distribution" | head -1 \
             | sed 's/.*"\(.*\)".*/\1/')
           if [ -z "$SIGN_ID" ]; then
-            # fallback: herhangi bir distribution sertifikası
             SIGN_ID=$(security find-identity -v -p codesigning "$BUILD_KEYCHAIN" \
               | grep -E "Distribution|iPhone Distribution" | head -1 \
               | sed 's/.*"\(.*\)".*/\1/')
           fi
           echo "✅ Sign identity: $SIGN_ID"
 
-          # ── createIPA — signing parametreleri -P ile enjekte edilir ──
-          # RoboVM kaynak kodu (RoboVMPluginExtension.java) incelendi:
-          # plugin sadece 'robovm.iosSignIdentity' ve 'robovm.iosProvisioningProfile'
-          # Gradle project property'lerini (-P) ya da robovm{} DSL bloğunu okur.
+          # ── createIPA — UUID ile ──────────────────────────────────────
           echo "=== Running createIPA ==="
           ./gradlew ios:createIPA \
             -Probovm.iosSignIdentity="$SIGN_ID" \
-            -Probovm.iosProvisioningProfile="$PROFILE" \
+            -Probovm.iosProvisioningProfile="$PROFILE_UUID" \
             -x test \
             --no-daemon \
             2>&1 | tee /tmp/robovm_build.log
@@ -78,7 +86,7 @@ workflows:
           # ── IPA bul ───────────────────────────────────────────────────
           IPA=$(find "$WORKDIR" -name "*.ipa" -not -path "*.gradle*" | head -1)
           if [ -z "$IPA" ]; then
-            echo "❌ No .ipa found after successful build — looking in build/robovm/"
+            echo "❌ No .ipa found — searching all:"
             find "$WORKDIR" -name "*.ipa" 2>/dev/null || true
             exit 1
           fi
