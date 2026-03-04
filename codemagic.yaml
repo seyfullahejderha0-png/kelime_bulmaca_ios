@@ -4,7 +4,7 @@ workflows:
 
     environment:
       xcode: latest
-      java: 17
+      java: 11
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.studioyes.wordconnect
