@@ -1,6 +1,6 @@
 workflows:
   ios-workflow:
-    name: LibGDX iOS Xcode Build
+    name: LibGDX iOS RoboVM IPA
 
     environment:
       xcode: latest
@@ -13,41 +13,15 @@ workflows:
       - name: Grant permission
         script: chmod +x gradlew
 
-      # 1️⃣ RoboVM Xcode project üretir (IPA üretmez)
-      - name: Generate Xcode project
-        script: ./gradlew ios:build
+      - name: Show signing identity
+        script: security find-identity -v -p codesigning | head -5
 
-      # 2️⃣ Archive oluştur
-      - name: Build Xcode archive
-        script: |
-          cd ios/build/robovm
-          xcodebuild \
-            -project WordConnect.xcodeproj \
-            -scheme WordConnect \
-            -configuration Release \
-            -archivePath build/WordConnect.xcarchive \
-            archive
+      - name: Show provisioning profiles
+        script: ls ~/Library/MobileDevice/Provisioning\ Profiles/ 2>/dev/null || echo "No profiles"
 
-      # 3️⃣ Export IPA
-      - name: Export IPA
-        script: |
-          cat > ExportOptions.plist <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>method</key>
-              <string>app-store</string>
-              <key>signingStyle</key>
-              <string>automatic</string>
-          </dict>
-          </plist>
-          EOF
-
-          xcodebuild -exportArchive \
-            -archivePath ios/build/robovm/build/WordConnect.xcarchive \
-            -exportOptionsPlist ExportOptions.plist \
-            -exportPath ios/build/robovm/build
+      - name: Build iOS IPA
+        script: ./gradlew ios:createIPA
 
     artifacts:
-      - ios/build/robovm/build/*.ipa
+      - ios/build/robovm/**/*.ipa
+      - ios/build/**/*.ipa
