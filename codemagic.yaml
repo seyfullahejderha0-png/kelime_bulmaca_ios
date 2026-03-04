@@ -13,95 +13,76 @@ workflows:
       - name: Grant permission
         script: chmod +x gradlew
 
-      - name: Build binary (RoboVM)
+      - name: Setup keychain and build IPA
         script: |
           set -e
           WORKDIR=$(pwd)
 
-          # robovm.properties — sadece bundle ID, imzalama YOK
+          # ── Provisioning profile ──────────────────────────────────────
+          PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -1)
+          if [ -z "$PROFILE" ]; then echo "❌ No provisioning profile found!"; exit 1; fi
+          echo "✅ Profile: $PROFILE"
+
+          PROFILE_UUID=$(security cms -D -i "$PROFILE" 2>/dev/null \
+            | grep -A1 '<key>UUID</key>' | tail -1 \
+            | sed 's|.*<string>\(.*\)</string>.*|\1|' | tr -d '[:space:]')
+          echo "UUID: [$PROFILE_UUID]"
+          if [ -z "$PROFILE_UUID" ]; then echo "❌ UUID extraction failed!"; exit 1; fi
+
+          # Profildeki gerçek bundle ID'yi göster (team prefix dahil)
+          echo "=== Profile application-identifier ==="
+          security cms -D -i "$PROFILE" 2>/dev/null \
+            | grep -A2 'application-identifier' | head -5
+
+          # Fingerprint'i göster
+          echo "=== Signing identities ==="
+          security find-identity -v -p codesigning
+
+          CERT_FINGERPRINT=$(security find-identity -v -p codesigning \
+            | grep "Apple Distribution" | head -1 \
+            | awk '{print $2}')
+          echo "Fingerprint: [$CERT_FINGERPRINT]"
+
+          # ── robovm.properties ─────────────────────────────────────────
           printf 'app.id=com.studioyes.wordconnect\n' > ios/robovm.properties
+          printf 'app.signingIdentity=Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)\n' >> ios/robovm.properties
+          printf 'app.provisioningProfile=%s\n' "$PROFILE_UUID" >> ios/robovm.properties
           echo "=== robovm.properties ==="
           cat ios/robovm.properties
 
-          # createIPA imzalama hatası verebilir; biz sadece .app'i istiyoruz
-          # set -e'yi "|| true" ile geçersiz kıl
-          ./gradlew ios:createIPA -x test --no-daemon 2>&1 | tee /tmp/robovm_build.log || true
+          # ── robovm.xml'e doğrudan inject et ──────────────────────────
+          # (Gradle plugin bypass — compiler XML'i doğrudan okur)
+          SIGN_LINE="    <iosSignIdentity>Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)<\/iosSignIdentity>"
+          PROF_LINE="    <iosProvisioningProfile>${PROFILE_UUID}<\/iosProvisioningProfile>"
+          sed -i "" "s|</config>|${SIGN_LINE}\n${PROF_LINE}\n</config>|" ios/robovm.xml
+          echo "=== robovm.xml (son 8 satır) ==="
+          tail -8 ios/robovm.xml
 
-          echo "=== Build directory ==="
-          find "$WORKDIR/ios/build" -type d | head -30
+          # ── createIPA ─────────────────────────────────────────────────
+          echo "=== Running createIPA ==="
+          ./gradlew ios:createIPA -x test --no-daemon --info 2>&1 | tee /tmp/robovm_build.log
+          BUILD_EXIT=${PIPESTATUS[0]}
 
-          # .app bundle'ı bul
-          APP=$(find "$WORKDIR/ios/build" -name "*.app" -type d 2>/dev/null | head -1)
-          if [ -z "$APP" ]; then
-            echo "❌ No .app bundle found after RoboVM build!"
-            cat /tmp/robovm_build.log | tail -30
+          echo "=== Key log lines ==="
+          grep -iE "sign|identity|profile|provisioningProfile|fingerprint|certificate|bundleId|ERROR|FAILED|IOException" \
+            /tmp/robovm_build.log | grep -v "^>" | tail -60 || true
+
+          if [ $BUILD_EXIT -ne 0 ]; then
+            echo "❌ createIPA failed (exit $BUILD_EXIT)"
+            echo "=== Build directory ==="
+            find "$WORKDIR/ios/build" 2>/dev/null | head -40
             exit 1
           fi
-          echo "✅ .app found: $APP"
 
-      - name: Sign and package IPA
-        script: |
-          set -e
-          WORKDIR=$(pwd)
-
-          # .app'i tekrar bul
-          APP=$(find "$WORKDIR/ios/build" -name "*.app" -type d 2>/dev/null | head -1)
-          echo "Signing: $APP"
-
-          # Provisioning profile
-          PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -1)
-          echo "Profile: $PROFILE"
-
-          # Entitlements
-          security cms -D -i "$PROFILE" > /tmp/profile.plist
-          /usr/libexec/PlistBuddy -x -c 'Print :Entitlements' /tmp/profile.plist > /tmp/entitlements.plist
-          echo "=== Entitlements ==="
-          cat /tmp/entitlements.plist
-
-          # Keychain (Codemagic'in oluşturduğu)
-          BUILD_KEYCHAIN=$(security list-keychains | grep codemagic | tr -d '" ' | head -1)
-          echo "Keychain: $BUILD_KEYCHAIN"
-
-          # Signing identity
-          CERT_ID=$(security find-identity -v -p codesigning "$BUILD_KEYCHAIN" 2>/dev/null \
-            | grep "Apple Distribution" | head -1 \
-            | sed 's/.*"\(.*\)".*/\1/')
-          if [ -z "$CERT_ID" ]; then
-            CERT_ID="Apple Distribution: SEYFULLAH EJDERHA (33H863YMQ7)"
+          # ── IPA bul ───────────────────────────────────────────────────
+          IPA=$(find "$WORKDIR" -name "*.ipa" -not -path "*.gradle*" | head -1)
+          if [ -z "$IPA" ]; then
+            echo "❌ No .ipa found!"
+            exit 1
           fi
-          echo "Certificate: $CERT_ID"
-
-          # embedded.mobileprovision kopyala
-          cp "$PROFILE" "$APP/embedded.mobileprovision"
-
-          # Frameworks varsa önce imzala
-          if [ -d "$APP/Frameworks" ]; then
-            find "$APP/Frameworks" -name "*.dylib" -o -name "*.framework" | while read fw; do
-              codesign --force --sign "$CERT_ID" \
-                --keychain "$BUILD_KEYCHAIN" "$fw" || true
-            done
-          fi
-
-          # Ana bundle'ı imzala
-          codesign --force --sign "$CERT_ID" \
-            --keychain "$BUILD_KEYCHAIN" \
-            --entitlements /tmp/entitlements.plist \
-            --timestamp=none \
-            "$APP"
-
-          echo "=== Codesign verify ==="
-          codesign --verify --verbose "$APP" || true
-
-          # IPA oluştur
-          PAYLOAD_DIR=$(mktemp -d)/Payload
-          mkdir -p "$PAYLOAD_DIR"
-          cp -r "$APP" "$PAYLOAD_DIR/"
-
           mkdir -p "$WORKDIR/ios/build/ipa"
-          IPA_PATH="$WORKDIR/ios/build/ipa/WordConnect.ipa"
-          (cd "$(dirname $PAYLOAD_DIR)" && zip -qr "$IPA_PATH" Payload/)
-
-          echo "✅ IPA: $IPA_PATH ($(du -h "$IPA_PATH" | cut -f1))"
+          cp "$IPA" "$WORKDIR/ios/build/ipa/WordConnect.ipa"
+          echo "✅ Done: ios/build/ipa/WordConnect.ipa"
 
     artifacts:
       - ios/build/ipa/*.ipa
