@@ -25,7 +25,6 @@ dependencies {
     implementation project(":core")
     api "com.badlogicgames.gdx:gdx-backend-robovm:$gdxVersion"
     api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-ios"
-    api "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-ios"
     // jsoup 1.21.2 uses Java Stream/NIO APIs internally which RoboVM cannot handle.
     // Use an older version that is compatible with Java 8 / RoboVM.
     implementation 'org.jsoup:jsoup:1.15.4'
