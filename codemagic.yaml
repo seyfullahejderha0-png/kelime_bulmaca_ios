@@ -3,7 +3,7 @@ workflows:
     name: LibGDX iOS RoboVM IPA
 
     integrations:
-      app_store_connect: "Codemagic CI"
+      app_store_connect: "Codemagic App Store Connect"
 
     environment:
       xcode: latest
