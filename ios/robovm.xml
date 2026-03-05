@@ -24,6 +24,7 @@
         <framework>SystemConfiguration</framework>
         <framework>CoreMotion</framework>
         <framework>GameKit</framework>
+        <framework>MessageUI</framework>
     </frameworks>
 
     <weakFrameworks>

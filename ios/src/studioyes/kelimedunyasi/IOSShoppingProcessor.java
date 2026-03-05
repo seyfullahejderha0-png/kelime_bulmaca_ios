@@ -32,13 +32,21 @@ public class IOSShoppingProcessor implements ShoppingProcessor {
     private ShoppingCallback   shoppingCallback;
     private boolean            removeAdsPurchased;
     private String             removeAdsPrice = "";
+    private boolean            prefsLoaded = false;
 
     // Simüle edilen ürün fiyatları (gerçekte StoreKit'ten gelecek)
     private static final String DEFAULT_PRICE = "—";
 
     public IOSShoppingProcessor() {
-        Preferences prefs = Gdx.app.getPreferences(PREF_NAME);
-        removeAdsPurchased = prefs.getBoolean(KEY_REMOVE_ADS, false);
+        // Gdx.app is null here! Defer loading preferences to avoid NullPointerException.
+    }
+
+    private void loadPrefsIfNeeded() {
+        if (!prefsLoaded && Gdx.app != null) {
+            Preferences prefs = Gdx.app.getPreferences(PREF_NAME);
+            removeAdsPurchased = prefs.getBoolean(KEY_REMOVE_ADS, false);
+            prefsLoaded = true;
+        }
     }
 
     /** IOSLauncher tarafından çağrılır — satın alınabilecek tüm ürün ID'lerini ekler */
@@ -128,6 +136,7 @@ public class IOSShoppingProcessor implements ShoppingProcessor {
 
     @Override
     public boolean isRemoveAdsPurchased() {
+        loadPrefsIfNeeded();
         return removeAdsPurchased;
     }
 
