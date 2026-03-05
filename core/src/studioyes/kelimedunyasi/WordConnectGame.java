@@ -5,7 +5,6 @@ import com.badlogic.gdx.Screen;
 
 import java.util.Map;
 
-
 import studioyes.kelimedunyasi.managers.AdManager;
 import studioyes.kelimedunyasi.managers.ConnectionManager;
 import studioyes.kelimedunyasi.managers.HintManager;
@@ -23,10 +22,9 @@ import studioyes.kelimedunyasi.util.RateUsLauncher;
 import studioyes.kelimedunyasi.util.SupportRequest;
 import studioyes.kelimedunyasi.ads.BannerController;
 
-
 public class WordConnectGame extends Game {
 
-    public BannerController bannerController;
+	public BannerController bannerController;
 	public ShoppingProcessor shoppingProcessor;
 	private BaseScreen currentScreen;
 	public ResourceManager resourceManager = new ResourceManager();
@@ -37,50 +35,47 @@ public class WordConnectGame extends Game {
 	public RateUsLauncher rateUsLauncher;
 	public SupportRequest supportRequest;
 
-
-
-	public WordConnectGame(Network network, Map<String, WordMeaningProvider> providerMap){
+	public WordConnectGame(Network network, Map<String, WordMeaningProvider> providerMap) {
 		ConnectionManager.network = network;
 		LanguageManager.wordMeaningProviderMap = providerMap;
 	}
 
-
-
-
-	public void notificationReceived(int coins, String title, String text){
+	public void notificationReceived(int coins, String title, String text) {
 		int current = HintManager.getRemainingCoins();
 		int newAmount = current + coins;
 		HintManager.setCoinCount(newAmount);
 
-		if(currentScreen != null) currentScreen.notificationReceived(newAmount, title, text);
+		if (currentScreen != null)
+			currentScreen.notificationReceived(newAmount, title, text);
 	}
-
-
-
 
 	@Override
 	public void create() {
-		setScreen(new SplashScreen(this));
+		System.out.println("[WC-DIAG] STAGE-9: WordConnectGame.create() called (GL context ready)");
+		try {
+			System.out.println("[WC-DIAG] STAGE-10: Creating SplashScreen");
+			setScreen(new SplashScreen(this));
+			System.out.println("[WC-DIAG] STAGE-10: SplashScreen set OK");
+		} catch (Throwable t) {
+			System.err.println("[WC-DIAG] CRASH in create(): " + t);
+			t.printStackTrace(System.err);
+			throw new RuntimeException("[WC-DIAG] Game create failed", t);
+		}
 	}
-
-
-
 
 	@Override
-	public void setScreen(Screen screen){
-		if(currentScreen != null)
+	public void setScreen(Screen screen) {
+		if (currentScreen != null)
 			currentScreen.dispose();
 
-		currentScreen = (BaseScreen)screen;
+		currentScreen = (BaseScreen) screen;
 		super.setScreen(screen);
 	}
-
 
 	@Override
 	public void render() {
 		super.render();
 	}
-
 
 	@Override
 	public void dispose() {
@@ -99,18 +94,5 @@ public class WordConnectGame extends Game {
 	public void setYukseklik(int yukseklik) {
 		this.yukseklik = yukseklik;
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }

@@ -55,15 +55,18 @@ public class IOSLauncher extends IOSApplication.Delegate {
 
     @Override
     protected IOSApplication createApplication() {
+        System.out.println("[WC-DIAG] STAGE-1: createApplication() started");
         IOSApplicationConfiguration config = new IOSApplicationConfiguration();
         config.orientationLandscape = false;
         config.preventScreenDimming = false;
 
-        // Platform implementasyonları
-        adManager        = new IOSAdManager();
+        System.out.println("[WC-DIAG] STAGE-2: Creating IOSAdManager");
+        adManager = new IOSAdManager();
+
+        System.out.println("[WC-DIAG] STAGE-3: Creating IOSShoppingProcessor");
         shoppingProcessor = new IOSShoppingProcessor();
 
-        // IAP Product ID'leri
+        System.out.println("[WC-DIAG] STAGE-4: Adding IAP products");
         shoppingProcessor.addProduct(IAP_REMOVE_ADS);
         shoppingProcessor.addProduct(IAP_COIN_240);
         shoppingProcessor.addProduct(IAP_COIN_760);
@@ -76,29 +79,35 @@ public class IOSLauncher extends IOSApplication.Delegate {
         shoppingProcessor.addProduct(IAP_PACK_LARGE);
         shoppingProcessor.addProduct(IAP_PACK_JUMBO);
 
+        System.out.println("[WC-DIAG] STAGE-5: Creating IOSNetwork");
         Map<String, WordMeaningProvider> providerMap = new HashMap<>();
         providerMap.put("en", new IOSWordMeaningProvider());
-
         IOSNetwork network = new IOSNetwork();
         IOSDateUtil dateUtil = new IOSDateUtil();
 
+        System.out.println("[WC-DIAG] STAGE-6: Creating WordConnectGame");
         game = new WordConnectGame(network, providerMap);
-        game.dateUtil         = dateUtil;
-        game.adManager        = adManager;
+        game.dateUtil          = dateUtil;
+        game.adManager         = adManager;
         game.shoppingProcessor = shoppingProcessor;
-        game.appExit          = new IOSAppExit();
-        game.rateUsLauncher   = new IOSRateUsLauncher(APP_STORE_ID);
-        game.supportRequest   = new IOSSupportRequest(SUPPORT_EMAIL, game);
+        game.appExit           = new IOSAppExit();
+        game.rateUsLauncher    = new IOSRateUsLauncher(APP_STORE_ID);
+        game.supportRequest    = new IOSSupportRequest(SUPPORT_EMAIL, game);
 
-        // Banner yüksekliği (reklam varsa)
+        System.out.println("[WC-DIAG] STAGE-7: Checking network reachability");
         boolean networkAvailable = network.isConnected();
+        System.out.println("[WC-DIAG] STAGE-7 done: networkAvailable=" + networkAvailable);
+
         if (networkAvailable && !shoppingProcessor.isRemoveAdsPurchased()) {
             game.setYukseklik(200);
         } else {
             game.setYukseklik(0);
         }
 
-        return new IOSApplication(game, config);
+        System.out.println("[WC-DIAG] STAGE-8: Creating IOSApplication (pre-GL init)");
+        IOSApplication app = new IOSApplication(game, config);
+        System.out.println("[WC-DIAG] STAGE-8: IOSApplication created OK");
+        return app;
     }
 
     public static void main(String[] argv) {

@@ -30,8 +30,7 @@ import studioyes.kelimedunyasi.ui.dial.DialButton;
 import studioyes.kelimedunyasi.ui.dialogs.menu.LanguageDialog;
 import studioyes.kelimedunyasi.util.UiUtil;
 
-
-public class SplashScreen extends BaseScreen{
+public class SplashScreen extends BaseScreen {
 
     private boolean loading;
     private Image loadingImg;
@@ -40,27 +39,23 @@ public class SplashScreen extends BaseScreen{
     private Texture loading_bg, loadingTex;
     private Group group = new Group();
 
-
     public SplashScreen(WordConnectGame wordConnectGame) {
         super(wordConnectGame);
         ShaderProgram.pedantic = false;
     }
 
-
-
-
-
     @Override
     public void show() {
+        System.out.println("[WC-DIAG] STAGE-11: SplashScreen.show() started");
         super.show();
-
+        System.out.println("[WC-DIAG] STAGE-12: Loading intro background");
         ResourceManager.introBackground = UIConfig.getIntroScreenBackgroundImage(wordConnectGame);
-        if(ResourceManager.introBackground != null){
+        if (ResourceManager.introBackground != null) {
             wordConnectGame.resourceManager.load(ResourceManager.introBackground, Texture.class);
             wordConnectGame.resourceManager.finishLoading();
             setBackground(UIConfig.INTRO_SCREEN_BACKGROUND_COLOR, ResourceManager.introBackground);
         }
-
+        System.out.println("[WC-DIAG] STAGE-13: Creating loading bar textures");
         loading_bg = new Texture(Gdx.files.internal("textures/loading_bg.png"));
 
         int w = loading_bg.getWidth() / 3;
@@ -69,10 +64,12 @@ public class SplashScreen extends BaseScreen{
 
         loadingBgImg = new Image(bgPatch);
 
-        if(UiUtil.isScreenWide()) loadingBgImg.setWidth(stage.getWidth() * 0.3f);
-        else loadingBgImg.setWidth(stage.getWidth() * 0.5f);
+        if (UiUtil.isScreenWide())
+            loadingBgImg.setWidth(stage.getWidth() * 0.3f);
+        else
+            loadingBgImg.setWidth(stage.getWidth() * 0.5f);
 
-        loadingBgImg.setHeight( 35 * Gdx.graphics.getDensity() * ResourceManager.scaleFactor);
+        loadingBgImg.setHeight(35 * Gdx.graphics.getDensity() * ResourceManager.scaleFactor);
 
         group.addActor(loadingBgImg);
         group.setSize(loadingBgImg.getWidth(), loadingBgImg.getHeight());
@@ -94,25 +91,19 @@ public class SplashScreen extends BaseScreen{
         loadingImg.setPosition(margin, margin);
         maxBarWidth = group.getWidth() - margin * 2f;
 
+        System.out.println("[WC-DIAG] STAGE-14: Calling loadAssets()");
         loadAssets();
+        System.out.println("[WC-DIAG] STAGE-15: loadAssets() complete, show() done");
     }
 
-
-
-
-
-
-
-
-    private void loadAssets(){
+    private void loadAssets() {
         GameData.resourceManager = wordConnectGame.resourceManager;
         I18NBundle.setSimpleFormatter(true);
         String localeCode = LanguageManager.getSelectedLocaleCode();
 
-        if(localeCode != null){
+        if (localeCode != null) {
             setNewLanguage(localeCode);
         }
-
 
         ResourceManager.ATLAS_1 = ResourceManager.resolveResolutionAwarePath(ResourceManager.ATLAS_1);
         ResourceManager.ATLAS_2 = ResourceManager.resolveResolutionAwarePath(ResourceManager.ATLAS_2);
@@ -120,42 +111,46 @@ public class SplashScreen extends BaseScreen{
         ResourceManager.ATLAS_4 = ResourceManager.resolveResolutionAwarePath(ResourceManager.ATLAS_4);
         ResourceManager.ATLAS_5 = ResourceManager.resolveResolutionAwarePath(ResourceManager.ATLAS_5);
 
-
         wordConnectGame.resourceManager.load(ResourceManager.ATLAS_1, TextureAtlas.class);
         wordConnectGame.resourceManager.load(ResourceManager.ATLAS_2, TextureAtlas.class);
         wordConnectGame.resourceManager.load(ResourceManager.ATLAS_3, TextureAtlas.class);
         wordConnectGame.resourceManager.load(ResourceManager.ATLAS_4, TextureAtlas.class);
         wordConnectGame.resourceManager.load(ResourceManager.ATLAS_5, TextureAtlas.class);
 
+        wordConnectGame.resourceManager.load(ResourceManager.SHADER_LINE, ShaderProgram.class,
+                new ShaderProgramLoader.ShaderProgramParameter() {
+                    {
+                        vertexFile = ResourceManager.SHADER_VERTEX;
+                    }
+                });
 
+        wordConnectGame.resourceManager.load(ResourceManager.SHADER_DIAL, ShaderProgram.class,
+                new ShaderProgramLoader.ShaderProgramParameter() {
+                    {
+                        vertexFile = ResourceManager.SHADER_VERTEX;
+                    }
+                });
 
-        wordConnectGame.resourceManager.load(ResourceManager.SHADER_LINE, ShaderProgram.class, new ShaderProgramLoader.ShaderProgramParameter(){
-            { vertexFile = ResourceManager.SHADER_VERTEX; }
-        });
-
-        wordConnectGame.resourceManager.load(ResourceManager.SHADER_DIAL, ShaderProgram.class, new ShaderProgramLoader.ShaderProgramParameter(){
-            { vertexFile = ResourceManager.SHADER_VERTEX; }
-        });
-
-        wordConnectGame.resourceManager.load(ResourceManager.SHADER_OVERLAY, ShaderProgram.class, new ShaderProgramLoader.ShaderProgramParameter(){
-            {vertexFile = ResourceManager.SHADER_VERTEX;}
-        });
-
-
-
+        wordConnectGame.resourceManager.load(ResourceManager.SHADER_OVERLAY, ShaderProgram.class,
+                new ShaderProgramLoader.ShaderProgramParameter() {
+                    {
+                        vertexFile = ResourceManager.SHADER_VERTEX;
+                    }
+                });
 
         ResourceManager.fontSemiBold = ResourceManager.resolveResolutionAwarePath(ResourceManager.fontSemiBold);
         wordConnectGame.resourceManager.load(ResourceManager.fontSemiBold, BitmapFont.class);
 
-        ResourceManager.fontSemiBoldShadow = ResourceManager.resolveResolutionAwarePath(ResourceManager.fontSemiBoldShadow);
+        ResourceManager.fontSemiBoldShadow = ResourceManager
+                .resolveResolutionAwarePath(ResourceManager.fontSemiBoldShadow);
         wordConnectGame.resourceManager.load(ResourceManager.fontSemiBoldShadow, BitmapFont.class);
 
         ResourceManager.fontBlack = ResourceManager.resolveResolutionAwarePath(ResourceManager.fontBlack);
         wordConnectGame.resourceManager.load(ResourceManager.fontBlack, BitmapFont.class);
 
-        ResourceManager.fontBoardAndDialFont = ResourceManager.resolveResolutionAwarePath(ResourceManager.fontBoardAndDialFont);
+        ResourceManager.fontBoardAndDialFont = ResourceManager
+                .resolveResolutionAwarePath(ResourceManager.fontBoardAndDialFont);
         wordConnectGame.resourceManager.load(ResourceManager.fontBoardAndDialFont, BitmapFont.class);
-
 
         wordConnectGame.resourceManager.load(ResourceManager.SFX_BLAST, Sound.class);
         wordConnectGame.resourceManager.load(ResourceManager.SFX_HINT, Sound.class);
@@ -180,60 +175,51 @@ public class SplashScreen extends BaseScreen{
         wordConnectGame.resourceManager.load(ResourceManager.SFX_NOTIFICATION, Sound.class);
         wordConnectGame.resourceManager.load(ResourceManager.SFX_HIT_BOOSTER, Sound.class);
 
-
-
         ResourceManager.gameBackground = UIConfig.getGameScreenBackgroundImage(GameData.findFirstIncompleteLevel());
-        if(ResourceManager.gameBackground != null){
+        if (ResourceManager.gameBackground != null) {
             wordConnectGame.resourceManager.load(ResourceManager.gameBackground, Texture.class);
         }
 
         loading = true;
     }
 
+    private void checkLanguage() {
 
-
-
-
-    private void checkLanguage(){
-
-        if(GameConfig.availableLanguages == null || (GameConfig.availableLanguages.size() == 0)){
-            //Gdx.app.log("game.log", "No language has been configured in GameConfig.");
+        if (GameConfig.availableLanguages == null || (GameConfig.availableLanguages.size() == 0)) {
+            // Gdx.app.log("game.log", "No language has been configured in GameConfig.");
             return;
         }
 
-
-
         String localeCode = LanguageManager.getSelectedLocaleCode();
-        if(localeCode == null){
+        if (localeCode == null) {
             dispose();
 
-            if(GameConfig.availableLanguages.size() > 1) {
-                LanguageDialog languageDialog = new LanguageDialog(stage.getWidth(), stage.getHeight(), this, languageSelectionComplete);
+            if (GameConfig.availableLanguages.size() > 1) {
+                LanguageDialog languageDialog = new LanguageDialog(stage.getWidth(), stage.getHeight(), this,
+                        languageSelectionComplete);
                 stage.addActor(languageDialog);
                 languageDialog.show();
-            }else{
-                for(String code : GameConfig.availableLanguages.keySet()) {
+            } else {
+                for (String code : GameConfig.availableLanguages.keySet()) {
                     setNewLanguage(code);
                     languageSelectionComplete.run();
                 }
             }
-        }else{
-            LanguageManager.bundle = wordConnectGame.resourceManager.get(ResourceManager.LOCALE_PROPERTIES_FILE, I18NBundle.class);
+        } else {
+            LanguageManager.bundle = wordConnectGame.resourceManager.get(ResourceManager.LOCALE_PROPERTIES_FILE,
+                    I18NBundle.class);
 
-            group.addAction(Actions.sequence(Actions.delay(0.1f), Actions.scaleTo(0f, 0f, 0.3f, Interpolation.sineIn), Actions.run(new Runnable() {
-                @Override
-                public void run() {
-                    dispose();
-                    wordConnectGame.setScreen(new IntroScreen(wordConnectGame));
-                }
-            })));
+            group.addAction(Actions.sequence(Actions.delay(0.1f), Actions.scaleTo(0f, 0f, 0.3f, Interpolation.sineIn),
+                    Actions.run(new Runnable() {
+                        @Override
+                        public void run() {
+                            dispose();
+                            wordConnectGame.setScreen(new IntroScreen(wordConnectGame));
+                        }
+                    })));
 
         }
     }
-
-
-
-
 
     @Override
     public void dispose() {
@@ -246,23 +232,19 @@ public class SplashScreen extends BaseScreen{
         loadingTex.dispose();
     }
 
-
-
-
-
     @Override
     public void render(float delta) {
-        super.render(delta);
-
-        if(loading){
-            update();
+        try {
+            super.render(delta);
+            if (loading) {
+                update();
+            }
+        } catch (Throwable t) {
+            System.err.println("[WC-DIAG] CRASH in SplashScreen.render(): " + t);
+            t.printStackTrace(System.err);
+            throw new RuntimeException("[WC-DIAG] SplashScreen render failed", t);
         }
     }
-
-
-
-
-
 
     private void update() {
         wordConnectGame.resourceManager.update();
@@ -270,20 +252,22 @@ public class SplashScreen extends BaseScreen{
 
         loadingImg.setWidth(maxBarWidth * progress);
 
-        if(progress == 1f){
-           loading = false;
+        if (progress == 1f) {
+            loading = false;
 
             AtlasRegions.init(wordConnectGame.resourceManager);
             NinePatches.init(wordConnectGame.resourceManager);
             GameConfig.setUpIAPToItemMapping();
 
-            BitmapFont font1 = wordConnectGame.resourceManager.get(ResourceManager.fontSemiBoldShadow, BitmapFont.class);
+            BitmapFont font1 = wordConnectGame.resourceManager.get(ResourceManager.fontSemiBoldShadow,
+                    BitmapFont.class);
             font1.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
             BitmapFont font2 = wordConnectGame.resourceManager.get(ResourceManager.fontSemiBold, BitmapFont.class);
             font2.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
-            BitmapFont gameFont = wordConnectGame.resourceManager.get(ResourceManager.fontBoardAndDialFont, BitmapFont.class);
+            BitmapFont gameFont = wordConnectGame.resourceManager.get(ResourceManager.fontBoardAndDialFont,
+                    BitmapFont.class);
             gameFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
             ConfigProcessor.muted = GameData.isGameMuted();
@@ -300,8 +284,6 @@ public class SplashScreen extends BaseScreen{
 
         }
 
-
     }
-
 
 }
