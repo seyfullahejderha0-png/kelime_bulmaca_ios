@@ -8,7 +8,9 @@
 
     <infoPList>Info.plist</infoPList>
 <forceLinkClasses>
-    <pattern>com.badlogic.gdx.physics.box2d.*</pattern>
+    <pattern>com.badlogic.gdx.**</pattern>
+    <pattern>studioyes.kelimedunyasi.**</pattern>
+    <pattern>org.jsoup.**</pattern>
 </forceLinkClasses>
     <frameworks>
         <framework>UIKit</framework>
