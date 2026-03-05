@@ -2,6 +2,9 @@ workflows:
   ios-workflow:
     name: LibGDX iOS RoboVM IPA
 
+    integrations:
+      app_store_connect: "D8UZ7547C3"
+
     environment:
       xcode: latest
       java: 17
