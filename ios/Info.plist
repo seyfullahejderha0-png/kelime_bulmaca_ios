@@ -7,6 +7,15 @@
 <key>CFBundleDisplayName</key>
 <string>Word Connect</string>
 
+<key>CFBundlePackageType</key>
+<string>APPL</string>
+
+<key>CFBundleSignature</key>
+<string>????</string>
+
+<key>CFBundleInfoDictionaryVersion</key>
+<string>6.0</string>
+
 <key>CFBundleExecutable</key>
 <string>${EXECUTABLE_NAME}</string>
 
