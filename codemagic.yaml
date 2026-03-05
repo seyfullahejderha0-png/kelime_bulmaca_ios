@@ -25,6 +25,7 @@ workflows:
           -Probovm.archs=arm64 \
           -Probovm.debug=false \
           -Probovm.skipSigning=false \
+          -Probovm.iosSignIdentity="Apple Distribution" \
           -x test \
           --no-daemon \
           --stacktrace
