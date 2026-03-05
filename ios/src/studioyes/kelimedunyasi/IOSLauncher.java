@@ -9,6 +9,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import studioyes.kelimedunyasi.net.WordMeaningProvider;
+import org.robovm.apple.uikit.UIAlertController;
+import org.robovm.apple.uikit.UIAlertControllerStyle;
+import org.robovm.apple.uikit.UIAlertAction;
+import org.robovm.apple.uikit.UIAlertActionStyle;
+import org.robovm.apple.uikit.UIWindow;
+import org.robovm.apple.uikit.UIScreen;
+import org.robovm.apple.uikit.UIViewController;
+import org.robovm.apple.foundation.NSOperationQueue;
+import org.robovm.apple.uikit.UIApplicationLaunchOptions;
 
 /**
  * iOS Launcher — AndroidLauncher'ın iOS karşılığı.
@@ -55,6 +64,14 @@ public class IOSLauncher extends IOSApplication.Delegate {
 
     @Override
     protected IOSApplication createApplication() {
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                System.err.println("[WC-DIAG] GLOBAL UNCAUGHT CRASH: " + e);
+                e.printStackTrace();
+                showCrashAlert("Fatal Error", e.toString());
+            }
+        });
         System.out.println("[WC-DIAG] STAGE-1: createApplication() started");
         IOSApplicationConfiguration config = new IOSApplicationConfiguration();
         config.orientationLandscape = false;
@@ -110,9 +127,51 @@ public class IOSLauncher extends IOSApplication.Delegate {
         return app;
     }
 
+    public static void showCrashAlert(final String title, final String message) {
+        System.err.println("[WC-DIAG] ALERT: " + title + " - " + message);
+        NSOperationQueue.getMainQueue().addOperation(new Runnable() {
+            @Override
+            public void run() {
+                UIAlertController alert = new UIAlertController(title, message, UIAlertControllerStyle.Alert);
+                alert.addAction(new UIAlertAction("OK", UIAlertActionStyle.Default, null));
+                
+                UIWindow window = UIApplication.getSharedApplication().getKeyWindow();
+                if (window == null || window.getRootViewController() == null) {
+                    window = new UIWindow(UIScreen.getMainScreen().getBounds());
+                    window.setRootViewController(new UIViewController());
+                    window.makeKeyAndVisible();
+                }
+                window.getRootViewController().presentViewController(alert, true, null);
+            }
+        });
+    }
+
+    @Override
+    public boolean didFinishLaunching(UIApplication application, UIApplicationLaunchOptions launchOptions) {
+        try {
+            boolean result = super.didFinishLaunching(application, launchOptions);
+            System.out.println("[WC-DIAG] didFinishLaunching returned " + result);
+            if (!result) {
+                showCrashAlert("LibGDX Init Failed", "didFinishLaunching returned false");
+            }
+            return result;
+        } catch (Throwable t) {
+            System.err.println("[WC-DIAG] CRASH in didFinishLaunching: " + t);
+            t.printStackTrace();
+            showCrashAlert("Crash in Startup", t.toString());
+            return false;
+        }
+    }
+
     public static void main(String[] argv) {
-        NSAutoreleasePool pool = new NSAutoreleasePool();
-        UIApplication.main(argv, null, IOSLauncher.class);
-        pool.close();
+        try {
+            NSAutoreleasePool pool = new NSAutoreleasePool();
+            UIApplication.main(argv, null, IOSLauncher.class);
+            pool.close();
+        } catch (Throwable t) {
+            System.err.println("[WC-DIAG] CRASH in main: " + t);
+            t.printStackTrace();
+            showCrashAlert("Main Crash", t.toString());
+        }
     }
 }
