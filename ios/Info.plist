@@ -10,6 +10,12 @@
 <key>CFBundleIconName</key>
 <string>AppIcon</string>
 
+<key>CFBundleIconFiles</key>
+<array>
+<string>Icon-120.png</string>
+<string>Icon-152.png</string>
+</array>
+
 <key>CFBundlePackageType</key>
 <string>APPL</string>
 
