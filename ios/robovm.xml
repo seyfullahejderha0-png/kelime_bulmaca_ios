@@ -35,6 +35,9 @@
         <resource>
             <path>GoogleService-Info.plist</path>
         </resource>
+        <resource>
+            <directory>data</directory>
+        </resource>
     </resources>
 
 </config>

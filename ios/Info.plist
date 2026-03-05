@@ -7,6 +7,9 @@
 <key>CFBundleDisplayName</key>
 <string>Word Connect</string>
 
+<key>CFBundleIconName</key>
+<string>AppIcon</string>
+
 <key>CFBundlePackageType</key>
 <string>APPL</string>
 
