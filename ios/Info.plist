@@ -66,5 +66,11 @@
 <true/>
 </dict>
 
+<key>UIRequiresFullScreen</key>
+<true/>
+
+<key>UILaunchScreen</key>
+<dict/>
+
 </dict>
 </plist>
