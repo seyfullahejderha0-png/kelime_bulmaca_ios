@@ -64,8 +64,12 @@ workflows:
             -x test \
             --no-daemon \
             --info \
+            --debug \
             --warning-mode all \
-            --stacktrace
+            --stacktrace 2>&1 | tee /tmp/robovm_build.log
+          
+          echo "=== PHANTOM CLASS WARNINGS ==="
+          grep -i "phantom\|Warning.*class\|NoClassDef\|not found" /tmp/robovm_build.log | head -100 || true
 
       - name: Locate IPA
         script: |
