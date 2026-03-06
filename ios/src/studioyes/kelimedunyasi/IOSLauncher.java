@@ -76,6 +76,9 @@ public class IOSLauncher extends IOSApplication.Delegate {
         IOSApplicationConfiguration config = new IOSApplicationConfiguration();
         config.orientationLandscape = false;
         config.preventScreenDimming = false;
+        // WC-DIAG12: Prevent iOS Privacy SIGKILL
+        config.useAccelerometer = false;
+        config.useCompass = false;
 
         System.out.println("[WC-DIAG] STAGE-2: Creating IOSAdManager");
         adManager = new IOSAdManager();
