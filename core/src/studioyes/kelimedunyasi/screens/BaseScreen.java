@@ -29,7 +29,6 @@ import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +70,6 @@ import studioyes.kelimedunyasi.util.TextLoader;
 
 public class BaseScreen extends ScreenAdapter {
 
-
     public WordConnectGame wordConnectGame;
     protected OrthographicCamera camera;
     public ScreenViewport viewport;
@@ -102,7 +100,7 @@ public class BaseScreen extends ScreenAdapter {
 
     private WheelDialogOzel wheelDialogOzel;
 
-    public BaseScreen(WordConnectGame wordConnectGame){
+    public BaseScreen(WordConnectGame wordConnectGame) {
         this.wordConnectGame = wordConnectGame;
         ResourceManager.init();
 
@@ -115,12 +113,11 @@ public class BaseScreen extends ScreenAdapter {
         Gdx.input.setInputProcessor(stage);
         Gdx.input.setCatchKey(Input.Keys.BACK, true);
 
-
         InputProcessor backProcessor = new InputAdapter() {
             @Override
             public boolean keyDown(int keycode) {
 
-                if ((keycode == Input.Keys.BACK) || (keycode == Input.Keys.BACKSPACE)){
+                if ((keycode == Input.Keys.BACK) || (keycode == Input.Keys.BACKSPACE)) {
                     onBackPress();
                 }
                 return false;
@@ -128,27 +125,29 @@ public class BaseScreen extends ScreenAdapter {
 
         };
 
-
         InputMultiplexer multiplexer = new InputMultiplexer(stage, backProcessor);
         Gdx.input.setInputProcessor(multiplexer);
-
 
         bgImage = new Image();
         stage.addActor(bgImage);
     }
 
-
-
-
-
-
+    @Override
+    public void resize(int width, int height) {
+        if (viewport != null) {
+            viewport.update(width, height, true);
+        }
+        if (camera != null) {
+            camera.setToOrtho(false, width, height);
+            camera.update();
+        }
+    }
 
     public Runnable watchAndEarnDialogClosedSonrakiSeviye = new Runnable() {
         @Override
         public void run() {
 
-            if(wordConnectGame.adManager.isRewardedAdEnabledToSonrakiSeviye())
-            {
+            if (wordConnectGame.adManager.isRewardedAdEnabledToSonrakiSeviye()) {
                 System.out.println("Reklam Açıldı");
                 wordConnectGame.adManager.showRewardedAd(rewardVideoForCoinsHasFinishedGameScreenSonrakiSeviye);
             }
@@ -162,48 +161,46 @@ public class BaseScreen extends ScreenAdapter {
     protected RewardedVideoCloseCallback rewardVideoForCoinsHasFinishedGameScreenSonrakiSeviye = new RewardedVideoCloseCallback() {
         @Override
         public void closed(boolean earnedReward) {
-            //rewardedVideoForCoinsHasFinished.closed(earnedReward);
-            //if(earnedReward) rewardedVideoButton.startTimer(TimeUtils.millis());
+            // rewardedVideoForCoinsHasFinished.closed(earnedReward);
+            // if(earnedReward) rewardedVideoButton.startTimer(TimeUtils.millis());
 
-            if(earnedReward) {
+            if (earnedReward) {
                 System.out.println("Reklam Bitti");
-                if(BaseScreen.this instanceof GameScreen){
-                    GameScreen gameScreen = (GameScreen)BaseScreen.this;
+                if (BaseScreen.this instanceof GameScreen) {
+                    GameScreen gameScreen = (GameScreen) BaseScreen.this;
                     gameScreen.levelFinishedSonrakiSeviye();
                 }
 
             }
         }
     };
-    protected void showTooltip(int align, Actor actor, String text){
-        if(tooltip == null) {
+
+    protected void showTooltip(int align, Actor actor, String text) {
+        if (tooltip == null) {
             tooltip = new Tooltip(wordConnectGame);
             tooltip.setWidth(stage.getWidth() * UIConfig.TOOLTIP_WIDTH_COEF);
         }
         float margin = stage.getWidth() * 0.01f;
-        if(align == Align.right) {
+        if (align == Align.right) {
             tooltip.setX(actor.getX() - tooltip.getWidth() - margin);
-        }else{
+        } else {
             tooltip.setX(actor.getX() + actor.getWidth() + margin);
         }
         tooltip.setY(actor.getY() + actor.getHeight() * 0.5f - tooltip.getHeight() * 0.5f);
 
-        if(tooltip.getParent() == null) {
+        if (tooltip.getParent() == null) {
             stage.addActor(tooltip);
         }
 
         tooltip.setText(align, text);
     }
 
+    public Toast showToast(String msg) {
 
-
-
-    public Toast showToast(String msg){
-
-        if(toast == null) {
+        if (toast == null) {
             toast = new Toast(wordConnectGame.resourceManager, stage.getWidth());
             toast.setZIndex(1000);
-        }else{
+        } else {
             toast.clearActions();
         }
 
@@ -217,33 +214,28 @@ public class BaseScreen extends ScreenAdapter {
         return toast;
     }
 
+    protected boolean checkWheelDialogTiming() {
 
-
-
-
-
-    protected boolean checkWheelDialogTiming(){
-
-        if(GameConfig.ALLOWED_SPIN_COUNT > 0){
+        if (GameConfig.ALLOWED_SPIN_COUNT > 0) {
             Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
             long lastSpinTime = preferences.getLong(Constants.KEY_LAST_WHEEL_SPIN_TIME, 0);
 
             boolean spin = false;
 
-            if(lastSpinTime == 0){
+            if (lastSpinTime == 0) {
                 spin = true;
-            }else{
+            } else {
                 final long millisInADay = 86400000;
                 long elapsed = TimeUtils.timeSinceMillis(lastSpinTime);
 
-                if(elapsed > millisInADay)
+                if (elapsed > millisInADay)
                     spin = true;
             }
 
             spin |= GameConfig.DEBUG_LUCKY_WHEEL;
 
-            if(spin){
-                if(wheelDialog == null) {
+            if (spin) {
+                if (wheelDialog == null) {
                     wheelDialog = new WheelDialog(stage.getWidth(), stage.getHeight(), this);
                     wheelDialog.setDialogId(Constants.WHEEL_DIALOG);
                 }
@@ -254,24 +246,21 @@ public class BaseScreen extends ScreenAdapter {
                 return true;
             }
 
-
         }
 
         return false;
     }
 
-    protected boolean checkWheelDialogSeviyeli(boolean sonuc,int seviye){
+    protected boolean checkWheelDialogSeviyeli(boolean sonuc, int seviye) {
 
-        if(GameConfig.ALLOWED_SPIN_COUNTOzel > 0){
+        if (GameConfig.ALLOWED_SPIN_COUNTOzel > 0) {
 
             boolean spin = false;
 
+            spin = sonuc;
 
-            spin=sonuc;
-
-
-            if(spin){
-                wheelDialogOzel = new WheelDialogOzel(stage.getWidth(), stage.getHeight(), this,seviye);
+            if (spin) {
+                wheelDialogOzel = new WheelDialogOzel(stage.getWidth(), stage.getHeight(), this, seviye);
                 wheelDialogOzel.setDialogId(Constants.WHEEL_DIALOG);
 
                 stage.addActor(wheelDialogOzel);
@@ -282,17 +271,12 @@ public class BaseScreen extends ScreenAdapter {
                 return true;
             }
 
-
         }
 
         return false;
     }
 
-
-
-
-
-    protected void setTopPanel(){
+    protected void setTopPanel() {
         float width = stage.getWidth() - stage.getWidth() * UIConfig.LEFT_AND_RIGHT_MARGIN * 2;
         topPanel = new TopPanel(this, width);
         topPanel.setOrigin(Align.center);
@@ -303,52 +287,37 @@ public class BaseScreen extends ScreenAdapter {
         topPanel.addMenuButtonListener(menuOpener);
     }
 
-
-
-
-
     private ChangeListener menuOpener = new ChangeListener() {
         @Override
         public void changed(ChangeEvent event, Actor actor) {
 
             stage.getRoot().setTouchable(Touchable.disabled);
-            if(menu == null) menu = new Menu(stage.getWidth(), stage.getHeight(), BaseScreen.this, languageSelectionComplete);
+            if (menu == null)
+                menu = new Menu(stage.getWidth(), stage.getHeight(), BaseScreen.this, languageSelectionComplete);
 
             stage.addActor(menu);
             menu.show();
         }
     };
 
-
-
-
-
-
-
-
     public ChangeListener iapDialogOpener = new ChangeListener() {
 
         @Override
         public void changed(ChangeEvent event, Actor actor) {
-            if(!ConnectionManager.network.isConnected()){
+            if (!ConnectionManager.network.isConnected()) {
                 showToast(LanguageManager.get("no_connection"));
                 return;
             }
 
             stage.getRoot().setTouchable(Touchable.disabled);
 
-            shoppingDialog = new ShoppingDialog(stage.getWidth(), stage.getHeight(), BaseScreen.this, topPanel, iapDialogOpenFinished, iapDialogClosed);
+            shoppingDialog = new ShoppingDialog(stage.getWidth(), stage.getHeight(), BaseScreen.this, topPanel,
+                    iapDialogOpenFinished, iapDialogClosed);
             shoppingDialog.setVisible(true);
             stage.addActor(shoppingDialog);
 
-
         }
     };
-
-
-
-
-
 
     protected Runnable iapDialogOpenFinished = new Runnable() {
         @Override
@@ -357,26 +326,24 @@ public class BaseScreen extends ScreenAdapter {
 
                 @Override
                 public void onShoppingItemsReady(List<ShoppingItem> items) {
-                    if(shoppingDialog != null){
+                    if (shoppingDialog != null) {
                         shoppingDialog.setShoppingItems(items);
                     }
                 }
 
                 @Override
                 public void onShoppingItemsError(int code) {
-                    if(shoppingDialog != null) {
+                    if (shoppingDialog != null) {
                         shoppingDialog.remove();
                         shoppingDialog = null;
                     }
                     showErrorDialog(LanguageManager.get("iap_error"), LanguageManager.format("iap_error_text", code));
                 }
 
-
                 @Override
                 public void onPurchase(String sku) {
                     savePurchase(sku);
                 }
-
 
                 @Override
                 public void onTransactionError(int code) {
@@ -385,45 +352,39 @@ public class BaseScreen extends ScreenAdapter {
                 }
             };
 
-
             wordConnectGame.shoppingProcessor.queryShoppingItems(callback);
         }
     };
 
-
-
-    private void showErrorDialog(String title, String text){
-        AlertDialog alertDialog = new AlertDialog(stage.getWidth(), stage.getHeight(), this, title, text, LanguageManager.get("okay"), iapDialogClosed);
+    private void showErrorDialog(String title, String text) {
+        AlertDialog alertDialog = new AlertDialog(stage.getWidth(), stage.getHeight(), this, title, text,
+                LanguageManager.get("okay"), iapDialogClosed);
         alertDialog.setDialogId(Constants.ALERT_DIALOG_IAP_ERROR1);
         stage.addActor(alertDialog);
         alertDialog.show();
         stage.getRoot().setTouchable(Touchable.enabled);
     }
 
-
-
-    private void savePurchase(String sku){
+    private void savePurchase(String sku) {
         ItemContent content = ShoppingDialog.mapping.get(sku);
 
-        if(shoppingDialog != null) {
+        if (shoppingDialog != null) {
             shoppingDialog.madeAPurchase = true;
             shoppingDialog.close();
         }
-        if(!content.removeAds){
+        if (!content.removeAds) {
             updateCoinsAndHints(content);
         }
 
-        if(!ConfigProcessor.muted) {
+        if (!ConfigProcessor.muted) {
             Sound sound = wordConnectGame.resourceManager.get(ResourceManager.SFX_BONUS_WORD, Sound.class);
             sound.play(SoundConfig.SFX_BONUS_VOLUME);
         }
     }
 
+    public void updateCoinsAndHints(ItemContent content) {
 
-
-    public void updateCoinsAndHints(ItemContent content){
-
-        if(content.coins > 0) {
+        if (content.coins > 0) {
             int remaining = HintManager.getRemainingCoins();
             int count = remaining + content.coins;
             HintManager.setCoinCount(count);
@@ -433,28 +394,28 @@ public class BaseScreen extends ScreenAdapter {
             }
         }
 
-        if(content.singleRandomReveal > 0){
+        if (content.singleRandomReveal > 0) {
             int remaining = HintManager.getRemainingSingleRandomRevealCount();
             int count = remaining + content.singleRandomReveal;
             HintManager.setSingleRandomRevealCount(count);
             updateHintButtonQuantity(singleRandomHintBtn, count);
         }
 
-        if(content.multiRandomReveal > 0){
+        if (content.multiRandomReveal > 0) {
             int remaining = HintManager.getRemainingMultiRandomRevealCount();
             int count = remaining + content.multiRandomReveal;
             HintManager.setMultiRandomRevealCount(count);
             updateHintButtonQuantity(multiRandomHintBtn, count);
         }
 
-        if(content.fingerReveal > 0){
+        if (content.fingerReveal > 0) {
             int remaining = HintManager.getRemainingFingerRevealCount();
             int count = remaining + content.fingerReveal;
             HintManager.setFingerHintRevealCount(count);
             updateHintButtonQuantity(fingerHintBtn, count);
         }
 
-        if(content.rocketReveal > 0){
+        if (content.rocketReveal > 0) {
             int remaining = HintManager.getRemainingRocketRevealCount();
             int count = remaining + content.rocketReveal;
             HintManager.setRocketRevealCount(count);
@@ -462,58 +423,53 @@ public class BaseScreen extends ScreenAdapter {
         }
     }
 
-
-
-    private void updateHintButtonQuantity(HintButton button, int quantity){
-        if(this instanceof GameScreen && button != null) {
+    private void updateHintButtonQuantity(HintButton button, int quantity) {
+        if (this instanceof GameScreen && button != null) {
             button.update(quantity);
         }
     }
-
-
 
     protected Runnable iapDialogClosed = new Runnable() {
         @Override
         public void run() {
             topPanel.coinView.plus.setDisabled(false);
-            if(shoppingDialog == null) return;
+            if (shoppingDialog == null)
+                return;
 
             boolean madeAPurchase = shoppingDialog.madeAPurchase;
             shoppingDialog.remove();
             shoppingDialog = null;
-            if(!madeAPurchase){
-                if(rewardedVideoButton != null && !rewardedVideoButton.timerRunning() && GameConfig.SHOW_WATCH_AD_AFTER_IAP && wordConnectGame.adManager != null && wordConnectGame.adManager.isRewardedAdEnabledToEarnCoins()) {
+            if (!madeAPurchase) {
+                if (rewardedVideoButton != null && !rewardedVideoButton.timerRunning()
+                        && GameConfig.SHOW_WATCH_AD_AFTER_IAP && wordConnectGame.adManager != null
+                        && wordConnectGame.adManager.isRewardedAdEnabledToEarnCoins()) {
                     openWatchAndEarnDialog(true);
-                }else{
+                } else {
                     stage.getRoot().setTouchable(Touchable.enabled);
-                    if(BaseScreen.this instanceof GameScreen){
-                        GameScreen gameScreen = (GameScreen)BaseScreen.this;
+                    if (BaseScreen.this instanceof GameScreen) {
+                        GameScreen gameScreen = (GameScreen) BaseScreen.this;
                         gameScreen.resumeIdleTimer();
                     }
                 }
-            }else{
+            } else {
                 stage.getRoot().setTouchable(Touchable.enabled);
-                if(BaseScreen.this instanceof GameScreen){
-                    GameScreen gameScreen = (GameScreen)BaseScreen.this;
+                if (BaseScreen.this instanceof GameScreen) {
+                    GameScreen gameScreen = (GameScreen) BaseScreen.this;
                     gameScreen.resumeIdleTimer();
                 }
             }
 
-
         }
     };
 
-
-
-
-    protected void openWatchAndEarnDialog(boolean delay){
-        if(rewardedVideoButton != null && rewardedVideoButton.timerRunning()){
+    protected void openWatchAndEarnDialog(boolean delay) {
+        if (rewardedVideoButton != null && rewardedVideoButton.timerRunning()) {
             stage.getRoot().setTouchable(Touchable.enabled);
             rewardedVideoButton.flashText();
             return;
         }
 
-        if(delay) {
+        if (delay) {
             RunnableAction runnableAction = new RunnableAction();
             runnableAction.setRunnable(new Runnable() {
                 @Override
@@ -523,30 +479,25 @@ public class BaseScreen extends ScreenAdapter {
             });
 
             stage.addAction(new SequenceAction(Actions.delay(0.5f), runnableAction));
-        }else{
+        } else {
             setWatchAndEarnDialog();
         }
 
     }
 
-
-
-
-    private void setWatchAndEarnDialog(){
+    private void setWatchAndEarnDialog() {
         if (watchAndEarnDialog == null) {
-            watchAndEarnDialog = new WatchAndEarnDialog(stage.getWidth(), stage.getHeight(), BaseScreen.this, watchAndEarnDialogClosed);
+            watchAndEarnDialog = new WatchAndEarnDialog(stage.getWidth(), stage.getHeight(), BaseScreen.this,
+                    watchAndEarnDialogClosed);
         }
         stage.addActor(watchAndEarnDialog);
         watchAndEarnDialog.show();
     }
 
-
-
-
     private Runnable watchAndEarnDialogClosed = new Runnable() {
         @Override
         public void run() {
-            if(wordConnectGame.adManager.isRewardedAdLoaded())
+            if (wordConnectGame.adManager.isRewardedAdLoaded())
                 wordConnectGame.adManager.showRewardedAd(rewardVideoForCoinsHasFinishedGameScreen);
             else
                 showToast(LanguageManager.get("no_video"));
@@ -554,17 +505,13 @@ public class BaseScreen extends ScreenAdapter {
         }
     };
 
-
-
-
-
     protected RewardedVideoCloseCallback rewardVideoForCoinsHasFinishedGameScreen = new RewardedVideoCloseCallback() {
         @Override
         public void closed(boolean earnedReward) {
-            //rewardedVideoForCoinsHasFinished.closed(earnedReward);
-            //if(earnedReward) rewardedVideoButton.startTimer(TimeUtils.millis());
+            // rewardedVideoForCoinsHasFinished.closed(earnedReward);
+            // if(earnedReward) rewardedVideoButton.startTimer(TimeUtils.millis());
 
-            if(earnedReward) {
+            if (earnedReward) {
                 int remaining = HintManager.getRemainingCoins();
                 int newTotal = remaining + GameConfig.NUMBER_OF_COINS_EARNED_FOR_WATCHING_VIDEO;
                 HintManager.setCoinCount(newTotal);
@@ -574,103 +521,90 @@ public class BaseScreen extends ScreenAdapter {
                 stage.addActor(rewardedAdAnimation);
                 rewardedAdAnimation.show();
 
-                if(rewardedVideoButton != null && wordConnectGame.adManager.getIntervalBetweenRewardedAds() > 0) rewardedVideoButton.startTimer(TimeUtils.millis());
+                if (rewardedVideoButton != null && wordConnectGame.adManager.getIntervalBetweenRewardedAds() > 0)
+                    rewardedVideoButton.startTimer(TimeUtils.millis());
             }
         }
     };
 
+    /*
+     * protected RewardedVideoCloseCallback rewardedVideoForCoinsHasFinished = new
+     * RewardedVideoCloseCallback() {
+     * 
+     * @Override
+     * public void closed(boolean earnedReward) {
+     * if(earnedReward) {
+     * int remaining = HintManager.getRemainingCoins();
+     * int newTotal = remaining +
+     * GameConfig.NUMBER_OF_COINS_EARNED_FOR_WATCHING_VIDEO;
+     * HintManager.setCoinCount(newTotal);
+     * topPanel.coinView.update(newTotal);
+     * if (rewardedAdAnimation == null)
+     * rewardedAdAnimation = new RewardedAdAnimation(BaseScreen.this);
+     * stage.addActor(rewardedAdAnimation);
+     * rewardedAdAnimation.show();
+     * }
+     * }
+     * };
+     */
 
+    public void notificationReceived(int newAmount, String title, String text) {
 
-    /*protected RewardedVideoCloseCallback rewardedVideoForCoinsHasFinished = new RewardedVideoCloseCallback() {
-        @Override
-        public void closed(boolean earnedReward) {
-            if(earnedReward) {
-                int remaining = HintManager.getRemainingCoins();
-                int newTotal = remaining + GameConfig.NUMBER_OF_COINS_EARNED_FOR_WATCHING_VIDEO;
-                HintManager.setCoinCount(newTotal);
-                topPanel.coinView.update(newTotal);
-                if (rewardedAdAnimation == null)
-                    rewardedAdAnimation = new RewardedAdAnimation(BaseScreen.this);
-                stage.addActor(rewardedAdAnimation);
-                rewardedAdAnimation.show();
-            }
-        }
-    };*/
-
-
-
-
-    public void notificationReceived(int newAmount, String title, String text){
-
-        if(topPanel != null && topPanel.coinView != null){
+        if (topPanel != null && topPanel.coinView != null) {
             topPanel.coinView.update(newAmount);
         }
 
-
-        AlertDialog alertDialog = new AlertDialog(stage.getWidth(), stage.getHeight(), this, title, text, LanguageManager.get("okay"), null);
+        AlertDialog alertDialog = new AlertDialog(stage.getWidth(), stage.getHeight(), this, title, text,
+                LanguageManager.get("okay"), null);
         alertDialog.setDialogId(Constants.ALERT_DIALOG_NOTIFICATION);
         stage.addActor(alertDialog);
         alertDialog.show();
 
-        if(!ConfigProcessor.muted) {
+        if (!ConfigProcessor.muted) {
             Sound sound = wordConnectGame.resourceManager.get(ResourceManager.SFX_NOTIFICATION, Sound.class);
             sound.play(SoundConfig.SFX_NOTIFICATION_VOLUME);
         }
 
     }
 
+    protected boolean onBackPress() {
 
-
-
-
-    protected boolean onBackPress(){
-
-        if (!backNavQueue.empty()){
+        if (!backNavQueue.empty()) {
             BackNavigator backNavigator = backNavQueue.peek();
 
-            if(backNavigator != null) {
-                Actor actor = (Actor)backNavigator;
-                if(actor.getStage() != null) {
+            if (backNavigator != null) {
+                Actor actor = (Actor) backNavigator;
+                if (actor.getStage() != null) {
                     return backNavigator.navigateBack();
                 }
             }
             return false;
-        }else{
+        } else {
             return false;
         }
     }
 
-
-
-
-    public void nullifyDialog(int id){
-        if(id == -1) return;
+    public void nullifyDialog(int id) {
+        if (id == -1)
+            return;
         BaseDialog baseDialog = dialogMap.get(id);
 
-        if(baseDialog != null){
+        if (baseDialog != null) {
             dialogMap.remove(id);
             baseDialog.remove();
             baseDialog = null;
         }
     }
 
-
-
-
     public Runnable nullifyTutorial = new Runnable() {
         @Override
         public void run() {
-            if(tutorial != null){
+            if (tutorial != null) {
                 tutorial.remove();
                 tutorial = null;
             }
         }
     };
-
-
-
-
-
 
     protected Runnable languageSelectionComplete = new Runnable() {
         @Override
@@ -679,31 +613,28 @@ public class BaseScreen extends ScreenAdapter {
         }
     };
 
-
-
-    protected void setBackground(Color bgColor, String path){
+    protected void setBackground(Color bgColor, String path) {
         r = bgColor.r;
         g = bgColor.g;
         b = bgColor.b;
 
-        if(path != null){
-            //don't load the same image again
-            if(prevBackgroundTexture != null && prevBackgroundTexture.toString().equals(path)) return;
+        if (path != null) {
+            // don't load the same image again
+            if (prevBackgroundTexture != null && prevBackgroundTexture.toString().equals(path))
+                return;
 
-
-            if(wordConnectGame.resourceManager.contains(path)){
+            if (wordConnectGame.resourceManager.contains(path)) {
                 backgroundTexture = wordConnectGame.resourceManager.get(path, Texture.class);
-            }else{
+            } else {
                 wordConnectGame.resourceManager.load(path, Texture.class);
                 wordConnectGame.resourceManager.finishLoading();
 
                 try {
                     backgroundTexture = wordConnectGame.resourceManager.get(path, Texture.class);
-                }catch (GdxRuntimeException e){
+                } catch (GdxRuntimeException e) {
                     backgroundTexture = new Texture(Gdx.files.internal(path));
                 }
             }
-
 
             backgroundTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
@@ -711,7 +642,7 @@ public class BaseScreen extends ScreenAdapter {
             bgImage.setScaling(Scaling.fill);
             bgImage.setSize(stage.getWidth(), stage.getHeight());
 
-            if(prevBackgroundTexture != null) {
+            if (prevBackgroundTexture != null) {
                 wordConnectGame.resourceManager.unload(prevBackgroundTexture.toString());
                 prevBackgroundTexture.dispose();
             }
@@ -720,10 +651,7 @@ public class BaseScreen extends ScreenAdapter {
 
     }
 
-
-
-
-    public void setNewLanguage(String code){
+    public void setNewLanguage(String code) {
 
         LanguageManager.setLocale(code, wordConnectGame);
 
@@ -731,28 +659,22 @@ public class BaseScreen extends ScreenAdapter {
         wordConnectGame.resourceManager.load(ResourceManager.LOCALE_PROPERTIES_FILE, I18NBundle.class);
         wordConnectGame.resourceManager.setLoader(Text.class, new TextLoader(new InternalFileHandleResolver()));
 
-        wordConnectGame.resourceManager.load( "data/" + LanguageManager.locale.code + "/words.txt", Text.class, new TextLoader.TextParameter());
-        wordConnectGame.resourceManager.load( "data/" + LanguageManager.locale.code + "/vulgar.txt", Text.class, new TextLoader.TextParameter());
+        wordConnectGame.resourceManager.load("data/" + LanguageManager.locale.code + "/words.txt", Text.class,
+                new TextLoader.TextParameter());
+        wordConnectGame.resourceManager.load("data/" + LanguageManager.locale.code + "/vulgar.txt", Text.class,
+                new TextLoader.TextParameter());
         wordConnectGame.resourceManager.finishLoading();
-        LanguageManager.bundle = wordConnectGame.resourceManager.get(ResourceManager.LOCALE_PROPERTIES_FILE, I18NBundle.class);
+        LanguageManager.bundle = wordConnectGame.resourceManager.get(ResourceManager.LOCALE_PROPERTIES_FILE,
+                I18NBundle.class);
 
     }
-
-
-
-
-
-
 
     @Override
     public void dispose() {
         super.dispose();
-        if(tutorial != null) tutorial.dispose();
+        if (tutorial != null)
+            tutorial.dispose();
     }
-
-
-
-
 
     @Override
     public void render(float delta) {
@@ -760,21 +682,23 @@ public class BaseScreen extends ScreenAdapter {
         stage.act(delta);
         camera.update();
 
-        Gdx.gl.glClearColor(r,g,b,1);
+        Gdx.gl.glClearColor(r, g, b, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         stage.draw();
     }
+
     protected RewardedVideoButtonSonrakiSeviye rewardedVideoButton2x;
     private WatchAndEarnDialogSonrakiSeviye watchAndEarnDialogSonrakiSeviye;
-    protected void openWatchAndEarnDialog2x(boolean delay){
-        if(rewardedVideoButton2x != null && rewardedVideoButton2x.timerRunning()){
+
+    protected void openWatchAndEarnDialog2x(boolean delay) {
+        if (rewardedVideoButton2x != null && rewardedVideoButton2x.timerRunning()) {
             stage.getRoot().setTouchable(Touchable.enabled);
             rewardedVideoButton2x.flashText();
             return;
         }
 
-        if(delay) {
+        if (delay) {
             RunnableAction runnableAction = new RunnableAction();
             runnableAction.setRunnable(new Runnable() {
                 @Override
@@ -784,19 +708,19 @@ public class BaseScreen extends ScreenAdapter {
             });
 
             stage.addAction(new SequenceAction(Actions.delay(0.5f), runnableAction));
-        }else{
+        } else {
             setWatchAndEarnDialogSonrakiSeviye();
         }
 
     }
 
-    private void setWatchAndEarnDialogSonrakiSeviye(){
+    private void setWatchAndEarnDialogSonrakiSeviye() {
         if (watchAndEarnDialogSonrakiSeviye == null) {
-            watchAndEarnDialogSonrakiSeviye = new WatchAndEarnDialogSonrakiSeviye(stage.getWidth(), stage.getHeight(), BaseScreen.this, watchAndEarnDialogClosedSonrakiSeviye);
+            watchAndEarnDialogSonrakiSeviye = new WatchAndEarnDialogSonrakiSeviye(stage.getWidth(), stage.getHeight(),
+                    BaseScreen.this, watchAndEarnDialogClosedSonrakiSeviye);
         }
         stage.addActor(watchAndEarnDialogSonrakiSeviye);
         watchAndEarnDialogSonrakiSeviye.show();
     }
-
 
 }
