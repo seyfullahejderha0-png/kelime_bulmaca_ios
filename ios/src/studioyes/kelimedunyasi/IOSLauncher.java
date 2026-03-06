@@ -76,13 +76,9 @@ public class IOSLauncher extends IOSApplication.Delegate {
         IOSApplicationConfiguration config = new IOSApplicationConfiguration();
         config.orientationLandscape = false;
         config.preventScreenDimming = false;
-        // WC-DIAG13: Prevent iOS Privacy SIGKILL + Enable Modern GL30 for iOS Metal Support
+        // WC-DIAG13: Prevent iOS Privacy SIGKILL
         config.useAccelerometer = false;
         config.useCompass = false;
-        config.useAudio = false; 
-        config.useGL30 = true; // Use GLES 3.0 instead of legacy 2.0 to prevent EAGLContext creation failures on Metal
-        config.colorFormat = IOSApplicationConfiguration.RGB565;
-        config.depthFormat = IOSApplicationConfiguration.DEPTH_16;
 
         System.out.println("[WC-DIAG] STAGE-2: Creating IOSAdManager");
         adManager = new IOSAdManager();

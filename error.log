@@ -1,0 +1,50 @@
+> Task :core:compileJava UP-TO-DATE
+
+> Task :ios:compileJava FAILED
+D:\Yusuf\WordConnect_03.12.2025\WordConnect\ios\src\studioyes\kelimedunyasi\IOSAdManager.java:97: error: unmappable character (0x9E) for encoding windows-1254
+        // �?imdilik anında callback çağır (reklam gösterilmeden)
+            ^
+D:\Yusuf\WordConnect_03.12.2025\WordConnect\ios\src\studioyes\kelimedunyasi\IOSAdManager.java:107: error: unmappable character (0x9E) for encoding windows-1254
+        // �?imdilik ödülsüz callback
+            ^
+D:\Yusuf\WordConnect_03.12.2025\WordConnect\ios\src\studioyes\kelimedunyasi\IOSAppExit.java:14: error: unmappable character (0x9E) for encoding windows-1254
+ * ve uygulamayı "arka plana" alır (exit(0) ÇA�?IRMAZ).
+                                                  ^
+D:\Yusuf\WordConnect_03.12.2025\WordConnect\ios\src\studioyes\kelimedunyasi\IOSShoppingProcessor.java:85: error: unmappable character (0x9E) for encoding windows-1254
+        // �?imdilik stub ürünler döndür
+            ^
+D:\Yusuf\WordConnect_03.12.2025\WordConnect\ios\src\studioyes\kelimedunyasi\IOSLauncher.java:84: error: cannot find symbol
+        config.colorFormat = IOSApplicationConfiguration.RGB565;
+                                                        ^
+  symbol:   variable RGB565
+  location: class IOSApplicationConfiguration
+D:\Yusuf\WordConnect_03.12.2025\WordConnect\ios\src\studioyes\kelimedunyasi\IOSLauncher.java:85: error: cannot find symbol
+        config.depthFormat = IOSApplicationConfiguration.DEPTH_16;
+                                                        ^
+  symbol:   variable DEPTH_16
+  location: class IOSApplicationConfiguration
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+2 errors
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':ios:compileJava'.
+> Compilation failed; see the compiler error output for details.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+
+* Get more help at https://help.gradle.org
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 8.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+See https://docs.gradle.org/7.5/userguide/command_line_interface.html#sec:command_line_warnings
+
+BU�LD FAILED in 1s
+2 actionable tasks: 1 executed, 1 up-to-date
