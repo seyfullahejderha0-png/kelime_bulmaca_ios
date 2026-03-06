@@ -9,7 +9,18 @@
     <infoPList>Info.plist</infoPList>
 <forceLinkClasses>
     <pattern>com.badlogic.gdx.**</pattern>
-    <pattern>studioyes.kelimedunyasi.**</pattern>
+    <pattern>studioyes.**</pattern>
+    <pattern>studioyes.kelimedunyasi.*</pattern>
+    <pattern>studioyes.kelimedunyasi.WordConnectGame</pattern>
+    <pattern>studioyes.kelimedunyasi.screens.*</pattern>
+    <pattern>studioyes.kelimedunyasi.managers.*</pattern>
+    <pattern>studioyes.kelimedunyasi.config.*</pattern>
+    <pattern>studioyes.kelimedunyasi.model.*</pattern>
+    <pattern>studioyes.kelimedunyasi.net.*</pattern>
+    <pattern>studioyes.kelimedunyasi.ui.*</pattern>
+    <pattern>studioyes.kelimedunyasi.util.*</pattern>
+    <pattern>studioyes.kelimedunyasi.ads.*</pattern>
+    <pattern>studioyes.kelimedunyasi.graphics.*</pattern>
 </forceLinkClasses>
     <frameworks>
         <framework>UIKit</framework>
