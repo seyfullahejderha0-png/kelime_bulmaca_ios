@@ -76,9 +76,13 @@ public class IOSLauncher extends IOSApplication.Delegate {
         IOSApplicationConfiguration config = new IOSApplicationConfiguration();
         config.orientationLandscape = false;
         config.preventScreenDimming = false;
-        // WC-DIAG12: Prevent iOS Privacy SIGKILL
+        // WC-DIAG13: Prevent iOS Privacy SIGKILL + Enable Modern GL30 for iOS Metal Support
         config.useAccelerometer = false;
         config.useCompass = false;
+        config.useAudio = false; 
+        config.useGL30 = true; // Use GLES 3.0 instead of legacy 2.0 to prevent EAGLContext creation failures on Metal
+        config.colorFormat = IOSApplicationConfiguration.RGB565;
+        config.depthFormat = IOSApplicationConfiguration.DEPTH_16;
 
         System.out.println("[WC-DIAG] STAGE-2: Creating IOSAdManager");
         adManager = new IOSAdManager();
@@ -155,9 +159,11 @@ public class IOSLauncher extends IOSApplication.Delegate {
             boolean result = super.didFinishLaunching(application, launchOptions);
             System.out.println("[WC-DIAG] didFinishLaunching returned " + result);
             if (!result) {
-                showCrashAlert("LibGDX Init Failed", "didFinishLaunching returned false");
+                showCrashAlert("LibGDX Init Failed", "EAGLContext cannot be spawned.");
             }
-            return result;
+            // CRITICAL WC-DIAG13: NO MATTER WHAT result IS, DO NOT TELL APPLE THE LAUNCH FAILED.
+            // If we return 'false', Apple SIGKILLs the whole app INSTANTLY before 'showCrashAlert' draws.
+            return true; 
         } catch (Throwable t) {
             System.err.println("[WC-DIAG] CRASH in didFinishLaunching: " + t);
             t.printStackTrace();
