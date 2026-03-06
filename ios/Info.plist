@@ -38,7 +38,7 @@
 <string>1.0</string>
 
 <key>CFBundleVersion</key>
-<string>10</string>
+<string>11</string>
 
 <key>MinimumOSVersion</key>
 <string>14.0</string>
@@ -59,9 +59,6 @@
 <array>
 <string>UIInterfaceOrientationPortrait</string>
 </array>
-
-<key>GADApplicationIdentifier</key>
-<string>ca-app-pub-8670933603778284~1824503232</string>
 
 <key>NSUserTrackingUsageDescription</key>
 <string>Bu uygulama size kişiselleştirilmiş reklamlar sunmak için cihaz tanımlayıcısını kullanmak istiyor.</string>
