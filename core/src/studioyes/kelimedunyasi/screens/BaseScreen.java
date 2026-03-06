@@ -682,7 +682,7 @@ public class BaseScreen extends ScreenAdapter {
         stage.act(delta);
         camera.update();
 
-        Gdx.gl.glClearColor(r, g, b, 1);
+        Gdx.gl.glClearColor(1f, 0f, 0f, 1f); // RED clear color for testing
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         stage.draw();

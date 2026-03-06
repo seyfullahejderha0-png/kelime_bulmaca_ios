@@ -59,7 +59,8 @@ public class WordConnectGame extends Game {
 		} catch (Throwable t) {
 			System.err.println("[WC-DIAG] CRASH in create(): " + t);
 			t.printStackTrace(System.err);
-			throw new RuntimeException("[WC-DIAG] Game create failed", t);
+			// throw new RuntimeException("[WC-DIAG] Game create failed", t); // DONT KILL
+			// GL THREAD
 		}
 	}
 
@@ -74,6 +75,8 @@ public class WordConnectGame extends Game {
 
 	@Override
 	public void render() {
+		com.badlogic.gdx.Gdx.gl.glClearColor(1f, 0f, 0f, 1f); // RED DIAGNOSTIC
+		com.badlogic.gdx.Gdx.gl.glClear(com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT);
 		super.render();
 	}
 

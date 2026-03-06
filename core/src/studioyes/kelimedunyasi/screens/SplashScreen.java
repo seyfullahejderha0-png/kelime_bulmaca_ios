@@ -52,8 +52,10 @@ public class SplashScreen extends BaseScreen {
         ResourceManager.introBackground = UIConfig.getIntroScreenBackgroundImage(wordConnectGame);
         if (ResourceManager.introBackground != null) {
             wordConnectGame.resourceManager.load(ResourceManager.introBackground, Texture.class);
-            wordConnectGame.resourceManager.finishLoading();
-            setBackground(UIConfig.INTRO_SCREEN_BACKGROUND_COLOR, ResourceManager.introBackground);
+            // Disabled finishLoading() sync block to prevent iOS deadlock before first
+            // render frame.
+            // setBackground(UIConfig.INTRO_SCREEN_BACKGROUND_COLOR,
+            // ResourceManager.introBackground);
         }
         System.out.println("[WC-DIAG] STAGE-13: Creating loading bar textures");
         loading_bg = new Texture(Gdx.files.internal("textures/loading_bg.png"));
