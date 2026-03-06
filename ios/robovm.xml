@@ -9,7 +9,8 @@
     <infoPList>Info.plist</infoPList>
 <forceLinkClasses>
     <pattern>com.badlogic.gdx.**</pattern>
-    <pattern>studioyes.**</pattern>
+    <pattern>studioyes.kelimedunyasi.**</pattern>
+    <pattern>com.badlogic.gdx.graphics.g2d.freetype.**</pattern>
 </forceLinkClasses>
     <frameworks>
         <framework>UIKit</framework>

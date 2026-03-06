@@ -8,6 +8,11 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+dependencies {
+    // and use implementation/api appropriately
+    implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
+}
+
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
 sourceSets.main.java.srcDirs = [ "src/" ]

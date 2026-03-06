@@ -101,17 +101,4 @@ project(":android") {
 
 
 
-project(":core") {
-    apply plugin: "java-library"
-
-    // RoboVM 2.3.23 requires Java 8 bytecode. Without this, core classes
-    // compiled on Java 11+ can trigger phantom class issues in RoboVM linker.
-    java {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    dependencies {
-        api "com.badlogicgames.gdx:gdx:$gdxVersion"
-    }
-}
+// project(":core") is now fully managed in core/build.gradle to avoid plugin conflicts.

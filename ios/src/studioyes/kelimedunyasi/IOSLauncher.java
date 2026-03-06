@@ -91,16 +91,18 @@ public class IOSLauncher extends IOSApplication.Delegate {
                 });
 
                 // WordConnectGame constructor'ını test et (create() yok, sadece new)
-                System.out.println("[WC-DIAG] T1: Testing WordConnectGame constructor...");
                 try {
+                    System.out.println("[WC-DIAG] T1: Checking class presence via reflection...");
+                    Class<?> clazz = Class.forName("studioyes.kelimedunyasi.WordConnectGame");
+                    System.out.println("[WC-DIAG] T1: Class.forName found: " + clazz.getName());
+
                     java.util.Map<String, studioyes.kelimedunyasi.net.WordMeaningProvider> pm = new java.util.HashMap<>();
                     WordConnectGame wcGame = new WordConnectGame(null, pm);
                     System.out.println("[WC-DIAG] T1: WordConnectGame constructor OK! (create() skipped)");
-                    // wcGame.create() kasıtlı olarak çağrılmıyor
                 } catch (Throwable t) {
-                    System.err.println("[WC-DIAG] T1: CRASH in WordConnectGame constructor: " + t);
+                    System.err.println("[WC-DIAG] T1: CRASH in WordConnectGame check: " + t);
                     t.printStackTrace(System.err);
-                    showCrashAlert("Constructor Crash", t.toString());
+                    showCrashAlert("Class/Init Crash", t.toString());
                 }
 
                 System.out.println("[WC-DIAG] T1: create() finished - green screen should be visible");
