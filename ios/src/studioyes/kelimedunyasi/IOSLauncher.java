@@ -165,6 +165,10 @@ public class IOSLauncher extends IOSApplication.Delegate {
 
     public static void main(String[] argv) {
         try {
+            try {
+                // WC-DIAG10: Binary search for crash timing
+                Thread.sleep(8000);
+            } catch (Exception ignore) {}
             NSAutoreleasePool pool = new NSAutoreleasePool();
             UIApplication.main(argv, null, IOSLauncher.class);
             pool.close();
