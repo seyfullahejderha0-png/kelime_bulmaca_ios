@@ -64,53 +64,41 @@ public class IOSLauncher extends IOSApplication.Delegate {
 
     @Override
     protected IOSApplication createApplication() {
-        System.out.println("[WC-DIAG] createApplication() starting - ISOLATION TEST 1");
+        System.out.println("[WC] createApplication() starting");
 
         IOSApplicationConfiguration config = new IOSApplicationConfiguration();
         config.orientationLandscape = false;
         config.useAccelerometer = false;
         config.useCompass = false;
 
-        // ── ISOLATION TEST 1 ─────────────────────────────────────────────────
-        // Önce yeşil ekran göster (RoboVM/LibGDX bazal çalışıyor mu?)
-        // Sonra WordConnectGame constructor'ını try-catch ile dene.
-        // game.create() ÇAĞRILMIYOR → SplashScreen/asset loading tetiklenmiyor.
-        // ─────────────────────────────────────────────────────────────────────
-        com.badlogic.gdx.Game testGame = new com.badlogic.gdx.Game() {
-            @Override
-            public void create() {
-                System.out.println("[WC-DIAG] T1: LibGDX create() called OK");
+        // Initialize Managers
+        adManager = new IOSAdManager();
+        shoppingProcessor = new IOSShoppingProcessor();
 
-                // Yeşil ekranı hemen göster
-                setScreen(new com.badlogic.gdx.ScreenAdapter() {
-                    @Override
-                    public void render(float delta) {
-                        com.badlogic.gdx.Gdx.gl.glClearColor(0f, 0.8f, 0.2f, 1f);
-                        com.badlogic.gdx.Gdx.gl.glClear(com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT);
-                    }
-                });
+        // Register products to IAP manager
+        shoppingProcessor.addProduct(IAP_REMOVE_ADS);
+        shoppingProcessor.addProduct(IAP_COIN_240);
+        shoppingProcessor.addProduct(IAP_COIN_760);
+        shoppingProcessor.addProduct(IAP_COIN_1340);
+        shoppingProcessor.addProduct(IAP_COIN_2940);
+        shoppingProcessor.addProduct(IAP_COIN_6240);
+        shoppingProcessor.addProduct(IAP_COIN_13440);
+        shoppingProcessor.addProduct(IAP_PACK_MINI);
+        shoppingProcessor.addProduct(IAP_PACK_MEDIUM);
+        shoppingProcessor.addProduct(IAP_PACK_LARGE);
+        shoppingProcessor.addProduct(IAP_PACK_JUMBO);
 
-                // WordConnectGame constructor'ını test et (create() yok, sadece new)
-                try {
-                    System.out.println("[WC-DIAG] T1: Checking class presence via reflection...");
-                    Class<?> clazz = Class.forName("studioyes.kelimedunyasi.WordConnectGame");
-                    System.out.println("[WC-DIAG] T1: Class.forName found: " + clazz.getName());
+        // WordMeaning providers map (stubs for now)
+        Map<String, WordMeaningProvider> providerMap = new HashMap<>();
 
-                    java.util.Map<String, studioyes.kelimedunyasi.net.WordMeaningProvider> pm = new java.util.HashMap<>();
-                    WordConnectGame wcGame = new WordConnectGame(null, pm);
-                    System.out.println("[WC-DIAG] T1: WordConnectGame constructor OK! (create() skipped)");
-                } catch (Throwable t) {
-                    System.err.println("[WC-DIAG] T1: CRASH in WordConnectGame check: " + t);
-                    t.printStackTrace(System.err);
-                    showCrashAlert("Class/Init Crash", t.toString());
-                }
+        // Create the game instance
+        game = new WordConnectGame(null, providerMap);
+        game.adManager = adManager;
+        game.shoppingProcessor = shoppingProcessor;
+        game.version = "1.0.38"; // Build 38
 
-                System.out.println("[WC-DIAG] T1: create() finished - green screen should be visible");
-            }
-        };
-
-        System.out.println("[WC-DIAG] T1: Returning IOSApplication");
-        return new IOSApplication(testGame, config);
+        System.out.println("[WC] Returning IOSApplication with real game");
+        return new IOSApplication(game, config);
     }
 
     public static void showCrashAlert(final String title, final String message) {
