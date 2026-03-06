@@ -19,6 +19,10 @@ workflows:
       - name: List signing identities
         script: security find-identity -v -p codesigning
 
+      - name: Check Java compilation
+        script: |
+          ./gradlew :ios:compileJava --no-daemon --info --stacktrace 2>&1 || true
+
       - name: Build IPA
         script: |
           ./gradlew ios:createIPA \
@@ -28,6 +32,8 @@ workflows:
           -Probovm.iosSignIdentity="Apple Distribution" \
           -x test \
           --no-daemon \
+          --info \
+          --warning-mode all \
           --stacktrace
 
       - name: Locate IPA
