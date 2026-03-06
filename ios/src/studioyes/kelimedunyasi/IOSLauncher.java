@@ -159,7 +159,7 @@ public class IOSLauncher extends IOSApplication.Delegate {
             System.err.println("[WC-DIAG] CRASH in didFinishLaunching: " + t);
             t.printStackTrace();
             showCrashAlert("Crash in Startup", t.toString());
-            return false;
+            return true;
         }
     }
 
