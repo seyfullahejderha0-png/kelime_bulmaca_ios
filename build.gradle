@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        roboVMVersion = '2.3.24'
+        roboVMVersion = '2.3.23'
     }
 
     repositories {
@@ -27,7 +27,7 @@ allprojects {
     ext {
         appName = "Word Connect"
         gdxVersion = '1.13.5'
-        roboVMVersion = '2.3.24'
+        roboVMVersion = '2.3.23'
         box2DLightsVersion = '1.5'
         ashleyVersion = '1.9.0'
         aiVersion = '1.9.0'
