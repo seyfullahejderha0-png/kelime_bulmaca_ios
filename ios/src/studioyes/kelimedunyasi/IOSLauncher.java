@@ -64,104 +64,40 @@ public class IOSLauncher extends IOSApplication.Delegate {
 
     @Override
     protected IOSApplication createApplication() {
-        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread t, Throwable e) {
-                System.err.println("[WC-DIAG] GLOBAL UNCAUGHT CRASH: " + e);
-                e.printStackTrace();
-                showCrashAlert("Fatal Error", e.toString());
-            }
-        });
-        System.out.println("[WC-DIAG] STAGE-1: createApplication() started");
+        // WC-DIAG25: ABSOLUTE MINIMUM - no StoreKit, no AdManager, no game, no network.
+        // If this crashes, LibGDX 1.13.5 RoboVM backend is fundamentally broken with Xcode 16.
+        // If this shows GREEN, it proves one of the platform SDKs above was causing the crash.
+        System.out.println("[WC-DIAG] STAGE-1: createApplication() BARE MINIMUM");
+
         IOSApplicationConfiguration config = new IOSApplicationConfiguration();
         config.orientationLandscape = false;
-        config.preventScreenDimming = false;
-        // WC-DIAG13: Prevent iOS Privacy SIGKILL
         config.useAccelerometer = false;
         config.useCompass = false;
-        // WC-DIAG22: Force simplest possible GL framebuffer so Metal does not reject it
-        // Default depth=16,stencil=0 causes 'framebuffer incomplete' abort in Xcode 15+
-        config.r = 8;
-        config.g = 8;
-        config.b = 8;
-        config.a = 0;    // no alpha channel = simpler framebuffer
         config.depth = 0;
         config.stencil = 0;
+        config.a = 0;
 
-        System.out.println("[WC-DIAG] STAGE-2: Creating IOSAdManager");
-        adManager = new IOSAdManager();
-
-        System.out.println("[WC-DIAG] STAGE-3: Creating IOSShoppingProcessor");
-        shoppingProcessor = new IOSShoppingProcessor();
-
-        System.out.println("[WC-DIAG] STAGE-4: Adding IAP products");
-        shoppingProcessor.addProduct(IAP_REMOVE_ADS);
-        shoppingProcessor.addProduct(IAP_COIN_240);
-        shoppingProcessor.addProduct(IAP_COIN_760);
-        shoppingProcessor.addProduct(IAP_COIN_1340);
-        shoppingProcessor.addProduct(IAP_COIN_2940);
-        shoppingProcessor.addProduct(IAP_COIN_6240);
-        shoppingProcessor.addProduct(IAP_COIN_13440);
-        shoppingProcessor.addProduct(IAP_PACK_MINI);
-        shoppingProcessor.addProduct(IAP_PACK_MEDIUM);
-        shoppingProcessor.addProduct(IAP_PACK_LARGE);
-        shoppingProcessor.addProduct(IAP_PACK_JUMBO);
-
-        System.out.println("[WC-DIAG] STAGE-5: Creating IOSNetwork");
-        Map<String, WordMeaningProvider> providerMap = new HashMap<>();
-        providerMap.put("en", new IOSWordMeaningProvider());
-        IOSNetwork network = new IOSNetwork();
-        IOSDateUtil dateUtil = new IOSDateUtil();
-
-        System.out.println("[WC-DIAG] STAGE-6: Creating WordConnectGame");
-        game = new WordConnectGame(network, providerMap);
-        game.dateUtil          = dateUtil;
-        game.adManager         = adManager;
-        game.shoppingProcessor = shoppingProcessor;
-        game.appExit           = new IOSAppExit();
-        game.rateUsLauncher    = new IOSRateUsLauncher(APP_STORE_ID);
-        game.supportRequest    = new IOSSupportRequest(SUPPORT_EMAIL, game);
-
-        System.out.println("[WC-DIAG] STAGE-7: Checking network reachability");
-        boolean networkAvailable = network.isConnected();
-        System.out.println("[WC-DIAG] STAGE-7 done: networkAvailable=" + networkAvailable);
-
-        if (networkAvailable && !shoppingProcessor.isRemoveAdsPurchased()) {
-            game.setYukseklik(200);
-        } else {
-            game.setYukseklik(0);
-        }
-
-        // WC-DIAG21: COMPLETELY BYPASS THE ENTIRE GAME LOGIC TO ISOLATE NATIVE GL ABORTS!
-        // If this crashes, RoboVM/LibGDX itself is broken on this iPhone/CI Combo.
-        // If this stays GREEN forever, WordConnectGame has a hidden JNI aborting bug.
-        System.out.println("[WC-DIAG] STAGE-8: Creating IOSApplication with DUMMY LISTENER");
+        System.out.println("[WC-DIAG] STAGE-2: Creating IOSApplication with BARE dummy listener");
         IOSApplication app = new IOSApplication(new com.badlogic.gdx.ApplicationListener() {
             @Override
             public void create() {
-                System.out.println("[WC-DIAG] DUMMY GL CREATE");
+                System.out.println("[WC-DIAG] BARE GL CREATE - if you see this, GL context works!");
             }
 
-            @Override
-            public void resize(int width, int height) {}
+            @Override public void resize(int width, int height) {}
 
             @Override
             public void render() {
-                com.badlogic.gdx.Gdx.gl.glClearColor(0f, 1f, 0f, 1f); // GREEN = SAFE
+                com.badlogic.gdx.Gdx.gl.glClearColor(0f, 1f, 0f, 1f); // GREEN = success
                 com.badlogic.gdx.Gdx.gl.glClear(com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT);
             }
 
-            @Override
-            public void pause() {}
-
-            @Override
-            public void resume() {}
-
-            @Override
-            public void dispose() {}
+            @Override public void pause() {}
+            @Override public void resume() {}
+            @Override public void dispose() {}
         }, config);
-        
-        System.out.println("[WC-DIAG] STAGE-8: IOSApplication created OK");
+
+        System.out.println("[WC-DIAG] STAGE-3: IOSApplication BARE created OK");
         return app;
     }
 
