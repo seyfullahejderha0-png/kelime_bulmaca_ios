@@ -79,6 +79,14 @@ public class IOSLauncher extends IOSApplication.Delegate {
         // WC-DIAG13: Prevent iOS Privacy SIGKILL
         config.useAccelerometer = false;
         config.useCompass = false;
+        // WC-DIAG22: Force simplest possible GL framebuffer so Metal does not reject it
+        // Default depth=16,stencil=0 causes 'framebuffer incomplete' abort in Xcode 15+
+        config.r = 8;
+        config.g = 8;
+        config.b = 8;
+        config.a = 0;    // no alpha channel = simpler framebuffer
+        config.depth = 0;
+        config.stencil = 0;
 
         System.out.println("[WC-DIAG] STAGE-2: Creating IOSAdManager");
         adManager = new IOSAdManager();
