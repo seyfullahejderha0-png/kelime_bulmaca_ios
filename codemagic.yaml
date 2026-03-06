@@ -16,31 +16,64 @@ workflows:
       - name: Grant permission
         script: chmod +x gradlew
 
-      - name: List signing identities
-        script: security find-identity -v -p codesigning
-
-      - name: Clean build (force recompile with Java 8 compat)
+      - name: Find signing identity
         script: |
-          ./gradlew clean --no-daemon
+          echo "=== Installed certificates ==="
+          security find-identity -v -p codesigning
 
-      - name: Build IPA
+          SIGN_ID=$(security find-identity -v -p codesigning \
+            | grep -E '"(Apple Distribution|iPhone Distribution)' \
+            | head -1 \
+            | sed -E 's/.*"(.+)".*/\1/')
+
+          echo "SIGN_ID: $SIGN_ID"
+
+          PP_PATH=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -1)
+          echo "PP_PATH: $PP_PATH"
+
+          if [ -n "$PP_PATH" ]; then
+            UUID=$(security cms -D -i "$PP_PATH" \
+              | /usr/libexec/PlistBuddy -c 'Print :UUID' /dev/stdin 2>/dev/null)
+            echo "UUID: $UUID"
+          fi
+
+      - name: Clean build
+        script: ./gradlew clean --no-daemon
+
+      - name: Build and sign IPA
         script: |
+          # Find signing identity
+          SIGN_ID=$(security find-identity -v -p codesigning \
+            | grep -E '"(Apple Distribution|iPhone Distribution)' \
+            | head -1 \
+            | sed -E 's/.*"(.+)".*/\1/')
+
+          echo "Using signing identity: $SIGN_ID"
+
+          # Find provisioning profile UUID
+          PP_PATH=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -1)
+          UUID=""
+          if [ -n "$PP_PATH" ]; then
+            UUID=$(security cms -D -i "$PP_PATH" \
+              | /usr/libexec/PlistBuddy -c 'Print :UUID' /dev/stdin 2>/dev/null)
+          fi
+          echo "Using provisioning profile UUID: $UUID"
+
           ./gradlew ios:createIPA \
-          -Probovm.archs=arm64 \
-          -Probovm.debug=false \
-          -x test \
-          --no-daemon \
-          --info \
-          --warning-mode all \
-          --stacktrace
+            -Probovm.archs=arm64 \
+            -Probovm.debug=false \
+            -Probovm.iosSignIdentity="$SIGN_ID" \
+            -Probovm.iosProvisioningProfile="$UUID" \
+            -x test \
+            --no-daemon \
+            --info \
+            --warning-mode all \
+            --stacktrace
 
       - name: Locate IPA
         script: |
           IPA_PATH=$(find ios/build -name "*.ipa" | head -n 1)
-
-          echo "IPA found:"
-          echo $IPA_PATH
-
+          echo "IPA found: $IPA_PATH"
           cp "$IPA_PATH" "$CM_BUILD_DIR/WordConnect.ipa"
 
     artifacts:
