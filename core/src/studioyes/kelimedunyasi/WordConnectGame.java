@@ -51,14 +51,11 @@ public class WordConnectGame extends Game {
 
 	@Override
 	public void create() {
-		System.out.println("[WC-DIAG] STAGE-9: WordConnectGame.create() called (GL context ready)");
+		System.out.println("[WC] WordConnectGame.create() called");
 		try {
-			// WC-DIAG14: Skip loading SplashScreen and its textures to see if a native PNG
-			// decode segfault was killing the app.
-			System.out.println("[WC-DIAG] STAGE-10: SKIPPING SplashScreen creation to test native crash!!!");
-			// setScreen(new SplashScreen(this));
+			setScreen(new SplashScreen(this));
 		} catch (Throwable t) {
-			System.err.println("[WC-DIAG] CRASH in create(): " + t);
+			System.err.println("[WC] CRASH in create(): " + t);
 			t.printStackTrace(System.err);
 		}
 	}
@@ -74,14 +71,11 @@ public class WordConnectGame extends Game {
 
 	@Override
 	public void render() {
-		com.badlogic.gdx.Gdx.gl.glClearColor(1f, 0f, 0f, 1f); // RED DIAGNOSTIC
-		com.badlogic.gdx.Gdx.gl.glClear(com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT);
 		try {
 			super.render();
 		} catch (Throwable t) {
-			System.err.println("[WC-DIAG] CRASH in render(): " + t);
-			// Do NOT throw it further! This prevents the native abort!
-			// We leave the screen red to indicate the crash happened inside render()!
+			System.err.println("[WC] CRASH in render(): " + t);
+			t.printStackTrace(System.err);
 		}
 	}
 
