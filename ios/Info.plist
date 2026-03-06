@@ -38,7 +38,7 @@
 <string>1.0</string>
 
 <key>CFBundleVersion</key>
-<string>19</string>
+<string>20</string>
 
 <key>MinimumOSVersion</key>
 <string>14.0</string>
@@ -63,6 +63,27 @@
 <key>NSUserTrackingUsageDescription</key>
 <string>Bu uygulama size kişiselleştirilmiş reklamlar sunmak için cihaz tanımlayıcısını kullanmak istiyor.</string>
 
+<key>NSMotionUsageDescription</key>
+<string>Oyun deneyimini geliştirmek için sensör verilerine ihtiyaç duyulabilir.</string>
+
+<key>NSMicrophoneUsageDescription</key>
+<string>Oyun içi ses özellikleri için mikrofon erişimine ihtiyaç duyulabilir.</string>
+
+<key>NSCameraUsageDescription</key>
+<string>Oyun özellikleri için kamera erişimine ihtiyaç duyulabilir.</string>
+
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Oyun özellikleri için fotoğraf kütüphanesine erişim gerekebilir.</string>
+
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>Oyun istatistikleriniz için konumunuza ihtiyaç duyulabilir.</string>
+
+<key>NSContactsUsageDescription</key>
+<string>Oyun özellikleri için kişilerinize erişim gerekebilir.</string>
+
+<key>NSCalendarsUsageDescription</key>
+<string>Oyun takvimi için takviminize erişim gerekebilir.</string>
+
 <key>NSAppTransportSecurity</key>
 <dict>
 <key>NSAllowsArbitraryLoads</key>
@@ -72,8 +93,8 @@
 <key>UIRequiresFullScreen</key>
 <true/>
 
-<key>UILaunchScreen</key>
-<dict/>
+<key>UILaunchStoryboardName</key>
+<string>LaunchScreen</string>
 
 </dict>
 </plist>
