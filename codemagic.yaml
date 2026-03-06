@@ -7,7 +7,7 @@ workflows:
 
     environment:
       xcode: latest
-      java: 17
+      java: 11
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.studioyes.wordconnect
@@ -19,17 +19,15 @@ workflows:
       - name: List signing identities
         script: security find-identity -v -p codesigning
 
-      - name: Check Java compilation
+      - name: Clean build (force recompile with Java 8 compat)
         script: |
-          ./gradlew :ios:compileJava --no-daemon --info --stacktrace 2>&1 || true
+          ./gradlew clean --no-daemon
 
       - name: Build IPA
         script: |
           ./gradlew ios:createIPA \
           -Probovm.archs=arm64 \
           -Probovm.debug=false \
-          -Probovm.skipSigning=false \
-          -Probovm.iosSignIdentity="Apple Distribution" \
           -x test \
           --no-daemon \
           --info \
