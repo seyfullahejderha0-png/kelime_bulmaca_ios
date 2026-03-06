@@ -73,9 +73,6 @@ public class IOSLauncher extends IOSApplication.Delegate {
         config.orientationLandscape = false;
         config.useAccelerometer = false;
         config.useCompass = false;
-        config.depth = 0;
-        config.stencil = 0;
-        config.a = 0;
 
         System.out.println("[WC-DIAG] STAGE-2: Creating IOSApplication with BARE dummy listener");
         IOSApplication app = new IOSApplication(new com.badlogic.gdx.ApplicationListener() {
