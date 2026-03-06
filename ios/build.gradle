@@ -1,9 +1,13 @@
-apply plugin: "java-library"
+// ios/build.gradle
+// Standard LibGDX RoboVM setup — uses 'java' plugin (NOT java-library).
+// RoboVM Gradle plugin was designed for 'java' plugin. Using java-library
+// changes runtimeClasspath behavior and causes core classes to be missing.
+apply plugin: "java"
 apply plugin: "robovm"
 
 // RoboVM 2.3.23 requires Java 8 source compatibility.
-// Java 9+ classes (Stream, NIO Path, etc.) cause phantom class warnings
-// and a NullPointerException crash in FrameworkTarget.matches().
+// Java 9+ apis (Stream, NIO Path, StringConcatFactory etc.) cause phantom class
+// warnings and NPE crash in FrameworkTarget.matches().
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
@@ -23,9 +27,8 @@ robovm {
 
 dependencies {
     implementation project(":core")
-    api "com.badlogicgames.gdx:gdx-backend-robovm:$gdxVersion"
-    api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-ios"
-    // jsoup 1.21.2 uses Java Stream/NIO APIs internally which RoboVM cannot handle.
-    // Use an older version that is compatible with Java 8 / RoboVM.
+    implementation "com.badlogicgames.gdx:gdx-backend-robovm:$gdxVersion"
+    implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-ios"
+    // jsoup 1.15.4 — older version compatible with Java 8 / RoboVM
     implementation 'org.jsoup:jsoup:1.15.4'
 }
