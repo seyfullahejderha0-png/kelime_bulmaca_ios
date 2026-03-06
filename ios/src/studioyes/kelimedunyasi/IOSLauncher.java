@@ -64,20 +64,51 @@ public class IOSLauncher extends IOSApplication.Delegate {
 
     @Override
     protected IOSApplication createApplication() {
-        System.out.println("[WC] createApplication() starting");
+        System.out.println("[WC-DIAG] createApplication() starting - ISOLATION TEST 1");
 
         IOSApplicationConfiguration config = new IOSApplicationConfiguration();
         config.orientationLandscape = false;
         config.useAccelerometer = false;
         config.useCompass = false;
 
-        // Platform stub'ları — gerçek implementasyonlar iOS modülünde tanımlanacak
-        java.util.Map<String, studioyes.kelimedunyasi.net.WordMeaningProvider> providerMap = new HashMap<>();
+        // ── ISOLATION TEST 1 ─────────────────────────────────────────────────
+        // Önce yeşil ekran göster (RoboVM/LibGDX bazal çalışıyor mu?)
+        // Sonra WordConnectGame constructor'ını try-catch ile dene.
+        // game.create() ÇAĞRILMIYOR → SplashScreen/asset loading tetiklenmiyor.
+        // ─────────────────────────────────────────────────────────────────────
+        com.badlogic.gdx.Game testGame = new com.badlogic.gdx.Game() {
+            @Override
+            public void create() {
+                System.out.println("[WC-DIAG] T1: LibGDX create() called OK");
 
-        game = new WordConnectGame(null, providerMap);
+                // Yeşil ekranı hemen göster
+                setScreen(new com.badlogic.gdx.ScreenAdapter() {
+                    @Override
+                    public void render(float delta) {
+                        com.badlogic.gdx.Gdx.gl.glClearColor(0f, 0.8f, 0.2f, 1f);
+                        com.badlogic.gdx.Gdx.gl.glClear(com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT);
+                    }
+                });
 
-        System.out.println("[WC] WordConnectGame created, launching IOSApplication");
-        return new IOSApplication(game, config);
+                // WordConnectGame constructor'ını test et (create() yok, sadece new)
+                System.out.println("[WC-DIAG] T1: Testing WordConnectGame constructor...");
+                try {
+                    java.util.Map<String, studioyes.kelimedunyasi.net.WordMeaningProvider> pm = new java.util.HashMap<>();
+                    WordConnectGame wcGame = new WordConnectGame(null, pm);
+                    System.out.println("[WC-DIAG] T1: WordConnectGame constructor OK! (create() skipped)");
+                    // wcGame.create() kasıtlı olarak çağrılmıyor
+                } catch (Throwable t) {
+                    System.err.println("[WC-DIAG] T1: CRASH in WordConnectGame constructor: " + t);
+                    t.printStackTrace(System.err);
+                    showCrashAlert("Constructor Crash", t.toString());
+                }
+
+                System.out.println("[WC-DIAG] T1: create() finished - green screen should be visible");
+            }
+        };
+
+        System.out.println("[WC-DIAG] T1: Returning IOSApplication");
+        return new IOSApplication(testGame, config);
     }
 
     public static void showCrashAlert(final String title, final String message) {
