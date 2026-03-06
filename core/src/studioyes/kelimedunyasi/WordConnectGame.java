@@ -53,14 +53,13 @@ public class WordConnectGame extends Game {
 	public void create() {
 		System.out.println("[WC-DIAG] STAGE-9: WordConnectGame.create() called (GL context ready)");
 		try {
-			System.out.println("[WC-DIAG] STAGE-10: Creating SplashScreen");
-			setScreen(new SplashScreen(this));
-			System.out.println("[WC-DIAG] STAGE-10: SplashScreen set OK");
+			// WC-DIAG14: Skip loading SplashScreen and its textures to see if a native PNG
+			// decode segfault was killing the app.
+			System.out.println("[WC-DIAG] STAGE-10: SKIPPING SplashScreen creation to test native crash!!!");
+			// setScreen(new SplashScreen(this));
 		} catch (Throwable t) {
 			System.err.println("[WC-DIAG] CRASH in create(): " + t);
 			t.printStackTrace(System.err);
-			// throw new RuntimeException("[WC-DIAG] Game create failed", t); // DONT KILL
-			// GL THREAD
 		}
 	}
 
