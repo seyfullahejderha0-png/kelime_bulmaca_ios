@@ -124,24 +124,51 @@ public class IOSLauncher extends IOSApplication.Delegate {
             game.setYukseklik(0);
         }
 
-        System.out.println("[WC-DIAG] STAGE-8: Creating IOSApplication (pre-GL init)");
-        IOSApplication app = new IOSApplication(game, config);
+        // WC-DIAG21: COMPLETELY BYPASS THE ENTIRE GAME LOGIC TO ISOLATE NATIVE GL ABORTS!
+        // If this crashes, RoboVM/LibGDX itself is broken on this iPhone/CI Combo.
+        // If this stays GREEN forever, WordConnectGame has a hidden JNI aborting bug.
+        System.out.println("[WC-DIAG] STAGE-8: Creating IOSApplication with DUMMY LISTENER");
+        IOSApplication app = new IOSApplication(new com.badlogic.gdx.ApplicationListener() {
+            @Override
+            public void create() {
+                System.out.println("[WC-DIAG] DUMMY GL CREATE");
+            }
+
+            @Override
+            public void resize(int width, int height) {}
+
+            @Override
+            public void render() {
+                com.badlogic.gdx.Gdx.gl.glClearColor(0f, 1f, 0f, 1f); // GREEN = SAFE
+                com.badlogic.gdx.Gdx.gl.glClear(com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT);
+            }
+
+            @Override
+            public void pause() {}
+
+            @Override
+            public void resume() {}
+
+            @Override
+            public void dispose() {}
+        }, config);
+        
         System.out.println("[WC-DIAG] STAGE-8: IOSApplication created OK");
         return app;
     }
 
     public static void showCrashAlert(final String title, final String message) {
         System.err.println("[WC-DIAG] ALERT: " + title + " - " + message);
-        NSOperationQueue.getMainQueue().addOperation(new Runnable() {
+        org.robovm.apple.foundation.NSOperationQueue.getMainQueue().addOperation(new Runnable() {
             @Override
             public void run() {
-                UIAlertController alert = new UIAlertController(title, message, UIAlertControllerStyle.Alert);
-                alert.addAction(new UIAlertAction("OK", UIAlertActionStyle.Default, null));
+                org.robovm.apple.uikit.UIAlertController alert = new org.robovm.apple.uikit.UIAlertController(title, message, org.robovm.apple.uikit.UIAlertControllerStyle.Alert);
+                alert.addAction(new org.robovm.apple.uikit.UIAlertAction("OK", org.robovm.apple.uikit.UIAlertActionStyle.Default, null));
                 
-                UIWindow window = UIApplication.getSharedApplication().getKeyWindow();
+                org.robovm.apple.uikit.UIWindow window = UIApplication.getSharedApplication().getKeyWindow();
                 if (window == null || window.getRootViewController() == null) {
-                    window = new UIWindow(UIScreen.getMainScreen().getBounds());
-                    window.setRootViewController(new UIViewController());
+                    window = new org.robovm.apple.uikit.UIWindow(org.robovm.apple.uikit.UIScreen.getMainScreen().getBounds());
+                    window.setRootViewController(new org.robovm.apple.uikit.UIViewController());
                     window.makeKeyAndVisible();
                 }
                 window.getRootViewController().presentViewController(alert, true, null);
@@ -150,15 +177,22 @@ public class IOSLauncher extends IOSApplication.Delegate {
     }
 
     @Override
-    public boolean didFinishLaunching(UIApplication application, UIApplicationLaunchOptions launchOptions) {
+    public boolean didFinishLaunching(UIApplication application, org.robovm.apple.uikit.UIApplicationLaunchOptions launchOptions) {
+        
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                System.err.println("[WC-DIAG] UNCAUGHT: " + e.toString());
+                showCrashAlert("Uncaught Exception", e.toString());
+            }
+        });
+
         try {
             boolean result = super.didFinishLaunching(application, launchOptions);
             System.out.println("[WC-DIAG] didFinishLaunching returned " + result);
             if (!result) {
                 showCrashAlert("LibGDX Init Failed", "EAGLContext cannot be spawned.");
             }
-            // CRITICAL WC-DIAG13: NO MATTER WHAT result IS, DO NOT TELL APPLE THE LAUNCH FAILED.
-            // If we return 'false', Apple SIGKILLs the whole app INSTANTLY before 'showCrashAlert' draws.
             return true; 
         } catch (Throwable t) {
             System.err.println("[WC-DIAG] CRASH in didFinishLaunching: " + t);
