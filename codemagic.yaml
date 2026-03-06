@@ -6,7 +6,7 @@ workflows:
       app_store_connect: "Codemagic App Store Connect"
 
     environment:
-      xcode: 14.3.1
+      xcode: latest
       java: 17
       ios_signing:
         distribution_type: app_store
