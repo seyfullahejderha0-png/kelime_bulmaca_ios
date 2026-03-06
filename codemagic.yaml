@@ -16,25 +16,21 @@ workflows:
       - name: Grant permission
         script: chmod +x gradlew
 
-      - name: Find signing identity
+      - name: Find signing info
         script: |
           echo "=== Installed certificates ==="
           security find-identity -v -p codesigning
 
-          SIGN_ID=$(security find-identity -v -p codesigning \
-            | grep -E '"(Apple Distribution|iPhone Distribution)' \
-            | head -1 \
-            | sed -E 's/.*"(.+)".*/\1/')
-
-          echo "SIGN_ID: $SIGN_ID"
+          echo "=== Provisioning profiles ==="
+          ls ~/Library/MobileDevice/Provisioning\ Profiles/ 2>/dev/null || echo "No profiles found"
 
           PP_PATH=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -1)
-          echo "PP_PATH: $PP_PATH"
-
           if [ -n "$PP_PATH" ]; then
-            UUID=$(security cms -D -i "$PP_PATH" \
-              | /usr/libexec/PlistBuddy -c 'Print :UUID' /dev/stdin 2>/dev/null)
-            echo "UUID: $UUID"
+            security cms -D -i "$PP_PATH" > /tmp/decoded_pp.plist 2>/dev/null
+            UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' /tmp/decoded_pp.plist 2>/dev/null)
+            NAME=$(/usr/libexec/PlistBuddy -c 'Print :Name' /tmp/decoded_pp.plist 2>/dev/null)
+            echo "Profile UUID: $UUID"
+            echo "Profile Name: $NAME"
           fi
 
       - name: Clean build
@@ -50,13 +46,14 @@ workflows:
 
           echo "Using signing identity: $SIGN_ID"
 
-          # Find provisioning profile UUID
+          # Find provisioning profile UUID (via temp file)
           PP_PATH=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -1)
           UUID=""
           if [ -n "$PP_PATH" ]; then
-            UUID=$(security cms -D -i "$PP_PATH" \
-              | /usr/libexec/PlistBuddy -c 'Print :UUID' /dev/stdin 2>/dev/null)
+            security cms -D -i "$PP_PATH" > /tmp/decoded_pp.plist 2>/dev/null
+            UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' /tmp/decoded_pp.plist 2>/dev/null)
           fi
+
           echo "Using provisioning profile UUID: $UUID"
 
           ./gradlew ios:createIPA \
