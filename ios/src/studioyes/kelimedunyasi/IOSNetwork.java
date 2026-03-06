@@ -14,16 +14,6 @@ public class IOSNetwork implements Network {
 
     @Override
     public boolean isConnected() {
-        try {
-            SCNetworkReachability reachability = new SCNetworkReachability("8.8.8.8");
-            if (reachability == null) return false;
-            SCNetworkReachabilityFlags flags = reachability.getFlags();
-            if (flags == null) return false;
-            boolean reachable = flags.contains(SCNetworkReachabilityFlags.Reachable);
-            boolean connectionRequired = flags.contains(SCNetworkReachabilityFlags.ConnectionRequired);
-            return reachable && !connectionRequired;
-        } catch (Exception e) {
-            return false;
-        }
+        return true;
     }
 }
