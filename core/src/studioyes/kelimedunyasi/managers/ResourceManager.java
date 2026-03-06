@@ -66,8 +66,10 @@ public class ResourceManager implements Disposable {
     public static float scaleFactor = 1.0f;
     public static String resolvedRes;
 
+    public static boolean needsRecalculation = false;
+
     public static void init() {
-        if (resolvedRes != null)
+        if (resolvedRes != null && !needsRecalculation)
             return;
 
         float screenWidth = Gdx.graphics.getWidth();
@@ -101,7 +103,9 @@ public class ResourceManager implements Disposable {
         }
 
         if (isFallback) {
-            resolvedRes = null; // Forces re-initialization on next resize()
+            needsRecalculation = true;
+        } else {
+            needsRecalculation = false;
         }
     }
 

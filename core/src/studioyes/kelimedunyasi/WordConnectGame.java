@@ -77,15 +77,53 @@ public class WordConnectGame extends Game {
 	public void render() {
 		com.badlogic.gdx.Gdx.gl.glClearColor(1f, 0f, 0f, 1f); // RED DIAGNOSTIC
 		com.badlogic.gdx.Gdx.gl.glClear(com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT);
-		super.render();
+		try {
+			super.render();
+		} catch (Throwable t) {
+			System.err.println("[WC-DIAG] CRASH in render(): " + t);
+			// Do NOT throw it further! This prevents the native abort!
+			// We leave the screen red to indicate the crash happened inside render()!
+		}
 	}
 
 	@Override
 	public void dispose() {
-		super.dispose();
-		currentScreen.dispose();
-		resourceManager.clear();
-		resourceManager.dispose();
+		try {
+			super.dispose();
+			if (currentScreen != null)
+				currentScreen.dispose();
+			resourceManager.clear();
+			resourceManager.dispose();
+		} catch (Throwable t) {
+			System.err.println("[WC-DIAG] CRASH in dispose(): " + t);
+		}
+	}
+
+	@Override
+	public void resize(int width, int height) {
+		try {
+			super.resize(width, height);
+		} catch (Throwable t) {
+			System.err.println("[WC-DIAG] CRASH in resize(): " + t);
+		}
+	}
+
+	@Override
+	public void pause() {
+		try {
+			super.pause();
+		} catch (Throwable t) {
+			System.err.println("[WC-DIAG] CRASH in pause(): " + t);
+		}
+	}
+
+	@Override
+	public void resume() {
+		try {
+			super.resume();
+		} catch (Throwable t) {
+			System.err.println("[WC-DIAG] CRASH in resume(): " + t);
+		}
 	}
 
 	int yukseklik;
