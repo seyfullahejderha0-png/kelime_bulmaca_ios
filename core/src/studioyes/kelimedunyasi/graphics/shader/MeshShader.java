@@ -162,7 +162,8 @@ public class MeshShader extends Group implements Disposable {
         }
 
         shaderProgram.setUniformMatrix("u_projTrans", combinedMatrix);
-        shaderProgram.setUniformf("u_resolution", getWidth(), getHeight());
+        shaderProgram.setUniformf("u_resolution", Gdx.graphics.getBackBufferWidth(),
+                Gdx.graphics.getBackBufferHeight());
 
         if (!paused) {
             time += Gdx.graphics.getDeltaTime();
