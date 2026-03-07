@@ -121,7 +121,7 @@ public class IOSLauncher extends IOSApplication.Delegate {
             org.robovm.apple.uikit.UIApplicationLaunchOptions launchOptions) {
 
         // Initialize AdMob
-        org.robovm.bindings.admob.GADMobileAds.sharedInstance().start(null);
+        org.robovm.pods.google.mobileads.GADMobileAds.getSharedInstance().start(null);
 
         // Initialize IAP
         if (shoppingProcessor != null) {
