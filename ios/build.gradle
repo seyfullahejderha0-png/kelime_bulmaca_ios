@@ -27,6 +27,7 @@ robovm {
 
 dependencies {
     implementation project(":core")
+    implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
     implementation "com.badlogicgames.gdx:gdx-backend-robovm:$gdxVersion"
     implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-ios"
     // jsoup 1.15.4 — older version compatible with Java 8 / RoboVM
