@@ -261,13 +261,10 @@ public class GameData {
         if (text == null)
             throw new GdxRuntimeException("Could not read: " + fileName);
 
-        try {
-            String str = new String(text.getString().getBytes(), "UTF-8");
-            String[] split = str.split("\\,");
-            vulgarWords = new HashSet<>(Arrays.asList(split));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        String str = text.getString();
+        String[] split = str.split("\\,");
+        vulgarWords = new HashSet<>(Arrays.asList(split));
+    }
 
     }
 
