@@ -9,7 +9,6 @@ import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonWriter;
 
-
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,13 +23,11 @@ import studioyes.kelimedunyasi.managers.ResourceManager;
 import studioyes.kelimedunyasi.pool.Pools;
 import studioyes.kelimedunyasi.util.Text;
 
-
 import static studioyes.kelimedunyasi.model.Constants.KEY_ROCKET_WORDS;
 import static studioyes.kelimedunyasi.model.Constants.KEY_SAVED_SOLVED_WORDS;
 import static studioyes.kelimedunyasi.model.Constants.KEY_TILE_STATE;
 
 public class GameData {
-
 
     public static ResourceManager resourceManager;
 
@@ -46,25 +43,20 @@ public class GameData {
     private static Array<Word> downWords = new Array<>();
     private static Level level;
 
-
-    public static int getTutorialStep(){
+    public static int getTutorialStep() {
         return Gdx.app.getPreferences(Constants.PREFS_NAME).getInteger(Constants.KEY_TUTORIAL_STEP, 0);
     }
 
-    public static void saveTutorialStep(int step){
+    public static void saveTutorialStep(int step) {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.putInteger(Constants.KEY_TUTORIAL_STEP, step);
         preferences.flush();
     }
 
-
-
     public static int findFirstIncompleteLevel() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         return preferences.getInteger(getLocaleAwareKey(Constants.KEY_LAST_INCOMPLETE_LEVEL), 0);
     }
-
-
 
     public static Level getLevelByIndex(int index) {
         String fileName = "data/" + LanguageManager.locale.code + "/levels/" + index;
@@ -73,18 +65,14 @@ public class GameData {
         return level;
     }
 
-
-
-
-
-
-
-    private static Level readLevelFile(String file){
+    private static Level readLevelFile(String file) {
 
         JsonValue doc = jsonReader.parse(Gdx.files.internal(file));
 
-        if(boardModel == null) boardModel = new BoardModel();
-        else boardModel.reset();
+        if (boardModel == null)
+            boardModel = new BoardModel();
+        else
+            boardModel.reset();
 
         String o = doc.getString("o");
         String[] split = o.split(",");
@@ -95,26 +83,26 @@ public class GameData {
         Set<Integer> solvedWords = getSolvedWords();
         Set<Integer> rocketWords = getWordsWithRocket();
 
-        if(acrossWords.size > 0) acrossWords.clear();
-        if(downWords.size > 0) downWords.clear();
+        if (acrossWords.size > 0)
+            acrossWords.clear();
+        if (downWords.size > 0)
+            downWords.clear();
 
+        if (GameConfig.DEBUG_LEVEL_ANSWERS) // Gdx.app.log("game.log", "--- LEVEL " + file + " (" + boardModel.height +
+                                            // "x" + boardModel.width + ")");
 
-
-        if(GameConfig.DEBUG_LEVEL_ANSWERS) //Gdx.app.log("game.log", "--- LEVEL " + file + " (" + boardModel.height + "x" + boardModel.width + ")");
-
-        jsonToWords(acrossWords, doc.get("a"), Direction.ACROSS, solvedWords, rocketWords);
+            jsonToWords(acrossWords, doc.get("a"), Direction.ACROSS, solvedWords, rocketWords);
         jsonToWords(downWords, doc.get("d"), Direction.DOWN, solvedWords, rocketWords);
 
         boardModel.setAcrossWords(acrossWords);
         boardModel.setDownWords(downWords);
 
-        if(level == null){
+        if (level == null) {
             level = new Level();
             level.setBoardModel(boardModel);
-        }else{
+        } else {
             level.reset();
         }
-
 
         String letters = split[2];
         char[] chars = letters.toCharArray();
@@ -124,24 +112,19 @@ public class GameData {
         return level;
     }
 
-
-
-
-    public static Set<Integer> getSolvedWords(){
+    public static Set<Integer> getSolvedWords() {
 
         JsonValue doc = readJsonArrayFromPreferences(getLocaleAwareKey(KEY_SAVED_SOLVED_WORDS));
 
-
         Set<Integer> set = new HashSet<>();
 
-        for(int i = 0; i < doc.size; i++)
+        for (int i = 0; i < doc.size; i++)
             set.add(doc.get(i).asInt());
 
         return set;
     }
 
-
-    public static void saveSolvedWord(int id){
+    public static void saveSolvedWord(int id) {
         String key = getLocaleAwareKey(KEY_SAVED_SOLVED_WORDS);
         JsonValue doc = readJsonArrayFromPreferences(key);
 
@@ -151,71 +134,53 @@ public class GameData {
 
     }
 
-
-
-
-    public static void saveWordWithRocket(int id){
+    public static void saveWordWithRocket(int id) {
         String key = getLocaleAwareKey(KEY_ROCKET_WORDS);
         JsonValue doc = readJsonArrayFromPreferences(key);
         doc.addChild(new JsonValue(id));
         saveJsonDocument(doc, key);
     }
 
-
-
-    public static Set<Integer> getWordsWithRocket(){
+    public static Set<Integer> getWordsWithRocket() {
         String key = getLocaleAwareKey(KEY_ROCKET_WORDS);
         JsonValue doc = readJsonArrayFromPreferences(key);
 
-
         integerSet.clear();
 
-        for(int i = 0; i < doc.size; i++)
+        for (int i = 0; i < doc.size; i++)
             integerSet.add(doc.get(i).asInt());
 
         return integerSet;
     }
 
-
-
-
-    public static void deleteWordWithRocket(int id){
+    public static void deleteWordWithRocket(int id) {
         Set<Integer> set = getWordsWithRocket();
         set.remove(id);
 
         clearWordsWithRocket();
 
-        for(Integer i : set){
+        for (Integer i : set) {
             saveWordWithRocket(i);
         }
 
     }
 
-
-
-
-
-    public static void clearWordsWithRocket(){
+    public static void clearWordsWithRocket() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
-        preferences.putString(getLocaleAwareKey(KEY_ROCKET_WORDS),"[]");
+        preferences.putString(getLocaleAwareKey(KEY_ROCKET_WORDS), "[]");
         preferences.flush();
     }
 
-
-
-
-
-    private static JsonValue readJsonArrayFromPreferences(String key){
+    private static JsonValue readJsonArrayFromPreferences(String key) {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         String json = preferences.getString(key, "[]");
         return jsonReader.parse(json);
     }
 
+    private static void jsonToWords(Array<Word> words, JsonValue json, Direction direction, Set<Integer> solvedWords,
+            Set<Integer> rocketWords) {
 
-
-    private static void jsonToWords(Array<Word> words, JsonValue json, Direction direction, Set<Integer> solvedWords, Set<Integer> rocketWords){
-
-        for (int i = 0; i < json.size; i++){
+        for (int i = 0; i < json.size; i++) {
             Word word = Pools.wordPool.obtain();
 
             JsonValue value = json.get(i);
@@ -226,8 +191,8 @@ public class GameData {
 
             word.answer = GameData.wordMap.get(word.id);
 
-            if(GameConfig.DEBUG_LEVEL_ANSWERS){
-                //Gdx.app.log("game.log", word.toString());
+            if (GameConfig.DEBUG_LEVEL_ANSWERS) {
+                // Gdx.app.log("game.log", word.toString());
             }
 
             word.x = Integer.parseInt(split[1]);
@@ -239,15 +204,12 @@ public class GameData {
         }
     }
 
-
-
-
-    private static void shuffleArray(char[] array){
+    private static void shuffleArray(char[] array) {
         int index;
 
-        for (int i = array.length - 1; i > 0; i--){
+        for (int i = array.length - 1; i > 0; i--) {
             index = MathUtils.random(i);
-            if (index != i){
+            if (index != i) {
                 array[index] ^= array[i];
                 array[i] ^= array[index];
                 array[index] ^= array[i];
@@ -255,12 +217,8 @@ public class GameData {
         }
     }
 
-
-
-
-
-    public static String getLocaleAwareKey(String key){
-        if(LanguageManager.locale == null) {
+    public static String getLocaleAwareKey(String key) {
+        if (LanguageManager.locale == null) {
             for (String k : GameConfig.availableLanguages.keySet()) {
                 return key + "_" + k;
             }
@@ -269,31 +227,25 @@ public class GameData {
         return key + "_" + LanguageManager.locale.code;
     }
 
-
-
-
-
     public static void readWords() {
         String fileName = "data/" + LanguageManager.locale.code + "/words.txt";
 
         Text text = resourceManager.get(fileName, Text.class);
-        try {
-            String str = new String(text.getString().getBytes(), "UTF-8");
-            String[] split = str.split(":");
+        String str = text.getString();
+        String[] split = str.split(":");
 
-            wordMap.clear();
-            for(int i = 0; i < split.length; i += 2){
-                wordMap.put(Integer.parseInt(split[i]), split[i + 1]);
-            }
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+        wordMap.clear();
+        for (int i = 0; i < split.length; i += 2) {
+            wordMap.put(Integer.parseInt(split[i]), split[i + 1]);
         }
+    }catch(
 
-
-
+    UnsupportedEncodingException e)
+    {
+        e.printStackTrace();
     }
 
-
+    }
 
     public static void readVulgarWords() {
 
@@ -302,11 +254,12 @@ public class GameData {
 
         try {
             text = resourceManager.get(fileName, Text.class);
-        }catch (GdxRuntimeException e){
+        } catch (GdxRuntimeException e) {
             text = new Text(fileName);
         }
 
-        if(text == null) throw new GdxRuntimeException("Could not read: "+fileName);
+        if (text == null)
+            throw new GdxRuntimeException("Could not read: " + fileName);
 
         try {
             String str = new String(text.getString().getBytes(), "UTF-8");
@@ -316,12 +269,9 @@ public class GameData {
             e.printStackTrace();
         }
 
-
     }
 
-
-
-    public static void saveTileState(int x, int y, int type){
+    public static void saveTileState(int x, int y, int type) {
         Map<Integer, Integer> map = readTileStates();
 
         int key = (x << 8) | y;
@@ -330,10 +280,7 @@ public class GameData {
         saveJsonDocument(mapToJsonValue(map), getLocaleAwareKey(KEY_TILE_STATE));
     }
 
-
-
-
-    public static void removeTileState(int x, int y){
+    public static void removeTileState(int x, int y) {
         Map<Integer, Integer> map = readTileStates();
         int key = (x << 8) | y;
 
@@ -341,9 +288,7 @@ public class GameData {
         saveJsonDocument(mapToJsonValue(map), getLocaleAwareKey(KEY_TILE_STATE));
     }
 
-
-
-    public static Map<Integer, Integer> readTileStates(){
+    public static Map<Integer, Integer> readTileStates() {
         String name = getLocaleAwareKey(KEY_TILE_STATE);
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         String json = preferences.getString(name, "{}");
@@ -351,13 +296,11 @@ public class GameData {
         return jsonToMap(doc);
     }
 
-
-
-    private static Map<Integer, Integer> jsonToMap(JsonValue doc){
+    private static Map<Integer, Integer> jsonToMap(JsonValue doc) {
 
         Map<Integer, Integer> map = new HashMap<>();
 
-        for(int i = 0; i < doc.size; i++){
+        for (int i = 0; i < doc.size; i++) {
             JsonValue jv = doc.get(i);
             map.put(Integer.parseInt(jv.name), jv.asInt());
         }
@@ -365,21 +308,14 @@ public class GameData {
         return map;
     }
 
-
-
-    private static JsonValue mapToJsonValue(Map<Integer, Integer> map){
+    private static JsonValue mapToJsonValue(Map<Integer, Integer> map) {
         JsonValue doc = new JsonValue(JsonValue.ValueType.object);
 
-        for(Integer key : map.keySet()){
+        for (Integer key : map.keySet()) {
             doc.addChild(Integer.toString(key), new JsonValue(map.get(key)));
         }
         return doc;
     }
-
-
-
-
-
 
     public static void clearTileStates() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
@@ -387,28 +323,17 @@ public class GameData {
         preferences.flush();
     }
 
-
-
-
-
-    private static void saveJsonDocument(JsonValue doc, String key){
+    private static void saveJsonDocument(JsonValue doc, String key) {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.putString(key, doc.toJson(JsonWriter.OutputType.json));
         preferences.flush();
     }
 
-
-
-
-    
     public static void clearSavedSolvedWordsJson() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.putString(getLocaleAwareKey(KEY_SAVED_SOLVED_WORDS), "[]");
         preferences.flush();
     }
-
-
-
 
     public static void updateFirstIncompleteLevelIndex(int index) {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
@@ -416,51 +341,41 @@ public class GameData {
         preferences.flush();
     }
 
-
-
-
-
-    public static int insertWordToExtraJson(String word){
+    public static int insertWordToExtraJson(String word) {
 
         int a = 0;
         int b = 0;
 
         int wordId = isExtraWord(word);
 
-        if(wordId > 0){
+        if (wordId > 0) {
             a = 1;
             boolean exists = doesWordExistInExtraJson(wordId);
 
-            if(!exists){
+            if (!exists) {
                 b = 1;
                 addWordToExtraJson(wordId);
-            }else{
+            } else {
                 b = 0;
             }
-
 
         }
 
         return (a << 8) | b;
     }
 
-
-
-    public static Array<String> getExtraWords(){
+    public static Array<String> getExtraWords() {
         String key = getLocaleAwareKey(Constants.KEY_EXTRA_WORDS);
         JsonValue doc = readJsonArrayFromPreferences(key);
 
         extraWords.clear();
 
-        for(int i = 0; i < doc.size; i++){
+        for (int i = 0; i < doc.size; i++) {
             extraWords.add(wordMap.get(doc.get(i).asInt()));
         }
 
         return extraWords;
     }
-
-
-
 
     private static void addWordToExtraJson(int wordId) {
         String key = getLocaleAwareKey(Constants.KEY_EXTRA_WORDS);
@@ -469,51 +384,38 @@ public class GameData {
         saveJsonDocument(doc, key);
     }
 
-
-
-
-
     private static boolean doesWordExistInExtraJson(int wordId) {
         String key = getLocaleAwareKey(Constants.KEY_EXTRA_WORDS);
         JsonValue doc = readJsonArrayFromPreferences(key);
 
-        for(int i = 0; i < doc.size; i++){
-            if(wordId == doc.get(i).asInt())
+        for (int i = 0; i < doc.size; i++) {
+            if (wordId == doc.get(i).asInt())
                 return true;
         }
 
         return false;
     }
 
-
-
-    public static boolean isVulgarWord(String word){
+    public static boolean isVulgarWord(String word) {
         return vulgarWords.contains(word);
     }
 
-
-
     public static int isExtraWord(String word) {
-        for(Map.Entry<Integer, String> entry : wordMap.entrySet()){
-            if(word.equals(entry.getValue()))
+        for (Map.Entry<Integer, String> entry : wordMap.entrySet()) {
+            if (word.equals(entry.getValue()))
                 return entry.getKey();
         }
         return 0;
     }
 
-
-
-    public static void clearExtraWords(){
+    public static void clearExtraWords() {
         String key = getLocaleAwareKey(Constants.KEY_EXTRA_WORDS);
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.putString(key, "[]");
         preferences.flush();
     }
 
-
-
-
-    public static void incrementFoundBonusWordCount(){
+    public static void incrementFoundBonusWordCount() {
         int count = getExtraWordsCount();
         count++;
 
@@ -523,304 +425,228 @@ public class GameData {
         preferences.flush();
     }
 
-
-    public static void saveExtraWordsCount(int n){
+    public static void saveExtraWordsCount(int n) {
         String key = getLocaleAwareKey(Constants.KEY_EXTRA_WORD_COUNT);
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.putInteger(key, n);
         preferences.flush();
     }
 
-
-    public static int getExtraWordsCount(){
+    public static int getExtraWordsCount() {
         String key = getLocaleAwareKey(Constants.KEY_EXTRA_WORD_COUNT);
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         return preferences.getInteger(key, 0);
     }
 
-
-
-
-    public static void resetExtraWordCount(){
+    public static void resetExtraWordCount() {
         String key = getLocaleAwareKey(Constants.KEY_EXTRA_WORD_COUNT);
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.putInteger(key, 0);
         preferences.flush();
     }
 
-
-
-
-    public static boolean hasUfoBeenConsumedInThisLevel(){
+    public static boolean hasUfoBeenConsumedInThisLevel() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         return preferences.getBoolean(getLocaleAwareKey(Constants.KEY_UFO_CONSUMED), false);
     }
 
-
-
-    public static void setUfoHasBeenConsumedInThisLevel(){
+    public static void setUfoHasBeenConsumedInThisLevel() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.putBoolean(getLocaleAwareKey(Constants.KEY_UFO_CONSUMED), true);
         preferences.flush();
     }
 
-
-
-    public static void removeUfoHasBeenConsumedInThisLevel(){
+    public static void removeUfoHasBeenConsumedInThisLevel() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.remove(getLocaleAwareKey(Constants.KEY_UFO_CONSUMED));
         preferences.flush();
     }
 
-
-
-
-    public static boolean hasBombBeenConsumedInThisLevel(){
+    public static boolean hasBombBeenConsumedInThisLevel() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         return preferences.getBoolean(getLocaleAwareKey(Constants.KEY_BOMB_CONSUMED), false);
     }
 
-
-
-    public static void setBombHasBeenConsumedInThisLevel(){
+    public static void setBombHasBeenConsumedInThisLevel() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.putBoolean(getLocaleAwareKey(Constants.KEY_BOMB_CONSUMED), true);
         preferences.flush();
     }
 
-
-
-    public static void removeBombHasBeenConsumedInThisLevel(){
+    public static void removeBombHasBeenConsumedInThisLevel() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.remove(getLocaleAwareKey(Constants.KEY_BOMB_CONSUMED));
         preferences.flush();
     }
 
-
-
-    public static void setNumberOfBombMoves(int count){
+    public static void setNumberOfBombMoves(int count) {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.putInteger(getLocaleAwareKey(Constants.KEY_NUMBER_OF_BOMB_MOVES), Math.max(0, count));
         preferences.flush();
     }
 
-
-
-
-    public static int getNumberOfBombMoves(){
+    public static int getNumberOfBombMoves() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         return preferences.getInteger(getLocaleAwareKey(Constants.KEY_NUMBER_OF_BOMB_MOVES), 0);
     }
 
-
-
-
-    public static void removeNumberOfBombMoves(){
+    public static void removeNumberOfBombMoves() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.remove(getLocaleAwareKey(Constants.KEY_NUMBER_OF_BOMB_MOVES));
         preferences.flush();
     }
 
-
-
-
-
-    public static boolean hasGoldPackBeenConsumedInThisLevel(){
+    public static boolean hasGoldPackBeenConsumedInThisLevel() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         return preferences.getBoolean(getLocaleAwareKey(Constants.KEY_GOLD_PACK_CONSUMED), false);
     }
 
-
-
-    public static void setGoldPackHasBeenConsumedInThisLevel(){
+    public static void setGoldPackHasBeenConsumedInThisLevel() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.putBoolean(getLocaleAwareKey(Constants.KEY_GOLD_PACK_CONSUMED), true);
         preferences.flush();
     }
 
-
-
-    public static void removeGoldPackHasBeenConsumedInThisLevel(){
+    public static void removeGoldPackHasBeenConsumedInThisLevel() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.remove(getLocaleAwareKey(Constants.KEY_GOLD_PACK_CONSUMED));
         preferences.flush();
     }
 
-
-
-    public static void setNumberOfGoldPackMoves(int count){
+    public static void setNumberOfGoldPackMoves(int count) {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.putInteger(getLocaleAwareKey(Constants.KEY_NUMBER_OF_GOLD_PACK_MOVES), count);
         preferences.flush();
     }
 
-
-
-    public static int getNumberOfGoldPackMoves(){
+    public static int getNumberOfGoldPackMoves() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         return preferences.getInteger(getLocaleAwareKey(Constants.KEY_NUMBER_OF_GOLD_PACK_MOVES), 0);
     }
 
-
-
-    public static void removeNumberOfGoldPackMoves(){
+    public static void removeNumberOfGoldPackMoves() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.remove(getLocaleAwareKey(Constants.KEY_NUMBER_OF_GOLD_PACK_MOVES));
         preferences.flush();
     }
 
-
-
-
-
-
-    public static void setMonsterHasBeenConsumedInThisLevel(){
+    public static void setMonsterHasBeenConsumedInThisLevel() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.putBoolean(getLocaleAwareKey(Constants.KEY_MONSTER_CONSUMED), true);
         preferences.flush();
     }
 
-
-
-    public static boolean hasMonsterBeenConsumedInThisLevel(){
-        return Gdx.app.getPreferences(Constants.PREFS_NAME).getBoolean(getLocaleAwareKey(Constants.KEY_MONSTER_CONSUMED), false);
+    public static boolean hasMonsterBeenConsumedInThisLevel() {
+        return Gdx.app.getPreferences(Constants.PREFS_NAME)
+                .getBoolean(getLocaleAwareKey(Constants.KEY_MONSTER_CONSUMED), false);
     }
 
-
-    public static void removeMonsterHasBeenConsumedInThisLevel(){
+    public static void removeMonsterHasBeenConsumedInThisLevel() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.remove(getLocaleAwareKey(Constants.KEY_MONSTER_CONSUMED));
         preferences.flush();
     }
 
-
-
-    public static void saveLastBoosterType(int boosterType){
+    public static void saveLastBoosterType(int boosterType) {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.putInteger(getLocaleAwareKey(Constants.KEY_BOOSTER_TYPE), boosterType);
         preferences.flush();
     }
 
-
-
-
-    public static int getLastBoosterType(){
-        return Gdx.app.getPreferences(Constants.PREFS_NAME).getInteger(getLocaleAwareKey(Constants.KEY_BOOSTER_TYPE), -1);
+    public static int getLastBoosterType() {
+        return Gdx.app.getPreferences(Constants.PREFS_NAME).getInteger(getLocaleAwareKey(Constants.KEY_BOOSTER_TYPE),
+                -1);
     }
 
-
-
-
-
-    public static void saveComboCount(int count){
+    public static void saveComboCount(int count) {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.putInteger(getLocaleAwareKey(Constants.KEY_COMBO_COUNT), count);
         preferences.flush();
     }
 
-
-
-    public static int getComboCount(){
+    public static int getComboCount() {
         return Gdx.app.getPreferences(Constants.PREFS_NAME).getInteger(getLocaleAwareKey(Constants.KEY_COMBO_COUNT), 0);
     }
 
-
-
-
-    public static void saveComboReward(int count){
+    public static void saveComboReward(int count) {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.putInteger(getLocaleAwareKey(Constants.KEY_COMBO_REWARD), count);
         preferences.flush();
     }
 
-
-
-    public static int getComboReward(){
-        return Gdx.app.getPreferences(Constants.PREFS_NAME).getInteger(getLocaleAwareKey(Constants.KEY_COMBO_REWARD), 0);
+    public static int getComboReward() {
+        return Gdx.app.getPreferences(Constants.PREFS_NAME).getInteger(getLocaleAwareKey(Constants.KEY_COMBO_REWARD),
+                0);
     }
 
-
-
-    public static boolean isUfoTutorialDisplayed(){
+    public static boolean isUfoTutorialDisplayed() {
         return Gdx.app.getPreferences(Constants.PREFS_NAME).getBoolean(Constants.KEY_UFO_TUTORIAL_SHOWN, false);
     }
 
-
-    public static void setUfoTutorialComplete(){
+    public static void setUfoTutorialComplete() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         preferences.putBoolean(Constants.KEY_UFO_TUTORIAL_SHOWN, true);
         preferences.flush();
     }
 
-
-
-
-    public static boolean isBombTutorialDisplayed(){
+    public static boolean isBombTutorialDisplayed() {
         return Gdx.app.getPreferences(Constants.PREFS_NAME).getBoolean(Constants.KEY_BOMB_TUTORIAL_SHOWN, false);
     }
 
-
-    public static void setBombTutorialComplete(){
+    public static void setBombTutorialComplete() {
         Gdx.app.getPreferences(Constants.PREFS_NAME).putBoolean(Constants.KEY_BOMB_TUTORIAL_SHOWN, true).flush();
     }
 
-
-    public static boolean isGoldPackTutorialDisplayed(){
+    public static boolean isGoldPackTutorialDisplayed() {
         return Gdx.app.getPreferences(Constants.PREFS_NAME).getBoolean(Constants.KEY_GOLD_PACK_TUTORIAL_SHOWN, false);
     }
 
-    public static void setGoldPackTutorialComplete(){
+    public static void setGoldPackTutorialComplete() {
         Gdx.app.getPreferences(Constants.PREFS_NAME).putBoolean(Constants.KEY_GOLD_PACK_TUTORIAL_SHOWN, true).flush();
     }
 
-    public static boolean isMonsterTutorialDisplayed(){
+    public static boolean isMonsterTutorialDisplayed() {
         return Gdx.app.getPreferences(Constants.PREFS_NAME).getBoolean(Constants.KEY_MONSTER_TUTORIAL_SHOWN, false);
     }
 
-    public static void setMonsterTutorialComplete(){
+    public static void setMonsterTutorialComplete() {
         Gdx.app.getPreferences(Constants.PREFS_NAME).putBoolean(Constants.KEY_MONSTER_TUTORIAL_SHOWN, true).flush();
     }
 
-    public static boolean isExtraWordsTutorialDisplayed1(){
-        return Gdx.app.getPreferences(Constants.PREFS_NAME).getBoolean(Constants.KEY_BONUS_WORDS_TUTORIAL_SHOWN1, false);
+    public static boolean isExtraWordsTutorialDisplayed1() {
+        return Gdx.app.getPreferences(Constants.PREFS_NAME).getBoolean(Constants.KEY_BONUS_WORDS_TUTORIAL_SHOWN1,
+                false);
     }
 
-    public static void setExtraWordsTutorialComplete1(){
-        Gdx.app.getPreferences(Constants.PREFS_NAME).putBoolean(Constants.KEY_BONUS_WORDS_TUTORIAL_SHOWN1, true).flush();
+    public static void setExtraWordsTutorialComplete1() {
+        Gdx.app.getPreferences(Constants.PREFS_NAME).putBoolean(Constants.KEY_BONUS_WORDS_TUTORIAL_SHOWN1, true)
+                .flush();
     }
 
-
-    public static boolean isExtraWordsTutorialDisplayed2(){
-        return Gdx.app.getPreferences(Constants.PREFS_NAME).getBoolean(Constants.KEY_BONUS_WORDS_TUTORIAL_SHOWN2, false);
+    public static boolean isExtraWordsTutorialDisplayed2() {
+        return Gdx.app.getPreferences(Constants.PREFS_NAME).getBoolean(Constants.KEY_BONUS_WORDS_TUTORIAL_SHOWN2,
+                false);
     }
 
-    public static void setExtraWordsTutorialComplete2(){
-        Gdx.app.getPreferences(Constants.PREFS_NAME).putBoolean(Constants.KEY_BONUS_WORDS_TUTORIAL_SHOWN2, true).flush();
+    public static void setExtraWordsTutorialComplete2() {
+        Gdx.app.getPreferences(Constants.PREFS_NAME).putBoolean(Constants.KEY_BONUS_WORDS_TUTORIAL_SHOWN2, true)
+                .flush();
     }
 
-
-
-
-
-
-    public static boolean isGameMuted(){
+    public static boolean isGameMuted() {
         return Gdx.app.getPreferences(Constants.PREFS_NAME).getBoolean(Constants.KEY_MUTED, false);
     }
 
-
-    public static void setGameMute(boolean muted){
+    public static void setGameMute(boolean muted) {
         Gdx.app.getPreferences(Constants.PREFS_NAME).putBoolean(Constants.KEY_MUTED, muted).flush();
         ConfigProcessor.muted = muted;
     }
 
-
-
-    public static void saveLastRewardedAdTime(long time){
+    public static void saveLastRewardedAdTime(long time) {
         Gdx.app.getPreferences(Constants.PREFS_NAME).putLong(Constants.KEY_LAST_REWARDED_AD_TIME, time).flush();
     }
 
-
-    public static long getLastRewardedAdTime(){
+    public static long getLastRewardedAdTime() {
         return Gdx.app.getPreferences(Constants.PREFS_NAME).getLong(Constants.KEY_LAST_REWARDED_AD_TIME, 0);
     }
 }

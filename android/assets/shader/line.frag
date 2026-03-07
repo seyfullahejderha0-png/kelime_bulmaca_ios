@@ -19,6 +19,6 @@ void main() {
 	float line = length((pointA - uv) - proj) - thickness;
 
 	vec4 color = vec4(0, 0, 0, 0);
-	color = mix(color, vec4(r,g,b,1), clamp(-line, 0.0, 1.0));
+	color = mix(color, line_color, clamp(-line, 0.0, 1.0));
 	gl_FragColor = color;
 }

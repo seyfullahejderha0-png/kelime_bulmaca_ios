@@ -96,7 +96,7 @@ public class IOSLauncher extends IOSApplication.Delegate {
         game = new WordConnectGame(null, providerMap);
         game.adManager = adManager;
         game.shoppingProcessor = shoppingProcessor;
-        game.version = "1.0.44"; // Build 44
+        game.version = "1.0.45"; // Build 45
 
         System.out.println("[WC] Returning IOSApplication with real game");
         return new IOSApplication(game, config);
