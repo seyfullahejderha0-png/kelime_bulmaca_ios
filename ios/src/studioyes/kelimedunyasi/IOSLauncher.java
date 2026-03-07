@@ -4,6 +4,7 @@ import com.badlogic.gdx.backends.iosrobovm.IOSApplication;
 import com.badlogic.gdx.backends.iosrobovm.IOSApplicationConfiguration;
 import org.robovm.apple.foundation.NSAutoreleasePool;
 import org.robovm.apple.uikit.UIApplication;
+import com.badlogic.gdx.Graphics.HdpiMode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -70,6 +71,7 @@ public class IOSLauncher extends IOSApplication.Delegate {
         config.orientationLandscape = false;
         config.useAccelerometer = false;
         config.useCompass = false;
+        config.hdpiMode = HdpiMode.Pixels;
 
         // Initialize Managers
         adManager = new IOSAdManager();
@@ -95,7 +97,7 @@ public class IOSLauncher extends IOSApplication.Delegate {
         game = new WordConnectGame(null, providerMap);
         game.adManager = adManager;
         game.shoppingProcessor = shoppingProcessor;
-        game.version = "1.0.39"; // Build 39
+        game.version = "1.0.40"; // Build 40
 
         System.out.println("[WC] Returning IOSApplication with real game");
         return new IOSApplication(game, config);
