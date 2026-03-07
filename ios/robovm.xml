@@ -11,6 +11,8 @@
     <pattern>com.badlogic.gdx.**</pattern>
     <pattern>studioyes.kelimedunyasi.**</pattern>
     <pattern>com.badlogic.gdx.graphics.g2d.freetype.**</pattern>
+    <pattern>org.robovm.pods.**</pattern>
+    <pattern>com.badlogic.gdx.pay.**</pattern>
 </forceLinkClasses>
     <frameworks>
         <framework>UIKit</framework>
