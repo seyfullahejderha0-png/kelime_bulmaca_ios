@@ -10,7 +10,8 @@ uniform float u_alpha;
 uniform vec2 u_pos;
 
 void main() {
-    vec2 p = vec2(gl_FragCoord.x-u_resolution.x * u_center.x - u_pos.x, gl_FragCoord.y-u_resolution.y * u_center.y - u_pos.y)/u_dial_diameter;
+    vec2 fragCoord = gl_FragCoord.xy / u_density;
+    vec2 p = vec2(fragCoord.x - u_resolution.x * u_center.x - u_pos.x, fragCoord.y - u_resolution.y * u_center.y - u_pos.y) / u_dial_diameter;
 
     float tau = 3.1415926535*2.0;
     float a = atan(p.x,p.y);
