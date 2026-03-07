@@ -25,7 +25,7 @@ public class IOSAdManager implements AdManager {
         if (bannerView != null)
             return;
         UIViewController root = UIApplication.getSharedApplication().getKeyWindow().getRootViewController();
-        bannerView = new GADBannerView(GADAdSize.getBanner());
+        bannerView = new GADBannerView(GADAdSize.Banner());
         bannerView.setAdUnitID(IOSLauncher.ADMOB_BANNER_ID);
         bannerView.setRootViewController(root);
         root.getView().addSubview(bannerView);
@@ -81,7 +81,7 @@ public class IOSAdManager implements AdManager {
                     loadInterstitial();
                 }
             });
-            interstitialAd.present(root);
+            interstitialAd.presentFromRootViewController(root);
         } else {
             if (closedCallback != null)
                 closedCallback.run();
@@ -121,7 +121,7 @@ public class IOSAdManager implements AdManager {
             rewardedAd.present(root, () -> {
                 Gdx.app.postRunnable(() -> {
                     if (finishedCallback != null)
-                        finishedCallback.onRewardedVideoFinished();
+                        finishedCallback.closed(true);
                 });
             });
         } else {

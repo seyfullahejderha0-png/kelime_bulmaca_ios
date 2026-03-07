@@ -3,6 +3,7 @@ package studioyes.kelimedunyasi;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.pay.*;
+import com.badlogic.gdx.pay.ios.apple.PurchaseManageriOSApple;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +50,7 @@ public class IOSShoppingProcessor implements ShoppingProcessor, PurchaseObserver
         // Remove Ads is non-consumable
         config.getOffer(IOSLauncher.IAP_REMOVE_ADS).setType(OfferType.ENTITLEMENT);
 
-        purchaseManager = Gdx.pay;
+        purchaseManager = new PurchaseManageriOSApple();
         if (purchaseManager != null) {
             purchaseManager.install(this, config, true);
         }
