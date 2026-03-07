@@ -8,15 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import studioyes.kelimedunyasi.net.WordMeaningProvider;
-import org.robovm.apple.uikit.UIAlertController;
-import org.robovm.apple.uikit.UIAlertControllerStyle;
-import org.robovm.apple.uikit.UIAlertAction;
-import org.robovm.apple.uikit.UIAlertActionStyle;
-import org.robovm.apple.uikit.UIWindow;
-import org.robovm.apple.uikit.UIScreen;
-import org.robovm.apple.uikit.UIViewController;
-import org.robovm.apple.foundation.NSOperationQueue;
-import org.robovm.apple.uikit.UIApplicationLaunchOptions;
+import org.robovm.apple.uikit.UIApplication;
 
 /**
  * iOS Launcher — AndroidLauncher'ın iOS karşılığı.
@@ -128,6 +120,14 @@ public class IOSLauncher extends IOSApplication.Delegate {
     public boolean didFinishLaunching(UIApplication application,
             org.robovm.apple.uikit.UIApplicationLaunchOptions launchOptions) {
 
+        // Initialize AdMob
+        org.robovm.pods.google.mobileads.GADMobileAds.getSharedInstance().start(null);
+
+        // Initialize IAP
+        if (shoppingProcessor != null) {
+            shoppingProcessor.initialize();
+        }
+
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
@@ -142,6 +142,14 @@ public class IOSLauncher extends IOSApplication.Delegate {
             if (!result) {
                 showCrashAlert("LibGDX Init Failed", "EAGLContext cannot be spawned.");
             }
+
+            // Initial ad loads
+            if (adManager != null) {
+                adManager.loadBanner();
+                adManager.loadInterstitial();
+                adManager.loadRewarded();
+            }
+
             return true;
         } catch (Throwable t) {
             System.err.println("[WC-DIAG] CRASH in didFinishLaunching: " + t);

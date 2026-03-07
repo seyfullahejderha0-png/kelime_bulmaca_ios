@@ -1,60 +1,104 @@
 package studioyes.kelimedunyasi;
 
 import com.badlogic.gdx.Gdx;
-import org.robovm.apple.foundation.NSOperationQueue;
+import com.badlogic.gdx.graphics.Color;
+import org.robovm.apple.coregraphics.CGRect;
+import org.robovm.apple.coregraphics.CGSize;
+import org.robovm.apple.foundation.NSError;
 import org.robovm.apple.uikit.UIApplication;
+import org.robovm.apple.uikit.UIScreen;
+import org.robovm.apple.uikit.UIViewController;
+import org.robovm.pods.google.mobileads.*;
 
 import studioyes.kelimedunyasi.managers.AdManager;
 import studioyes.kelimedunyasi.util.RewardedVideoCloseCallback;
 
-/**
- * iOS reklam yöneticisi — AdManager interface'ini implement eder.
- *
- * Bu sınıf AdMob iOS SDK (Google Mobile Ads) ile çalışır.
- * RoboVM için Google Mobile Ads iOS binding'leri projeye dahil edilmelidir.
- *
- * Bağımlılık:
- *   CocoaPods: pod 'Google-Mobile-Ads-SDK'
- *   veya SPM ile ekleme yapıldıktan sonra RoboVM binding JAR'ı ios/libs/ altına koyun.
- *
- * ÖNEMLİ: Gerçek AdMob çağrıları (GADBannerView, GADRewardedAd vb.) için
- * resmi RoboVM-Google-Mobile-Ads binding JAR'ını kullanın:
- *   https://github.com/MobiVM/robovm-robopods
- *
- * Bu dosya şimdilik stub implementasyondur — binding eklenince doldurulacak.
- */
 public class IOSAdManager implements AdManager {
 
-    // Reklam birim ID'leri IOSLauncher'dan gelecek
-    private boolean rewardedLoaded       = false;
-    private boolean interstitialLoaded   = false;
-    private boolean interstitialEnabled  = true;
+    private GADBannerView bannerView;
+    private GADInterstitialAd interstitialAd;
+    private GADRewardedAd rewardedAd;
+
+    private boolean rewardedLoaded = false;
+    private boolean interstitialLoaded = false;
+    private boolean interstitialEnabled = true;
     private boolean rewardedCoinsEnabled = true;
     private boolean rewardedMovesEnabled = true;
     private boolean rewardedWheelEnabled = true;
-    private boolean rewardedNextLevel    = true;
-    private boolean userInEU             = false;
+    private boolean rewardedNextLevel = true;
+    private boolean userInEU = false;
 
-    /** Banner yükleme — Mac'te AdMob binding ile gerçek implementasyon yapılacak */
     public void loadBanner() {
-        Gdx.app.log("IOSAdManager", "loadBanner() — iOS AdMob binding bekleniyor");
+        if (bannerView != null)
+            return;
+
+        UIViewController rootViewController = UIApplication.getSharedApplication().getKeyWindow()
+                .getRootViewController();
+
+        // Banner size - standard banner
+        GADAdSize adSize = GADAdSize.Banner();
+        bannerView = new GADBannerView(adSize);
+        bannerView.setAdUnitID(IOSLauncher.ADMOB_BANNER_ID);
+        bannerView.setRootViewController(rootViewController);
+
+        // Position at top center
+        CGRect screenBounds = UIScreen.getMainScreen().getBounds();
+        double x = (screenBounds.getWidth() - adSize.getSize().getWidth()) / 2.0;
+        bannerView.setFrame(new CGRect(x, 0, adSize.getSize().getWidth(), adSize.getSize().getHeight()));
+
+        rootViewController.getView().addSubview(bannerView);
+        bannerView.loadRequest(new GADRequest());
     }
 
-    /** Interstitial yükleme */
     public void loadInterstitial() {
-        Gdx.app.log("IOSAdManager", "loadInterstitial() — iOS AdMob binding bekleniyor");
-        // Gerçek: GADInterstitialAd.load(adUnitID, request, callback)
+        GADInterstitialAd.load(IOSLauncher.ADMOB_INTERSTITIAL_ID, new GADRequest(), new GADInterstitialAdLoadHandler() {
+            @Override
+            public void done(GADInterstitialAd ad, NSError error) {
+                if (error != null) {
+                    Gdx.app.log("IOSAdManager", "Interstitial load failed: " + error.getLocalizedDescription());
+                    interstitialLoaded = false;
+                    return;
+                }
+                interstitialAd = ad;
+                interstitialLoaded = true;
+                Gdx.app.log("IOSAdManager", "Interstitial loaded");
+
+                interstitialAd.setFullScreenContentDelegate(new GADFullScreenContentDelegateAdapter() {
+                    @Override
+                    public void didDismissFullScreenContent(GADFullScreenPresentingAd ad) {
+                        interstitialLoaded = false;
+                        interstitialAd = null;
+                        loadInterstitial(); // Pre-load next
+                    }
+                });
+            }
+        });
     }
 
-    /** Rewarded reklam yükleme */
     public void loadRewarded() {
-        Gdx.app.log("IOSAdManager", "loadRewarded() — iOS AdMob binding bekleniyor");
-        // Gerçek: GADRewardedAd.load(adUnitID, request, callback)
-    }
+        GADRewardedAd.load(IOSLauncher.ADMOB_REWARDED_ID, new GADRequest(), new GADRewardedAdLoadHandler() {
+            @Override
+            public void done(GADRewardedAd ad, NSError error) {
+                if (error != null) {
+                    Gdx.app.log("IOSAdManager", "Rewarded load failed: " + error.getLocalizedDescription());
+                    rewardedLoaded = false;
+                    return;
+                }
+                rewardedAd = ad;
+                rewardedLoaded = true;
+                Gdx.app.log("IOSAdManager", "Rewarded loaded");
 
-    // ------------------------------------------------------------------
-    // AdManager interface implementasyonu
-    // ------------------------------------------------------------------
+                rewardedAd.setFullScreenContentDelegate(new GADFullScreenContentDelegateAdapter() {
+                    @Override
+                    public void didDismissFullScreenContent(GADFullScreenPresentingAd ad) {
+                        rewardedLoaded = false;
+                        rewardedAd = null;
+                        loadRewarded(); // Pre-load next
+                    }
+                });
+            }
+        });
+    }
 
     @Override
     public boolean isInterstitialAdEnabled() {
@@ -93,33 +137,48 @@ public class IOSAdManager implements AdManager {
 
     @Override
     public void showInterstitialAd(final Runnable closedCallback) {
-        Gdx.app.log("IOSAdManager", "showInterstitialAd() — iOS AdMob binding bekleniyor");
-        // Şimdilik anında callback çağır (reklam gösterilmeden)
-        if (closedCallback != null) {
-            Gdx.app.postRunnable(closedCallback);
+        if (interstitialLoaded && interstitialAd != null) {
+            UIViewController rootViewController = UIApplication.getSharedApplication().getKeyWindow()
+                    .getRootViewController();
+            interstitialAd.presentFromRootViewController(rootViewController);
+            if (closedCallback != null)
+                closedCallback.run(); // Usually triggered on dismiss, but keep consistent with Android
+        } else {
+            if (closedCallback != null)
+                closedCallback.run();
+            loadInterstitial();
         }
-        // Gerçek: interstitialAd.presentFromRootViewController(...)
     }
 
     @Override
     public void showRewardedAd(final RewardedVideoCloseCallback finishedCallback) {
-        Gdx.app.log("IOSAdManager", "showRewardedAd() — iOS AdMob binding bekleniyor");
-        // Şimdilik ödülsüz callback
-        if (finishedCallback != null) {
-            Gdx.app.postRunnable(() -> finishedCallback.closed(false));
+        if (rewardedLoaded && rewardedAd != null) {
+            UIViewController rootViewController = UIApplication.getSharedApplication().getKeyWindow()
+                    .getRootViewController();
+            rewardedAd.presentFromRootViewController(rootViewController, new GADUserDidEarnRewardHandler() {
+                @Override
+                public void done(GADAdReward reward) {
+                    if (finishedCallback != null) {
+                        Gdx.app.postRunnable(() -> finishedCallback.closed(true));
+                    }
+                }
+            });
+        } else {
+            if (finishedCallback != null) {
+                Gdx.app.postRunnable(() -> finishedCallback.closed(false));
+            }
+            loadRewarded();
         }
-        // Gerçek: rewardedAd.presentFromRootViewController(..., userDidEarnReward -> ...)
     }
 
     @Override
     public int getIntervalBetweenRewardedAds() {
-        return 30; // saniye
+        return 30;
     }
 
     @Override
     public void openGDPRForm() {
-        Gdx.app.log("IOSAdManager", "openGDPRForm() — UMPConsentForm iOS ile açılacak");
-        // Gerçek: UMPConsentForm.load(parameters, completionHandler)
+        Gdx.app.log("IOSAdManager", "openGDPRForm() — UMP integration recommended for production");
     }
 
     @Override
@@ -127,7 +186,6 @@ public class IOSAdManager implements AdManager {
         return userInEU;
     }
 
-    /** Remove Ads satın alındığında interstitial'ı devre dışı bırak */
     public void disableInterstitial() {
         interstitialEnabled = false;
     }

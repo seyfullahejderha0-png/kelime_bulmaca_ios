@@ -258,8 +258,6 @@ public class GameData {
         vulgarWords = new HashSet<>(Arrays.asList(split));
     }
 
-    }
-
     public static void saveTileState(int x, int y, int type) {
         Map<Integer, Integer> map = readTileStates();
 
