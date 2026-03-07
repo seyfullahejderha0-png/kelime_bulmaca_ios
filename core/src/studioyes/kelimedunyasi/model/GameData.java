@@ -238,17 +238,9 @@ public class GameData {
         for (int i = 0; i < split.length; i += 2) {
             wordMap.put(Integer.parseInt(split[i]), split[i + 1]);
         }
-    }catch(
-
-    UnsupportedEncodingException e)
-    {
-        e.printStackTrace();
-    }
-
     }
 
     public static void readVulgarWords() {
-
         String fileName = "data/" + LanguageManager.locale.code + "/vulgar.txt";
         Text text = null;
 
