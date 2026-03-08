@@ -45,4 +45,7 @@
         </resource>
     </resources>
 
+    <cocoapods>
+        <pod name="Google-Mobile-Ads-SDK" version="13.0.0" />
+    </cocoapods>
 </config>
