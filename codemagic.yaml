@@ -63,8 +63,6 @@ workflows:
             -Probovm.iosProvisioningProfile="$UUID" \
             -x test \
             --no-daemon \
-            --info \
-            --debug \
             --warning-mode all \
             --stacktrace 2>&1 | tee /tmp/robovm_build.log
           

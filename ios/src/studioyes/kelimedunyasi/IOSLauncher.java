@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import studioyes.kelimedunyasi.net.WordMeaningProvider;
-import org.robovm.apple.uikit.UIApplication;
 
 /**
  * iOS Launcher — AndroidLauncher'ın iOS karşılığı.

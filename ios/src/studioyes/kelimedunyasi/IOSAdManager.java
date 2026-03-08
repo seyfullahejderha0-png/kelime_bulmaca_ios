@@ -54,7 +54,7 @@ public class IOSAdManager implements AdManager {
             interstitialAd.setFullScreenContentDelegate(new GADFullScreenContentDelegateAdapter() {
                 @Override
                 public void adDidDismissFullScreenContent(
-                        org.robovm.pods.google.mobileads.GADFullScreenPresentingAd presentingAd) {
+                        GADFullScreenPresentingAd presentingAd) {
                     interstitialLoaded = false;
                     interstitialAd = null;
                     loadInterstitial();
@@ -62,7 +62,7 @@ public class IOSAdManager implements AdManager {
 
                 @Override
                 public void didFailToPresentFullScreenContent(
-                        org.robovm.pods.google.mobileads.GADFullScreenPresentingAd presentingAd, NSError error) {
+                        GADFullScreenPresentingAd presentingAd, NSError error) {
                     interstitialLoaded = false;
                     interstitialAd = null;
                     loadInterstitial();
@@ -83,7 +83,7 @@ public class IOSAdManager implements AdManager {
             interstitialAd.setFullScreenContentDelegate(new GADFullScreenContentDelegateAdapter() {
                 @Override
                 public void adDidDismissFullScreenContent(
-                        org.robovm.pods.google.mobileads.GADFullScreenPresentingAd presentingAd) {
+                        GADFullScreenPresentingAd presentingAd) {
                     interstitialLoaded = false;
                     interstitialAd = null;
                     if (closedCallback != null)
@@ -93,7 +93,7 @@ public class IOSAdManager implements AdManager {
 
                 @Override
                 public void didFailToPresentFullScreenContent(
-                        org.robovm.pods.google.mobileads.GADFullScreenPresentingAd presentingAd, NSError error) {
+                        GADFullScreenPresentingAd presentingAd, NSError error) {
                     interstitialLoaded = false;
                     interstitialAd = null;
                     if (closedCallback != null)
@@ -121,7 +121,7 @@ public class IOSAdManager implements AdManager {
             rewardedAd.setFullScreenContentDelegate(new GADFullScreenContentDelegateAdapter() {
                 @Override
                 public void adDidDismissFullScreenContent(
-                        org.robovm.pods.google.mobileads.GADFullScreenPresentingAd presentingAd) {
+                        GADFullScreenPresentingAd presentingAd) {
                     rewardedLoaded = false;
                     rewardedAd = null;
                     loadRewarded();
@@ -129,7 +129,7 @@ public class IOSAdManager implements AdManager {
 
                 @Override
                 public void didFailToPresentFullScreenContent(
-                        org.robovm.pods.google.mobileads.GADFullScreenPresentingAd presentingAd, NSError error) {
+                        GADFullScreenPresentingAd presentingAd, NSError error) {
                     rewardedLoaded = false;
                     rewardedAd = null;
                     loadRewarded();
