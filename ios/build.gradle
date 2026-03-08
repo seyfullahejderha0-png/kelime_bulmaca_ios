@@ -4,7 +4,9 @@
 // changes runtimeClasspath behavior and causes core classes to be missing.
 apply plugin: "java"
 apply plugin: "robovm"
-apply plugin: "robovm-cocoapods"
+if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+    apply plugin: "robovm-cocoapods"
+}
 
 // RoboVM 2.3.23 requires Java 8 source compatibility.
 // Java 9+ apis (Stream, NIO Path, StringConcatFactory etc.) cause phantom class
