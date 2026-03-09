@@ -65,8 +65,8 @@ public class IOSShoppingProcessor implements ShoppingProcessor, PurchaseObserver
     public void queryShoppingItems(ShoppingCallback callback) {
         this.shoppingCallback = callback;
         if (purchaseManager != null && purchaseManager.installed()) {
-            // Already installed, but we might need to refresh UI
-            // gdx-pay usually handles product info during installation or via inventory
+            // Already installed, run handleInstall to immediately show items
+            handleInstall();
         } else {
             initialize();
         }
@@ -126,34 +126,49 @@ public class IOSShoppingProcessor implements ShoppingProcessor, PurchaseObserver
     // PurchaseObserver methods
     @Override
     public void handleInstall() {
-        Gdx.app.log("IOSIAPs", "PurchaseManager installed");
-        List<ShoppingItem> items = new ArrayList<>();
-        for (String id : productIds) {
-            Information info = purchaseManager.getInformation(id);
-            String price = (info != null && info.getLocalPricing() != null) ? info.getLocalPricing() : "—";
-            items.add(new ShoppingItem(id, price, id));
-            if (id.equals(IOSLauncher.IAP_REMOVE_ADS))
-                removeAdsPrice = price;
-        }
-        if (shoppingCallback != null) {
-            shoppingCallback.onShoppingItemsReady(items);
-        }
-    }
-
-    @Override
-    public void handleInstallError(Throwable e) {
-        Gdx.app.error("IOSIAPs", "PurchaseManager install error", e);
-        if (shoppingCallback != null)
-            shoppingCallback.onShoppingItemsError(1);
-    }
-
-    @Override
-    public void handleRestore(Transaction[] transactions) {
-        for (Transaction t : transactions) {
-            if (t.getIdentifier().equals(IOSLauncher.IAP_REMOVE_ADS)) {
-                hasMadeAPurchase(t.getIdentifier(), false);
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                Gdx.app.log("IOSIAPs", "PurchaseManager installed");
+                List<ShoppingItem> items = new ArrayList<>();
+                for (String id : productIds) {
+                    Information info = purchaseManager.getInformation(id);
+                    String price = (info != null && info.getLocalPricing() != null) ? info.getLocalPricing() : "—";
+                    items.add(new ShoppingItem(id, price, id));
+                    if (id.equals(IOSLauncher.IAP_REMOVE_ADS))
+                        removeAdsPrice = price;
+                }
+                if (shoppingCallback != null) {
+                    shoppingCallback.onShoppingItemsReady(items);
+                }
             }
-        }
+        });
+    }
+
+    @Override
+    public void handleInstallError(final Throwable e) {
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                Gdx.app.error("IOSIAPs", "PurchaseManager install error", e);
+                if (shoppingCallback != null)
+                    shoppingCallback.onShoppingItemsError(1);
+            }
+        });
+    }
+
+    @Override
+    public void handleRestore(final Transaction[] transactions) {
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                for (Transaction t : transactions) {
+                    if (t.getIdentifier().equals(IOSLauncher.IAP_REMOVE_ADS)) {
+                        hasMadeAPurchase(t.getIdentifier(), false);
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -161,19 +176,34 @@ public class IOSShoppingProcessor implements ShoppingProcessor, PurchaseObserver
     }
 
     @Override
-    public void handlePurchase(Transaction transaction) {
-        hasMadeAPurchase(transaction.getIdentifier(), true);
+    public void handlePurchase(final Transaction transaction) {
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                hasMadeAPurchase(transaction.getIdentifier(), true);
+            }
+        });
     }
 
     @Override
     public void handlePurchaseError(Throwable e) {
-        if (shoppingCallback != null)
-            shoppingCallback.onTransactionError(1);
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                if (shoppingCallback != null)
+                    shoppingCallback.onTransactionError(1);
+            }
+        });
     }
 
     @Override
     public void handlePurchaseCanceled() {
-        if (shoppingCallback != null)
-            shoppingCallback.onTransactionError(0);
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                if (shoppingCallback != null)
+                    shoppingCallback.onTransactionError(0);
+            }
+        });
     }
 }
