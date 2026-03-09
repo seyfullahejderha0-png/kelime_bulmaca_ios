@@ -38,6 +38,15 @@ workflows:
 
       - name: Build and sign IPA
         script: |
+          # Download Google Mobile Ads SDK for iOS
+          echo "Downloading Google Mobile Ads SDK..."
+          cd ios
+          mkdir -p libs
+          curl -sL -o googlemobileadssdkios.zip "https://dl.google.com/googleadmobadssdk/googlemobileadssdkios.zip"
+          unzip -q googlemobileadssdkios.zip -d libs/
+          rm googlemobileadssdkios.zip
+          cd ..
+          
           # Find signing identity
           SIGN_ID=$(security find-identity -v -p codesigning \
             | grep -E '"(Apple Distribution|iPhone Distribution)' \

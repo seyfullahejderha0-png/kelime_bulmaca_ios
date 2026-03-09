@@ -44,4 +44,9 @@
             <directory>data</directory>
         </resource>
     </resources>
+
+    <frameworkPaths>
+        <path>libs/GoogleMobileAds.xcframework/ios-arm64</path>
+        <path>libs/UserMessagingPlatform.xcframework/ios-arm64</path>
+    </frameworkPaths>
 </config>
