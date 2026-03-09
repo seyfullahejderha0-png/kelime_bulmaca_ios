@@ -22,51 +22,55 @@ public class IOSAdManager implements AdManager {
     }
 
     public void loadBanner() {
-        if (bannerView != null)
-            return;
-        UIViewController root = UIApplication.getSharedApplication().getKeyWindow().getRootViewController();
-        bannerView = new GADBannerView(GADAdSize.Banner());
-        bannerView.setAdUnitID(IOSLauncher.ADMOB_BANNER_ID);
-        bannerView.setRootViewController(root);
-        root.getView().addSubview(bannerView);
-        bannerView.loadRequest(new GADRequest());
+        org.robovm.apple.foundation.NSOperationQueue.getMainQueue().addOperation(() -> {
+            if (bannerView != null)
+                return;
+            org.robovm.apple.uikit.UIWindow window = UIApplication.getSharedApplication().getKeyWindow();
+            if (window == null)
+                return;
+            UIViewController root = window.getRootViewController();
+            if (root == null)
+                return;
+
+            bannerView = new GADBannerView(GADAdSize.Banner());
+            bannerView.setAdUnitID(IOSLauncher.ADMOB_BANNER_ID);
+            bannerView.setRootViewController(root);
+
+            double screenWidth = window.getBounds().getSize().getWidth();
+            double safeTop = window.getSafeAreaInsets().getTop();
+            if (safeTop == 0)
+                safeTop = 20; // standard status bar height if no notch
+
+            bannerView.setFrame(new org.robovm.apple.coregraphics.CGRect((screenWidth - 320) / 2.0, safeTop, 320, 50));
+            root.getView().addSubview(bannerView);
+            bannerView.loadRequest(new GADRequest());
+        });
     }
 
     public void showBanner() {
-        if (bannerView != null)
-            bannerView.setHidden(false);
+        org.robovm.apple.foundation.NSOperationQueue.getMainQueue().addOperation(() -> {
+            if (bannerView != null)
+                bannerView.setHidden(false);
+        });
     }
 
     public void hideBanner() {
-        if (bannerView != null)
-            bannerView.setHidden(true);
+        org.robovm.apple.foundation.NSOperationQueue.getMainQueue().addOperation(() -> {
+            if (bannerView != null)
+                bannerView.setHidden(true);
+        });
     }
 
     public void loadInterstitial() {
-        GADRequest request = new GADRequest();
-        GADInterstitialAd.load(IOSLauncher.ADMOB_INTERSTITIAL_ID, request, (ad, error) -> {
-            if (error != null) {
-                interstitialLoaded = false;
-                return;
-            }
-            interstitialAd = ad;
-            interstitialLoaded = true;
-            interstitialAd.setFullScreenContentDelegate(new GADFullScreenContentDelegateAdapter() {
-                @Override
-                public void adDidDismissFullScreenContent(
-                        GADFullScreenPresentingAd presentingAd) {
+        org.robovm.apple.foundation.NSOperationQueue.getMainQueue().addOperation(() -> {
+            GADRequest request = new GADRequest();
+            GADInterstitialAd.load(IOSLauncher.ADMOB_INTERSTITIAL_ID, request, (ad, error) -> {
+                if (error != null) {
                     interstitialLoaded = false;
-                    interstitialAd = null;
-                    loadInterstitial();
+                    return;
                 }
-
-                @Override
-                public void didFailToPresentFullScreenContent(
-                        GADFullScreenPresentingAd presentingAd, NSError error) {
-                    interstitialLoaded = false;
-                    interstitialAd = null;
-                    loadInterstitial();
-                }
+                interstitialAd = ad;
+                interstitialLoaded = true;
             });
         });
     }
@@ -78,62 +82,53 @@ public class IOSAdManager implements AdManager {
 
     @Override
     public void showInterstitialAd(Runnable closedCallback) {
-        if (interstitialLoaded && interstitialAd != null) {
-            UIViewController root = UIApplication.getSharedApplication().getKeyWindow().getRootViewController();
-            interstitialAd.setFullScreenContentDelegate(new GADFullScreenContentDelegateAdapter() {
-                @Override
-                public void adDidDismissFullScreenContent(
-                        GADFullScreenPresentingAd presentingAd) {
-                    interstitialLoaded = false;
-                    interstitialAd = null;
-                    if (closedCallback != null)
-                        closedCallback.run();
-                    loadInterstitial();
-                }
+        org.robovm.apple.foundation.NSOperationQueue.getMainQueue().addOperation(() -> {
+            if (interstitialLoaded && interstitialAd != null) {
+                UIViewController root = UIApplication.getSharedApplication().getKeyWindow().getRootViewController();
 
-                @Override
-                public void didFailToPresentFullScreenContent(
-                        GADFullScreenPresentingAd presentingAd, NSError error) {
-                    interstitialLoaded = false;
-                    interstitialAd = null;
-                    if (closedCallback != null)
-                        closedCallback.run();
-                    loadInterstitial();
+                interstitialAd.setFullScreenContentDelegate(new GADFullScreenContentDelegateAdapter() {
+                    @Override
+                    public void adDidDismissFullScreenContent(GADFullScreenPresentingAd presentingAd) {
+                        interstitialLoaded = false;
+                        interstitialAd = null;
+                        if (closedCallback != null) {
+                            Gdx.app.postRunnable(closedCallback);
+                        }
+                        loadInterstitial();
+                    }
+
+                    @Override
+                    public void didFailToPresentFullScreenContent(GADFullScreenPresentingAd presentingAd,
+                            NSError error) {
+                        interstitialLoaded = false;
+                        interstitialAd = null;
+                        if (closedCallback != null) {
+                            Gdx.app.postRunnable(closedCallback);
+                        }
+                        loadInterstitial();
+                    }
+                });
+
+                interstitialAd.presentFromRootViewController(root);
+            } else {
+                if (closedCallback != null) {
+                    Gdx.app.postRunnable(closedCallback);
                 }
-            });
-            interstitialAd.presentFromRootViewController(root);
-        } else {
-            if (closedCallback != null)
-                closedCallback.run();
-            loadInterstitial();
-        }
+                loadInterstitial();
+            }
+        });
     }
 
     public void loadRewarded() {
-        GADRequest request = new GADRequest();
-        GADRewardedAd.load(IOSLauncher.ADMOB_REWARDED_ID, request, (ad, error) -> {
-            if (error != null) {
-                rewardedLoaded = false;
-                return;
-            }
-            rewardedAd = ad;
-            rewardedLoaded = true;
-            rewardedAd.setFullScreenContentDelegate(new GADFullScreenContentDelegateAdapter() {
-                @Override
-                public void adDidDismissFullScreenContent(
-                        GADFullScreenPresentingAd presentingAd) {
+        org.robovm.apple.foundation.NSOperationQueue.getMainQueue().addOperation(() -> {
+            GADRequest request = new GADRequest();
+            GADRewardedAd.load(IOSLauncher.ADMOB_REWARDED_ID, request, (ad, error) -> {
+                if (error != null) {
                     rewardedLoaded = false;
-                    rewardedAd = null;
-                    loadRewarded();
+                    return;
                 }
-
-                @Override
-                public void didFailToPresentFullScreenContent(
-                        GADFullScreenPresentingAd presentingAd, NSError error) {
-                    rewardedLoaded = false;
-                    rewardedAd = null;
-                    loadRewarded();
-                }
+                rewardedAd = ad;
+                rewardedLoaded = true;
             });
         });
     }
@@ -145,17 +140,39 @@ public class IOSAdManager implements AdManager {
 
     @Override
     public void showRewardedAd(RewardedVideoCloseCallback finishedCallback) {
-        if (rewardedLoaded && rewardedAd != null) {
-            UIViewController root = UIApplication.getSharedApplication().getKeyWindow().getRootViewController();
-            rewardedAd.present(root, () -> {
-                Gdx.app.postRunnable(() -> {
-                    if (finishedCallback != null)
-                        finishedCallback.closed(true);
+        org.robovm.apple.foundation.NSOperationQueue.getMainQueue().addOperation(() -> {
+            if (rewardedLoaded && rewardedAd != null) {
+                UIViewController root = UIApplication.getSharedApplication().getKeyWindow().getRootViewController();
+
+                rewardedAd.setFullScreenContentDelegate(new GADFullScreenContentDelegateAdapter() {
+                    @Override
+                    public void adDidDismissFullScreenContent(GADFullScreenPresentingAd presentingAd) {
+                        rewardedLoaded = false;
+                        rewardedAd = null;
+                        loadRewarded();
+                    }
+
+                    @Override
+                    public void didFailToPresentFullScreenContent(GADFullScreenPresentingAd presentingAd,
+                            NSError error) {
+                        rewardedLoaded = false;
+                        rewardedAd = null;
+                        loadRewarded();
+                    }
                 });
-            });
-        } else {
-            loadRewarded();
-        }
+
+                rewardedAd.present(root, () -> {
+                    if (finishedCallback != null) {
+                        Gdx.app.postRunnable(() -> finishedCallback.closed(true));
+                    }
+                });
+            } else {
+                if (finishedCallback != null) {
+                    Gdx.app.postRunnable(() -> finishedCallback.closed(false));
+                }
+                loadRewarded();
+            }
+        });
     }
 
     @Override
