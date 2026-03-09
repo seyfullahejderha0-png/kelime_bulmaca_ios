@@ -44,6 +44,7 @@ workflows:
           mkdir -p libs
           curl -sL -o googlemobileadssdkios.zip "https://dl.google.com/googleadmobadssdk/googlemobileadssdkios.zip"
           unzip -q googlemobileadssdkios.zip -d libs/
+          mv libs/GoogleMobileAdsSdkiOS-*/*.xcframework libs/
           rm googlemobileadssdkios.zip
           cd ..
           
