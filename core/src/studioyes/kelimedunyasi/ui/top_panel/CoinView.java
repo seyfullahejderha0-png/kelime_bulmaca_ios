@@ -24,10 +24,7 @@ import studioyes.kelimedunyasi.managers.HintManager;
 import studioyes.kelimedunyasi.managers.ResourceManager;
 import studioyes.kelimedunyasi.screens.BaseScreen;
 
-
-
 public class CoinView extends Group {
-
 
     public Image coin;
     private Label label;
@@ -41,9 +38,7 @@ public class CoinView extends Group {
     private Array<Coin> coins;
     private boolean cancelled;
 
-
-
-    public CoinView(BaseScreen screen){
+    public CoinView(BaseScreen screen) {
         this.screen = screen;
 
         Image bg = new Image(AtlasRegions.coin_view_bg);
@@ -57,19 +52,19 @@ public class CoinView extends Group {
         coin.setY((getHeight() - coin.getHeight()) * 0.75f);
         addActor(coin);
 
-        if(screen.wordConnectGame.shoppingProcessor != null && screen.wordConnectGame.shoppingProcessor.isIAPEnabled()){
-            plus = new ImageButton(new TextureRegionDrawable(AtlasRegions.coin_view_plus_up), new TextureRegionDrawable(AtlasRegions.coin_view_plus_down));
-            plus.setX(getWidth() - plus.getWidth() * 1.18f);
-            plus.setY((getHeight() - plus.getHeight()) * 0.6f);
-            addActor(plus);
-            maxWidth = getWidth() - plus.getWidth() - coin.getWidth();
-        }else{
-            maxWidth = getWidth() - coin.getWidth();
-        }
+        plus = new ImageButton(new TextureRegionDrawable(AtlasRegions.coin_view_plus_up),
+                new TextureRegionDrawable(AtlasRegions.coin_view_plus_down));
+        plus.setX(getWidth() - plus.getWidth() * 1.18f);
+        plus.setY((getHeight() - plus.getHeight()) * 0.6f);
+        addActor(plus);
+        maxWidth = getWidth() - plus.getWidth() - coin.getWidth();
 
         maxWidth *= 0.7f;
-        String font = UIConfig.REMAINING_COINS_USE_SHADOW_FONT ? ResourceManager.fontSemiBoldShadow : ResourceManager.fontSemiBold;
-        Label.LabelStyle style = new Label.LabelStyle(screen.wordConnectGame.resourceManager.get(font, BitmapFont.class), UIConfig.REMAINING_COINS_TEXT_COLOR);
+        String font = UIConfig.REMAINING_COINS_USE_SHADOW_FONT ? ResourceManager.fontSemiBoldShadow
+                : ResourceManager.fontSemiBold;
+        Label.LabelStyle style = new Label.LabelStyle(
+                screen.wordConnectGame.resourceManager.get(font, BitmapFont.class),
+                UIConfig.REMAINING_COINS_TEXT_COLOR);
 
         label = new Label("", style);
         label.setAlignment(Align.center);
@@ -78,29 +73,21 @@ public class CoinView extends Group {
         update(HintManager.getRemainingCoins());
     }
 
-
-
-
-
-
-    public void setPlusListener(ChangeListener changeListener){
-        if(plus != null)
+    public void setPlusListener(ChangeListener changeListener) {
+        if (plus != null)
             plus.addListener(changeListener);
     }
 
-
-
-
-    public void update(int count){
+    public void update(int count) {
         label.setText(count);
         GlyphLayout glyphLayout = Pools.obtain(GlyphLayout.class);
         glyphLayout.setText(label.getStyle().font, label.getText());
 
-        if(glyphLayout.width > maxWidth){
+        if (glyphLayout.width > maxWidth) {
             label.setFontScale(maxWidth / glyphLayout.width);
         }
 
-        if(plus == null)
+        if (plus == null)
             label.setX((getWidth() - label.getWidth()) * 0.6f);
         else
             label.setX((getWidth() - label.getWidth()) * 0.51f);
@@ -109,15 +96,10 @@ public class CoinView extends Group {
         Pools.free(glyphLayout);
     }
 
-
-
-
-
-
-    public void incrementCoinLabelWithAnimationAndDeleteCoinImages(int startFrom, int count, Runnable callback){
-        if(coinCountInrementer == null) {
+    public void incrementCoinLabelWithAnimationAndDeleteCoinImages(int startFrom, int count, Runnable callback) {
+        if (coinCountInrementer == null) {
             coinCountInrementer = new CoinCountInrementer();
-        }else{
+        } else {
             coinCountInrementer.reset();
         }
 
@@ -126,15 +108,15 @@ public class CoinView extends Group {
         coinCountInrementer.setStart(startFrom);
         coinCountInrementer.setEnd(startFrom + count);
 
-        if(callback == null){
+        if (callback == null) {
             label.addAction(coinCountInrementer);
-        }else{
-            if(sequenceAction == null)
+        } else {
+            if (sequenceAction == null)
                 sequenceAction = new SequenceAction();
             else
                 sequenceAction.reset();
 
-            if(runnableAction == null)
+            if (runnableAction == null)
                 runnableAction = new RunnableAction();
             else
                 runnableAction.reset();
@@ -147,11 +129,7 @@ public class CoinView extends Group {
         }
     }
 
-
-
-
-
-    private class CoinCountInrementer extends IntAction{
+    private class CoinCountInrementer extends IntAction {
 
         @Override
         protected void update(float percent) {
@@ -160,17 +138,14 @@ public class CoinView extends Group {
         }
     }
 
-
-
-
-    public boolean isCancelled(){
+    public boolean isCancelled() {
         return cancelled;
     }
 
-    public void cancel(boolean flag){
+    public void cancel(boolean flag) {
         cancelled = flag;
 
-        if(cancelled && coins != null) {
+        if (cancelled && coins != null) {
             Sound sound = screen.wordConnectGame.resourceManager.get(ResourceManager.SFX_BONUS_WORD, Sound.class);
             sound.stop();
 
@@ -181,52 +156,55 @@ public class CoinView extends Group {
         }
     }
 
-
-
-
-
-
-    public void createCoinAnimation(int count, float x, float y, Runnable coinAnimFinishedCompleted){
+    public void createCoinAnimation(int count, float x, float y, Runnable coinAnimFinishedCompleted) {
         this.coinAnimFinishedCompleted = coinAnimFinishedCompleted;
-        if(coins == null) coins = new Array<>();
-        else coins.clear();
+        if (coins == null)
+            coins = new Array<>();
+        else
+            coins.clear();
 
         getColor().a = 1f;
-        for(int i = 0; i < count; i++){
+        for (int i = 0; i < count; i++) {
             Coin coin = studioyes.kelimedunyasi.pool.Pools.coinPool.obtain();
             coins.add(coin);
-            coin.setPosition(x - coin.getWidth() * coin.getScaleX() * 0.5f, y - coin.getHeight() * coin.getScaleY() * 0.5f);
+            coin.setPosition(x - coin.getWidth() * coin.getScaleX() * 0.5f,
+                    y - coin.getHeight() * coin.getScaleY() * 0.5f);
             addActor(coin);
             coin.animateForCoinView(this, i * 0.1f, i == count - 1, count);
         }
     }
 
-
     private ScaleToAction grow, shrink;
     private SequenceAction pulseSequence;
     private RunnableAction pulseRunnable;
 
-
-    public void coinPulseAnimation(Runnable callback){
-        if(grow == null) grow = new ScaleToAction();
-        else grow.reset();
+    public void coinPulseAnimation(Runnable callback) {
+        if (grow == null)
+            grow = new ScaleToAction();
+        else
+            grow.reset();
         grow.setScale(1.1f);
         grow.setDuration(0.05f);
 
-        if(shrink == null) shrink = new ScaleToAction();
+        if (shrink == null)
+            shrink = new ScaleToAction();
         shrink.reset();
         shrink.setScale(0.72f);
         shrink.setDuration(0.05f);
 
-        if(pulseSequence == null) pulseSequence = new SequenceAction();
-        else pulseSequence.reset();
+        if (pulseSequence == null)
+            pulseSequence = new SequenceAction();
+        else
+            pulseSequence.reset();
 
         pulseSequence.addAction(grow);
         pulseSequence.addAction(shrink);
 
-        if(callback != null) {
-            if(pulseRunnable == null) pulseRunnable = new RunnableAction();
-            else pulseRunnable.reset();
+        if (callback != null) {
+            if (pulseRunnable == null)
+                pulseRunnable = new RunnableAction();
+            else
+                pulseRunnable.reset();
             pulseRunnable.setRunnable(callback);
             pulseSequence.addAction(pulseRunnable);
         }
@@ -234,11 +212,7 @@ public class CoinView extends Group {
         coin.addAction(pulseSequence);
     }
 
-
-
-
-
-    public Runnable incrementCoinsWithAnimation(final int count){
+    public Runnable incrementCoinsWithAnimation(final int count) {
 
         return new Runnable() {
             @Override

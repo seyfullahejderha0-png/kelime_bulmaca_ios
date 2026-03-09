@@ -33,10 +33,7 @@ import studioyes.kelimedunyasi.util.BackNavigator;
 
 public class Tutorial extends Group implements Disposable, BackNavigator {
 
-
-
-
-    public enum Shape{
+    public enum Shape {
         RECT,
         DISC
     }
@@ -56,8 +53,7 @@ public class Tutorial extends Group implements Disposable, BackNavigator {
     protected Vector2 actorPos;
     public TutorialSaver tutorialSaver;
 
-
-    public Tutorial(BaseScreen screen){
+    public Tutorial(BaseScreen screen) {
         this.screen = screen;
         notifyNavigationController(screen);
         setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -69,42 +65,34 @@ public class Tutorial extends Group implements Disposable, BackNavigator {
         addActor(bg);
     }
 
-
-
-
-
     @Override
     public void notifyNavigationController(BaseScreen screen) {
         screen.backNavQueue.push(this);
     }
 
-
-
-
     @Override
     public boolean navigateBack() {
-        if(step > 0) GameData.saveTutorialStep(step);
-        if(tutorialSaver != null) tutorialSaver.save();
+        if (step > 0)
+            GameData.saveTutorialStep(step);
+        if (tutorialSaver != null)
+            tutorialSaver.save();
 
-        if(screen instanceof IntroScreen){
+        if (screen instanceof IntroScreen) {
             fadeOut(screen.nullifyTutorial, true);
-        }else{
-            GameScreen gameScreen = (GameScreen)screen;
+        } else {
+            GameScreen gameScreen = (GameScreen) screen;
             fadeOut(gameScreen.tutorialRemover, true);
         }
 
         return true;
     }
 
-
-
-
-
-    public void highlightActor(Actor actor, Shape shape){
+    public void highlightActor(Actor actor, Shape shape) {
         IdleTimer.setPaused(true);
         this.actor = actor;
-        if(shaderProgram == null){
-            shaderProgram = screen.wordConnectGame.resourceManager.get(ResourceManager.SHADER_OVERLAY, ShaderProgram.class);
+        if (shaderProgram == null) {
+            shaderProgram = screen.wordConnectGame.resourceManager.get(ResourceManager.SHADER_OVERLAY,
+                    ShaderProgram.class);
             meshShader = new MeshShader(shaderProgram);
             meshShader.setWidth(getWidth());
             meshShader.setHeight(getHeight());
@@ -121,9 +109,9 @@ public class Tutorial extends Group implements Disposable, BackNavigator {
 
         boolean inRoot = actor.getParent().equals(screen.stage.getRoot());
 
-        if(inRoot) {
+        if (inRoot) {
             pos.set(actor.getX(), actor.getY(), 0);
-        }else{
+        } else {
             Vector2 vector2 = actor.localToActorCoordinates(screen.stage.getRoot(), new Vector2());
             pos.set(vector2.x, vector2.y, 0);
         }
@@ -132,24 +120,18 @@ public class Tutorial extends Group implements Disposable, BackNavigator {
         getParent().getStage().getCamera().project(pos);
         meshShader.setUniformVec2("u_position",
                 inRoot ? new Vector2(
-                        pos.x  + actor.getOriginX()  * ResourceManager.scaleFactor ,
-                        pos.y  + actor.getOriginY()  * ResourceManager.scaleFactor
-                ) :
-                new Vector2(
-                        pos.x + actor.getWidth() * actor.getScaleX() * 0.5f * ResourceManager.scaleFactor,
-                        pos.y + actor.getHeight() * actor.getScaleY() * 0.5f * ResourceManager.scaleFactor
-                )
-        );
-        meshShader.setUniformFloat("u_shape", (float)shape.ordinal());
+                        pos.x + actor.getOriginX() * ResourceManager.scaleFactor,
+                        pos.y + actor.getOriginY() * ResourceManager.scaleFactor)
+                        : new Vector2(
+                                pos.x + actor.getWidth() * actor.getScaleX() * 0.5f * ResourceManager.scaleFactor,
+                                pos.y + actor.getHeight() * actor.getScaleY() * 0.5f * ResourceManager.scaleFactor));
+        meshShader.setUniformFloat("u_shape", (float) shape.ordinal());
 
         actor.setZIndex(this.getZIndex() + 1);
     }
 
-
-
-
-    public void showText(String text){
-        if(label == null) {
+    public void showText(String text) {
+        if (label == null) {
             textContainer = new Group();
             addActor(textContainer);
 
@@ -157,9 +139,10 @@ public class Tutorial extends Group implements Disposable, BackNavigator {
             textContainer.addActor(textBg);
 
             Label.LabelStyle style = new Label.LabelStyle();
-            String font = UIConfig.INTERACTIVE_TUTORIAL_TEXT_USE_SHADOW_FONT ? ResourceManager.fontSemiBoldShadow : ResourceManager.fontSemiBold;
+            String font = UIConfig.INTERACTIVE_TUTORIAL_TEXT_USE_SHADOW_FONT ? ResourceManager.fontSemiBoldShadow
+                    : ResourceManager.fontSemiBold;
             style.font = screen.wordConnectGame.resourceManager.get(font, BitmapFont.class);
-            style.font.getData().markupEnabled = false;
+            style.font.getData().markupEnabled = true;
 
             label = new Label(text, style);
             label.setAlignment(Align.center);
@@ -167,7 +150,7 @@ public class Tutorial extends Group implements Disposable, BackNavigator {
             label.setWrap(true);
             label.setWidth(screen.stage.getWidth() * 0.7f);
             textContainer.addActor(label);
-        }else{
+        } else {
             label.setText(text);
         }
 
@@ -181,11 +164,7 @@ public class Tutorial extends Group implements Disposable, BackNavigator {
         label.setY((textContainer.getHeight() - label.getHeight()) * 0.5f);
     }
 
-
-
-
-
-    public void indicateActor(float angle){
+    public void indicateActor(float angle) {
         arrow = new Image(AtlasRegions.arrow);
         arrow.setOrigin(Align.center);
         arrow.setRotation(angle);
@@ -201,16 +180,16 @@ public class Tutorial extends Group implements Disposable, BackNavigator {
         float x2 = 0;
         float y2 = 0;
 
-        if(angle == 90f){
+        if (angle == 90f) {
             x1 = p.x + (actor.getWidth() * actor.getScaleX() - arrow.getWidth()) * 0.5f;
             y1 = p.y - arrow.getHeight() * 2f;
-        }else if(angle == 180f){
+        } else if (angle == 180f) {
             x1 = p.x + actor.getWidth() + arrow.getWidth() * 0.5f;
             y1 = p.y + actor.getHeight() * 0.5f - arrow.getHeight() * 0.5f;
-        }else if(angle == 0f){
+        } else if (angle == 0f) {
             x1 = p.x - arrow.getWidth() * 1.5f;
             y1 = p.y + actor.getHeight() * 0.5f - arrow.getHeight() * 0.5f;
-        }else if(angle == -90f){
+        } else if (angle == -90f) {
             x1 = p.x + (actor.getWidth() - arrow.getWidth()) * 0.5f;
             y1 = p.y + actor.getHeight() + arrow.getHeight();
         }
@@ -222,52 +201,40 @@ public class Tutorial extends Group implements Disposable, BackNavigator {
         x2 = arrow.getX() + MathUtils.cos(radian) * halfHeight;
         y2 = arrow.getY() + MathUtils.sin(radian) * halfHeight;
 
-        arrow.addAction(Actions.forever(Actions.sequence(Actions.moveTo(x2, y2, 0.5f, Interpolation.sineOut), Actions.moveTo(x1, y1, 0.5f, Interpolation.sineOut))));
+        arrow.addAction(Actions.forever(Actions.sequence(Actions.moveTo(x2, y2, 0.5f, Interpolation.sineOut),
+                Actions.moveTo(x1, y1, 0.5f, Interpolation.sineOut))));
     }
 
-
-
-
-
-    private void setAlphaAction(){
-        if(alphaAction == null)
+    private void setAlphaAction() {
+        if (alphaAction == null)
             alphaAction = new AlphaAction();
         else
             alphaAction.reset();
     }
 
-
-
-
-
-    public void fadeIn(Runnable callback){
+    public void fadeIn(Runnable callback) {
         setAlphaAction();
         alphaAction.setAlpha(1f);
         alphaAction.setDuration(0.3f);
 
-        if(callback == null) addAction(alphaAction);
-        else addAction(Actions.sequence(alphaAction, Actions.run(callback)));
+        if (callback == null)
+            addAction(alphaAction);
+        else
+            addAction(Actions.sequence(alphaAction, Actions.run(callback)));
     }
 
-
-
-
-
-
-
-
-    public void fadeOut(Runnable callback, boolean pop){
-        if(pop) screen.backNavQueue.pop();
+    public void fadeOut(Runnable callback, boolean pop) {
+        if (pop)
+            screen.backNavQueue.pop();
         setAlphaAction();
         alphaAction.setAlpha(0f);
         alphaAction.setDuration(0.3f);
 
-        if(callback == null) addAction(alphaAction);
-        else addAction(Actions.sequence(alphaAction, Actions.run(callback)));
+        if (callback == null)
+            addAction(alphaAction);
+        else
+            addAction(Actions.sequence(alphaAction, Actions.run(callback)));
     }
-
-
-
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
@@ -275,29 +242,20 @@ public class Tutorial extends Group implements Disposable, BackNavigator {
         super.draw(batch, parentAlpha);
     }
 
-
-
-
     @Override
     public boolean remove() {
         dispose();
         return super.remove();
     }
 
-
-
-
-
     @Override
     public void dispose() {
-        if(meshShader != null) {
+        if (meshShader != null) {
             meshShader.dispose();
         }
     }
 
-
-
-    public interface TutorialSaver{
+    public interface TutorialSaver {
         void save();
     }
 }

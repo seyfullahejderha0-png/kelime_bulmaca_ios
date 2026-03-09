@@ -108,6 +108,7 @@ public class MeshShader extends Group implements Disposable {
             batch.end();
             ShaderProgram sp = batch.getShader();
             renderMesh(getX(), getY(), getWidth(), getHeight());
+            flush(); // Force submission of vertices to the GPU
             batch.begin();
             batch.setShader(sp);
         }
