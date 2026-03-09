@@ -92,6 +92,13 @@ public class IOSShoppingProcessor implements ShoppingProcessor, PurchaseObserver
     }
 
     @Override
+    public void restorePurchases() {
+        if (purchaseManager != null && purchaseManager.installed()) {
+            purchaseManager.purchaseRestore();
+        }
+    }
+
+    @Override
     public void hasMadeAPurchase(String sku, boolean newPurchase) {
         if (sku.equals(IOSLauncher.IAP_REMOVE_ADS)) {
             removeAdsPurchased = true;

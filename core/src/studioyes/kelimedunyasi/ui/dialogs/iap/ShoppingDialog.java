@@ -22,8 +22,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 
-
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +44,6 @@ import studioyes.kelimedunyasi.util.BackNavigator;
 
 public class ShoppingDialog extends Group implements BackNavigator {
 
-
     public static Map<String, ItemContent> mapping = new HashMap<>();
 
     private LoadingAnim loadingAnim;
@@ -64,7 +61,8 @@ public class ShoppingDialog extends Group implements BackNavigator {
     private float coinViewX, coinViewY;
     private float margin;
     private TextButton.TextButtonStyle purchaseButtonsStyle;
-    private Group box0, box1, box2, box3, box4, box5, ribbonCoins, box6, box7, box8, box9, ribbonBundles, box10, ribbonOneTime;
+    private Group box0, box1, box2, box3, box4, box5, ribbonCoins, box6, box7, box8, box9, ribbonBundles, box10,
+            ribbonOneTime;
     private Array<Group> contents;
     private Runnable closeCallback;
     private Runnable openCallback;
@@ -73,14 +71,13 @@ public class ShoppingDialog extends Group implements BackNavigator {
     private float padding;
     private float maxButtonWidth = 0.75f;
 
-    public ShoppingDialog(float width, float height, BaseScreen screen, TopPanel topPanel, Runnable openCallback, Runnable closeCallback) {
+    public ShoppingDialog(float width, float height, BaseScreen screen, TopPanel topPanel, Runnable openCallback,
+            Runnable closeCallback) {
 
-
-        if(screen instanceof GameScreen){
-            GameScreen s = (GameScreen)screen;
+        if (screen instanceof GameScreen) {
+            GameScreen s = (GameScreen) screen;
             s.stopIdleTimer();
         }
-
 
         setSize(width, height);
 
@@ -105,11 +102,6 @@ public class ShoppingDialog extends Group implements BackNavigator {
 
     }
 
-
-
-
-
-
     private Runnable loadingAnimStarter = new Runnable() {
         @Override
         public void run() {
@@ -122,14 +114,9 @@ public class ShoppingDialog extends Group implements BackNavigator {
         }
     };
 
+    public void setShoppingItems(final List<ShoppingItem> items) {
 
-
-
-
-
-    public void setShoppingItems(final List<ShoppingItem> items){
-
-        for(ShoppingItem item : items){
+        for (ShoppingItem item : items) {
             item.title = LanguageManager.get(item.sku);
         }
 
@@ -137,16 +124,22 @@ public class ShoppingDialog extends Group implements BackNavigator {
         margin = content.getWidth() * 0.03f;
         padding = content.getWidth() * 0.03f;
 
-        String font = UIConfig.IAP_RIBBON_USE_SHADOW_FONT ? ResourceManager.fontSemiBoldShadow : ResourceManager.fontSemiBold;
-        ribbonTextStyle = new Label.LabelStyle(resourceManager.get(font, BitmapFont.class), UIConfig.IAP_RIBBON_TEXT_COLOR);
+        String font = UIConfig.IAP_RIBBON_USE_SHADOW_FONT ? ResourceManager.fontSemiBoldShadow
+                : ResourceManager.fontSemiBold;
+        ribbonTextStyle = new Label.LabelStyle(resourceManager.get(font, BitmapFont.class),
+                UIConfig.IAP_RIBBON_TEXT_COLOR);
 
-        String font2 = UIConfig.IAP_CARD_TITLE_TEXT_USE_SHADOW_FONT ? ResourceManager.fontSemiBoldShadow : ResourceManager.fontSemiBold;
-        cardTitlelabelStyle = new Label.LabelStyle(resourceManager.get(font2, BitmapFont.class), UIConfig.IAP_CARD_TITLE_TEXT_COLOR);
+        String font2 = UIConfig.IAP_CARD_TITLE_TEXT_USE_SHADOW_FONT ? ResourceManager.fontSemiBoldShadow
+                : ResourceManager.fontSemiBold;
+        cardTitlelabelStyle = new Label.LabelStyle(resourceManager.get(font2, BitmapFont.class),
+                UIConfig.IAP_CARD_TITLE_TEXT_COLOR);
         costStyle = new Label.LabelStyle(cardTitlelabelStyle);
         costStyle.background = new TextureRegionDrawable(AtlasRegions.reward_count_bg);
 
-        String font3 = UIConfig.IAP_CARD_QUANTITY_TEXT_USE_SHADOW_FONT ? ResourceManager.fontSemiBoldShadow : ResourceManager.fontSemiBold;
-        countLabelStyle = new Label.LabelStyle(resourceManager.get(font3, BitmapFont.class), UIConfig.IAP_CARD_QUANTITY_TEXT_COLOR);
+        String font3 = UIConfig.IAP_CARD_QUANTITY_TEXT_USE_SHADOW_FONT ? ResourceManager.fontSemiBoldShadow
+                : ResourceManager.fontSemiBold;
+        countLabelStyle = new Label.LabelStyle(resourceManager.get(font3, BitmapFont.class),
+                UIConfig.IAP_CARD_QUANTITY_TEXT_COLOR);
 
         titleBar = new Group();
         addActor(titleBar);
@@ -167,10 +160,10 @@ public class ShoppingDialog extends Group implements BackNavigator {
 
         float margin = topPanel.coinView.getWidth() * 0.1f;
         topPanel.coinView.setX(margin);
-        topPanel.coinView.setY((titleBar.getHeight() - topPanel.coinView.getHeight() * topPanel.coinView.getScaleY()) * 0.5f);
+        topPanel.coinView
+                .setY((titleBar.getHeight() - topPanel.coinView.getHeight() * topPanel.coinView.getScaleY()) * 0.5f);
         titleBar.addActor(topPanel.coinView);
         topPanel.coinView.plus.setDisabled(true);
-
 
         ImageButton.ImageButtonStyle closeBtnStyle = new ImageButton.ImageButtonStyle();
         closeBtnStyle.up = new TextureRegionDrawable(AtlasRegions.close_button_up);
@@ -179,19 +172,19 @@ public class ShoppingDialog extends Group implements BackNavigator {
         ImageButton closeBtn = new ImageButton(closeBtnStyle);
         closeBtn.setTransform(true);
 
-
         closeBtn.setX(titleBar.getWidth() - margin - closeBtn.getWidth() * closeBtn.getScaleX());
         closeBtn.setY((titleBar.getHeight() - closeBtn.getHeight() * closeBtn.getScaleY()) * 0.5f);
         titleBar.addActor(closeBtn);
         closeBtn.addListener(closeListener);
 
-
-        titleTextStyle = new Label.LabelStyle(resourceManager.get(ResourceManager.fontSemiBoldShadow, BitmapFont.class), UIConfig.IAP_DIALOG_TITLE_TEXT_COLOR);
+        titleTextStyle = new Label.LabelStyle(resourceManager.get(ResourceManager.fontSemiBoldShadow, BitmapFont.class),
+                UIConfig.IAP_DIALOG_TITLE_TEXT_COLOR);
 
         title = new Label(LanguageManager.get("shop"), titleTextStyle);
         title.setFontScale(1.4f);
 
-        if(title.getWidth() > titleBar.getWidth() * 0.4f) title.setFontScale(titleBar.getWidth() * 0.4f / title.getWidth());
+        if (title.getWidth() > titleBar.getWidth() * 0.4f)
+            title.setFontScale(titleBar.getWidth() * 0.4f / title.getWidth());
 
         title.setAlignment(Align.center);
         title.setX((getWidth() - title.getWidth()) * 0.5f);
@@ -200,13 +193,15 @@ public class ShoppingDialog extends Group implements BackNavigator {
         title.setY((titleBar.getHeight() - title.getHeight()) * 0.5f);
 
         purchaseButtonsStyle = new TextButton.TextButtonStyle();
-        String font4 = UIConfig.IAP_BUY_BUTTON_TEXT_USE_SHADOW_FONT ? ResourceManager.fontSemiBoldShadow : ResourceManager.fontSemiBold;
+        String font4 = UIConfig.IAP_BUY_BUTTON_TEXT_USE_SHADOW_FONT ? ResourceManager.fontSemiBoldShadow
+                : ResourceManager.fontSemiBold;
         purchaseButtonsStyle.font = resourceManager.get(font4, BitmapFont.class);
         purchaseButtonsStyle.fontColor = UIConfig.IAP_BUY_BUTTON_TEXT_COLOR;
         purchaseButtonsStyle.up = new NinePatchDrawable(NinePatches.btn_dialog_up);
         purchaseButtonsStyle.down = new NinePatchDrawable(NinePatches.btn_dialog_down);
 
-        Action titleBarDown = Actions.moveTo(titleBar.getX(), getHeight() - titleBar.getHeight(), 0.15f, Interpolation.fastSlow);
+        Action titleBarDown = Actions.moveTo(titleBar.getX(), getHeight() - titleBar.getHeight(), 0.15f,
+                Interpolation.fastSlow);
         RunnableAction runnableAction = new RunnableAction();
         runnableAction.setRunnable(new Runnable() {
             @Override
@@ -218,11 +213,7 @@ public class ShoppingDialog extends Group implements BackNavigator {
         titleBar.addAction(new SequenceAction(titleBarDown, runnableAction));
     }
 
-
-
-
-
-    private void populate(List<ShoppingItem> items){
+    private void populate(List<ShoppingItem> items) {
 
         contents = new Array<>();
 
@@ -243,7 +234,7 @@ public class ShoppingDialog extends Group implements BackNavigator {
         box2.setY(margin);
         content.addActor(box2);
 
-        //2.row
+        // 2.row
         box3 = createCoinBox(items.get(5));
         box3.setY(box2.getY() + box2.getHeight() + margin);
         content.addActor(box3);
@@ -258,14 +249,12 @@ public class ShoppingDialog extends Group implements BackNavigator {
         box5.setY(box3.getY());
         content.addActor(box5);
 
-
         ribbonCoins = getRibbon(UIConfig.IAP_COINS_RIBBON_COLOR, LanguageManager.get("coins"));
         ribbonCoins.setX((content.getWidth() - ribbonCoins.getWidth()) * 0.5f);
         ribbonCoins.setY((box5.getY() + box5.getHeight() + margin * 2));
         content.addActor(ribbonCoins);
 
-
-        //bundles
+        // bundles
         box6 = createBundleBox(items.get(6));
         box6.setY(ribbonCoins.getY() + ribbonCoins.getHeight() + margin * 3);
         content.addActor(box6);
@@ -273,7 +262,6 @@ public class ShoppingDialog extends Group implements BackNavigator {
         box7 = createBundleBox(items.get(7));
         box7.setY(box6.getY() + box6.getHeight() + margin);
         content.addActor(box7);
-
 
         box8 = createBundleBox(items.get(8));
         box8.setY(box7.getY() + box7.getHeight() + margin);
@@ -288,8 +276,7 @@ public class ShoppingDialog extends Group implements BackNavigator {
         ribbonBundles.setY((box9.getY() + box9.getHeight() + margin * 2));
         content.addActor(ribbonBundles);
 
-
-        if(!screen.wordConnectGame.shoppingProcessor.isRemoveAdsPurchased()) {
+        if (!screen.wordConnectGame.shoppingProcessor.isRemoveAdsPurchased()) {
             box10 = createRemoveAdsBox(items.get(10));
             box10.setY(ribbonBundles.getY() + ribbonBundles.getHeight() + margin * 3);
             content.addActor(box10);
@@ -300,11 +287,38 @@ public class ShoppingDialog extends Group implements BackNavigator {
             content.addActor(ribbonOneTime);
         }
 
-
-        if(ribbonOneTime != null)
+        if (ribbonOneTime != null)
             content.setHeight(ribbonOneTime.getY() + ribbonOneTime.getHeight());
         else
             content.setHeight(ribbonBundles.getY() + ribbonBundles.getHeight());
+
+        // Restore Purchases Button
+        TextButton restoreBtn = new TextButton(
+                LanguageManager.get("restore_purchases") != null ? LanguageManager.get("restore_purchases")
+                        : "Restore Purchases",
+                purchaseButtonsStyle);
+        restoreBtn.setTransform(true);
+        restoreBtn.setScale(0.8f);
+        if (restoreBtn.getLabel().getPrefWidth() > content.getWidth() * maxButtonWidth) {
+            restoreBtn.getLabel()
+                    .setFontScale(content.getWidth() * maxButtonWidth / restoreBtn.getLabel().getPrefWidth());
+        }
+        restoreBtn.setX((content.getWidth() - restoreBtn.getWidth() * restoreBtn.getScaleX()) * 0.5f);
+        restoreBtn.setY(content.getHeight() + margin * 3);
+        content.addActor(restoreBtn);
+
+        restoreBtn.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (screen != null && screen.wordConnectGame != null
+                        && screen.wordConnectGame.shoppingProcessor != null) {
+                    screen.wordConnectGame.shoppingProcessor.restorePurchases();
+                    close();
+                }
+            }
+        });
+
+        content.setHeight(content.getHeight() + restoreBtn.getHeight() + margin * 5);
 
         ScrollPane pane = new ScrollPane(content, new ScrollPane.ScrollPaneStyle());
         pane.setScrollbarsVisible(false);
@@ -312,29 +326,20 @@ public class ShoppingDialog extends Group implements BackNavigator {
         pane.setX((getWidth() - pane.getWidth()) * 0.5f);
         addActor(pane);
 
-
-        for(int i = contents.size - 1; i >= 0; i--){
+        for (int i = contents.size - 1; i >= 0; i--) {
             animateRowIn(contents.get(i), (contents.size - 1 - i) * 0.1f);
         }
 
-
-        if(loadingAnim != null){
+        if (loadingAnim != null) {
             loadingAnim.remove();
         }
-
 
         getStage().getRoot().setTouchable(Touchable.enabled);
     }
 
-
-
-
-    public void close(){
+    public void close() {
         closeListener.changed(null, null);
     }
-
-
-
 
     private ChangeListener closeListener = new ChangeListener() {
 
@@ -342,7 +347,7 @@ public class ShoppingDialog extends Group implements BackNavigator {
         public void changed(ChangeEvent event, Actor actor) {
             getStage().getRoot().setTouchable(Touchable.disabled);
 
-            if(ribbonOneTime != null) {
+            if (ribbonOneTime != null) {
                 animateRowOut(ribbonOneTime, 0, false);
                 animateRowOut(box10, 0.1f, false);
             }
@@ -364,28 +369,20 @@ public class ShoppingDialog extends Group implements BackNavigator {
         }
     };
 
-
-
-
-
-    public void onTransactionError(int code){
+    public void onTransactionError(int code) {
         showErrorDialog(LanguageManager.get("iap_error"), LanguageManager.format("iap_error_text", code));
     }
 
-
-
-
-    private void showErrorDialog(String title, String text){
-        AlertDialog alertDialog = new AlertDialog(getWidth(), getHeight(), screen, title, text, LanguageManager.get("okay"), null);
+    private void showErrorDialog(String title, String text) {
+        AlertDialog alertDialog = new AlertDialog(getWidth(), getHeight(), screen, title, text,
+                LanguageManager.get("okay"), null);
         alertDialog.setDialogId(Constants.ALERT_DIALOG_IAP_ERROR2);
         addActor(alertDialog);
         alertDialog.show();
         getStage().getRoot().setTouchable(Touchable.enabled);
     }
 
-
-
-    private void animateRowOut(Group row, float time, boolean isLast){
+    private void animateRowOut(Group row, float time, boolean isLast) {
         Action delay = Actions.delay(time);
         Action scale1 = Actions.scaleTo(1.05f, 1.05f, 0.08f, Interpolation.fastSlow);
         Action scale2 = Actions.scaleTo(0, 0, 0.16f, Interpolation.slowFast);
@@ -395,22 +392,18 @@ public class ShoppingDialog extends Group implements BackNavigator {
         sequenceAction.addAction(scale1);
         sequenceAction.addAction(scale2);
 
-        if(isLast){
+        if (isLast) {
             RunnableAction runnableAction = new RunnableAction();
             runnableAction.setRunnable(closeDialog);
             sequenceAction.addAction(runnableAction);
         }
 
-        //Update
-        if(row != null) {
+        // Update
+        if (row != null) {
             row.addAction(new SequenceAction(Actions.delay(time), Actions.fadeOut(0.24f)));
             row.addAction(sequenceAction);
         }
     }
-
-
-
-
 
     private Runnable closeDialog = new Runnable() {
 
@@ -426,9 +419,6 @@ public class ShoppingDialog extends Group implements BackNavigator {
         }
     };
 
-
-
-
     private Runnable closer = new Runnable() {
 
         @Override
@@ -442,10 +432,7 @@ public class ShoppingDialog extends Group implements BackNavigator {
         }
     };
 
-
-
-
-    private void animateRowIn(Group row, float time){
+    private void animateRowIn(Group row, float time) {
         row.getColor().a = 0;
         Action delay = Actions.delay(time);
         Action scale1 = Actions.scaleTo(1.05f, 1.05f, 0.2f, Interpolation.fastSlow);
@@ -456,10 +443,7 @@ public class ShoppingDialog extends Group implements BackNavigator {
         row.addAction(new SequenceAction(Actions.delay(time), Actions.fadeIn(0.2f)));
     }
 
-
-
-
-    private Group createRemoveAdsBox(ShoppingItem item){
+    private Group createRemoveAdsBox(ShoppingItem item) {
         Group row = new Group();
         contents.add(row);
         row.getColor().a = 0;
@@ -478,7 +462,7 @@ public class ShoppingDialog extends Group implements BackNavigator {
         purchase.setTransform(true);
         purchase.setScale(0.8f);
 
-        if(purchase.getLabel().getPrefWidth() > purchase.getWidth() * maxButtonWidth){
+        if (purchase.getLabel().getPrefWidth() > purchase.getWidth() * maxButtonWidth) {
             purchase.getLabel().setFontScale(purchase.getWidth() * maxButtonWidth / purchase.getLabel().getPrefWidth());
         }
 
@@ -510,17 +494,12 @@ public class ShoppingDialog extends Group implements BackNavigator {
         label.setY(lightBg.getY() + lightBg.getHeight() + padding);
         row.addActor(label);
 
-
         bg.setHeight(label.getY() + label.getHeight() + padding);
         row.setHeight(bg.getHeight());
         row.setOrigin(Align.top);
 
         return row;
     }
-
-
-
-
 
     private ChangeListener makePurchase = new ChangeListener() {
         @Override
@@ -529,10 +508,7 @@ public class ShoppingDialog extends Group implements BackNavigator {
         }
     };
 
-
-
-
-    private Group createCoinBox(ShoppingItem item){
+    private Group createCoinBox(ShoppingItem item) {
         Group row = new Group();
         contents.add(row);
         row.getColor().a = 0;
@@ -554,7 +530,7 @@ public class ShoppingDialog extends Group implements BackNavigator {
 
         purchase.setScaleX(0.95f);
         purchase.setScaleY(0.8f);
-        if(purchase.getLabel().getPrefWidth() > purchase.getWidth() * maxButtonWidth){
+        if (purchase.getLabel().getPrefWidth() > purchase.getWidth() * maxButtonWidth) {
             purchase.getLabel().setFontScale(purchase.getWidth() * maxButtonWidth / purchase.getLabel().getPrefWidth());
         }
 
@@ -565,12 +541,11 @@ public class ShoppingDialog extends Group implements BackNavigator {
         Image icon = new Image(content.textureRegion);
         row.addActor(icon);
 
-        Label label = new Label(content.coins+"", cardTitlelabelStyle);
+        Label label = new Label(content.coins + "", cardTitlelabelStyle);
         label.setAlignment(Align.center);
-        if(label.getWidth() > purchase.getWidth())
+        if (label.getWidth() > purchase.getWidth())
             label.setFontScale(purchase.getWidth() * 0.9f / label.getWidth());
         row.addActor(label);
-
 
         row.setWidth(purchase.getWidth() + padding * 2);
         row.setHeight(purchase.getHeight() * purchase.getScaleY() * 4.5f);
@@ -594,11 +569,7 @@ public class ShoppingDialog extends Group implements BackNavigator {
         return row;
     }
 
-
-
-
-
-    private Group createBundleBox(ShoppingItem item){
+    private Group createBundleBox(ShoppingItem item) {
         Group row = new Group();
         contents.add(row);
         row.setScale(0.5f);
@@ -616,7 +587,7 @@ public class ShoppingDialog extends Group implements BackNavigator {
         purchase.setWidth(bg.getWidth() * 0.4f);
         purchase.setTransform(true);
         purchase.setScale(0.8f);
-        if(purchase.getLabel().getPrefWidth() > purchase.getWidth() * maxButtonWidth){
+        if (purchase.getLabel().getPrefWidth() > purchase.getWidth() * maxButtonWidth) {
             purchase.getLabel().setFontScale(purchase.getWidth() * maxButtonWidth / purchase.getLabel().getPrefWidth());
         }
         purchase.setX((row.getWidth() - purchase.getWidth() * purchase.getScaleX()) * 0.5f);
@@ -637,7 +608,6 @@ public class ShoppingDialog extends Group implements BackNavigator {
         icon.setX(row.getWidth() - icon.getWidth() - padding * 2);
         icon.setY(lightBg.getY() + padding);
         row.addActor(icon);
-
 
         Label label = new Label(item.title, cardTitlelabelStyle);
         label.setX((row.getWidth() - label.getWidth()) * 0.5f);
@@ -709,10 +679,7 @@ public class ShoppingDialog extends Group implements BackNavigator {
         return row;
     }
 
-
-
-
-    private Group getRibbon(Color ribbonColor, String text){
+    private Group getRibbon(Color ribbonColor, String text) {
         NinePatch ribbon = NinePatches.ribbon;
         Image image = new Image(ribbon);
         image.setColor(ribbonColor);
@@ -721,7 +688,8 @@ public class ShoppingDialog extends Group implements BackNavigator {
         group.addActor(image);
 
         Label label = new Label(text, ribbonTextStyle);
-        if(label.getWidth() > content.getWidth() * 0.6f) label.setFontScale(content.getWidth() * 0.6f / label.getWidth());
+        if (label.getWidth() > content.getWidth() * 0.6f)
+            label.setFontScale(content.getWidth() * 0.6f / label.getWidth());
 
         image.setWidth(label.getWidth() * label.getFontScaleX() + (ribbon.getLeftWidth() + ribbon.getRightWidth()));
         group.setSize(image.getWidth(), image.getHeight());
@@ -738,21 +706,15 @@ public class ShoppingDialog extends Group implements BackNavigator {
         return group;
     }
 
-
-
-
     @Override
     public void notifyNavigationController(BaseScreen screen) {
         screen.backNavQueue.push(this);
     }
-
-
 
     @Override
     public boolean navigateBack() {
         closeListener.changed(null, null);
         return true;
     }
-
 
 }

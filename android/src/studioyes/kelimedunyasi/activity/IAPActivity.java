@@ -29,108 +29,91 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-
 import studioyes.kelimedunyasi.R;
 import studioyes.kelimedunyasi.ui.dialogs.iap.ShoppingItem;
 import studioyes.kelimedunyasi.ui.dialogs.iap.ShoppingCallback;
 import studioyes.kelimedunyasi.ui.dialogs.iap.ShoppingProcessor;
 
-public class IAPActivity extends AdActivity implements PurchasesUpdatedListener, BillingClientStateListener{
-
+public class IAPActivity extends AdActivity implements PurchasesUpdatedListener, BillingClientStateListener {
 
     private BillingClient billingClient;
     protected AndroidShoppingProcessor androidShoppingProcessor;
     private List<ProductDetails> skuDetailsList;
 
-
-
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if(getResources().getBoolean(R.bool.IAP_ENABLED)) {
+        if (getResources().getBoolean(R.bool.IAP_ENABLED)) {
             androidShoppingProcessor = new AndroidShoppingProcessor();
             billingClient = BillingClient.newBuilder(this).enablePendingPurchases().setListener(this).build();
             billingClient.startConnection(this);
         }
     }
 
-
-
-
     @Override
     public void onBillingSetupFinished(BillingResult billingResult) {
-        if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK){
+        if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
             queryPurchases();
             findRemoveAdsCost();
-            //Log.d("iap", "billing service disconnected");
-        }else{
-            //Log.d("iap", "error in billing service connection, error code:"+billingResult.getResponseCode());
+            // Log.d("iap", "billing service disconnected");
+        } else {
+            // Log.d("iap", "error in billing service connection, error
+            // code:"+billingResult.getResponseCode());
         }
 
     }
 
-
-
-
     @Override
     public void onBillingServiceDisconnected() {
-        //Log.d("iap", "billing service disconnected");
+        // Log.d("iap", "billing service disconnected");
     }
 
-
-
-
-    void queryPurchases(){
-        if(billingClient == null)
+    void queryPurchases() {
+        if (billingClient == null)
             return;
 
         billingClient.queryPurchasesAsync(
                 QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.INAPP).build(),
                 new PurchasesResponseListener() {
                     public void onQueryPurchasesResponse(BillingResult billingResult, List<Purchase> list) {
-                        if(list != null) handlePurchases(list);
+                        if (list != null)
+                            handlePurchases(list);
                     }
-                }
-        );
+                });
     }
 
-
-
-
     void handlePurchases(List<Purchase> purchases) {
-        for(Purchase purchase : purchases){
-            if(purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED){
+        for (Purchase purchase : purchases) {
+            if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
                 handlePurchase(purchase);
             }
         }
     }
 
+    void handlePurchase(Purchase purchase) {
+        // Log.d("iap", "Found purchase:"+purchase.getProducts().get(0)+", purchase
+        // state:"+purchase.getPurchaseState());
+        if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
 
+            // Log.d("iap", "purchase.isAcknowledged: " + purchase.isAcknowledged());
 
+            // ConsumeParams cp =
+            // ConsumeParams.newBuilder().setPurchaseToken(purchase.getPurchaseToken()).build();
+            // billingClient.consumeAsync(cp, consumeResponseListener);
 
-
-
-    void handlePurchase(Purchase purchase){
-        //Log.d("iap", "Found purchase:"+purchase.getProducts().get(0)+", purchase state:"+purchase.getPurchaseState());
-        if(purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED){
-
-           // Log.d("iap", "purchase.isAcknowledged: " + purchase.isAcknowledged());
-
-            //ConsumeParams cp = ConsumeParams.newBuilder().setPurchaseToken(purchase.getPurchaseToken()).build();
-            //billingClient.consumeAsync(cp, consumeResponseListener);
-
-            if(!purchase.isAcknowledged()) {
+            if (!purchase.isAcknowledged()) {
                 if (purchase.getProducts().get(0).equals(getString(R.string.IAP_ITEM_remove_ads))) {
-                    AcknowledgePurchaseParams acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchase.getPurchaseToken()).build();
+                    AcknowledgePurchaseParams acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
+                            .setPurchaseToken(purchase.getPurchaseToken()).build();
                     billingClient.acknowledgePurchase(acknowledgePurchaseParams, acknowledgePurchaseResponseListener);
                 } else {
-                    ConsumeParams consumeParams = ConsumeParams.newBuilder().setPurchaseToken(purchase.getPurchaseToken()).build();
+                    ConsumeParams consumeParams = ConsumeParams.newBuilder()
+                            .setPurchaseToken(purchase.getPurchaseToken()).build();
                     billingClient.consumeAsync(consumeParams, consumeResponseListener);
                 }
                 androidShoppingProcessor.hasMadeAPurchase(purchase.getProducts().get(0), true);
-            }else{
+            } else {
                 if (purchase.getProducts().get(0).equals(getString(R.string.IAP_ITEM_remove_ads))) {
                     androidShoppingProcessor.hasMadeAPurchase(purchase.getProducts().get(0), false);
                 }
@@ -138,70 +121,60 @@ public class IAPActivity extends AdActivity implements PurchasesUpdatedListener,
         }
     }
 
-
-
-
-
     @Override
     public void onPurchasesUpdated(BillingResult billingResult, @Nullable List<Purchase> purchases) {
         if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases != null) {
             handlePurchases(purchases);
         } else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.USER_CANCELED) {
-            //Log.d("iap", "IAP operation cancelled");
+            // Log.d("iap", "IAP operation cancelled");
         } else {
             androidShoppingProcessor.reportTransactionError(billingResult.getResponseCode());
-            //Log.d("iap", "IAP error on purchase, error code:"+billingResult.getResponseCode());
+            // Log.d("iap", "IAP error on purchase, error
+            // code:"+billingResult.getResponseCode());
         }
     }
 
+    public void startPurchase(String productId) {
+        // Log.d("iap", "START PURCHASE, product id to purchase:."+productId);
 
+        if (billingClient != null) {
+            for (ProductDetails skuDetails : skuDetailsList) {
 
-
-
-
-    public void startPurchase(String productId){
-        //Log.d("iap", "START PURCHASE, product id to purchase:."+productId);
-
-        if(billingClient != null){
-            for(ProductDetails skuDetails : skuDetailsList){
-
-                if(skuDetails.getProductId().equals(productId)){
+                if (skuDetails.getProductId().equals(productId)) {
                     List<BillingFlowParams.ProductDetailsParams> productDetailsParamsList = new ArrayList<>();
-                    productDetailsParamsList.add(BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(skuDetails).build());
-                    BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder().setProductDetailsParamsList(productDetailsParamsList).build();
+                    productDetailsParamsList.add(
+                            BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(skuDetails).build());
+                    BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
+                            .setProductDetailsParamsList(productDetailsParamsList).build();
                     BillingResult billingResult = billingClient.launchBillingFlow(this, billingFlowParams);
-                    if(billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK)
-                        //Log.d("iap", "Failed to start purchase, error code:"+billingResult.getResponseCode()+", "+billingResult.getDebugMessage());
+                    if (billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK)
+                        // Log.d("iap", "Failed to start purchase, error
+                        // code:"+billingResult.getResponseCode()+", "+billingResult.getDebugMessage());
 
-                    break;
+                        break;
                 }
             }
         }
 
     }
 
-
-
     AcknowledgePurchaseResponseListener acknowledgePurchaseResponseListener = new AcknowledgePurchaseResponseListener() {
         @Override
         public void onAcknowledgePurchaseResponse(BillingResult billingResult) {
-           // Log.d("iap", "non-consumable purchase acknowledged, result:" + billingResult.getResponseCode()+", "+billingResult.getDebugMessage());
+            // Log.d("iap", "non-consumable purchase acknowledged, result:" +
+            // billingResult.getResponseCode()+", "+billingResult.getDebugMessage());
         }
     };
-
-
 
     ConsumeResponseListener consumeResponseListener = new ConsumeResponseListener() {
         @Override
         public void onConsumeResponse(BillingResult billingResult, String purchaseToken) {
-            //Log.d("iap", "consumable purchase consumed, result:" + billingResult.getResponseCode()+", "+billingResult.getDebugMessage());
+            // Log.d("iap", "consumable purchase consumed, result:" +
+            // billingResult.getResponseCode()+", "+billingResult.getDebugMessage());
         }
     };
 
-
-
-
-    private void findRemoveAdsCost(){
+    private void findRemoveAdsCost() {
         List<QueryProductDetailsParams.Product> skuList = new ArrayList<>();
         skuList.add(QueryProductDetailsParams.Product.newBuilder()
                 .setProductId(getString(R.string.IAP_ITEM_remove_ads))
@@ -213,16 +186,18 @@ public class IAPActivity extends AdActivity implements PurchasesUpdatedListener,
 
         billingClient.queryProductDetailsAsync(params.build(), new ProductDetailsResponseListener() {
             @Override
-            public void onProductDetailsResponse(@NonNull BillingResult billingResult, @NonNull List<ProductDetails> list) {
+            public void onProductDetailsResponse(@NonNull BillingResult billingResult,
+                    @NonNull List<ProductDetails> list) {
 
-                if(list == null){
+                if (list == null) {
                     androidShoppingProcessor.removeAdsPrice = "";
                     return;
                 }
 
-                for(ProductDetails skuDetails : list){
-                    if(skuDetails.getProductId().equals(getString(R.string.IAP_ITEM_remove_ads))){
-                        androidShoppingProcessor.removeAdsPrice = skuDetails.getOneTimePurchaseOfferDetails().getFormattedPrice();
+                for (ProductDetails skuDetails : list) {
+                    if (skuDetails.getProductId().equals(getString(R.string.IAP_ITEM_remove_ads))) {
+                        androidShoppingProcessor.removeAdsPrice = skuDetails.getOneTimePurchaseOfferDetails()
+                                .getFormattedPrice();
                         break;
                     }
                 }
@@ -230,9 +205,7 @@ public class IAPActivity extends AdActivity implements PurchasesUpdatedListener,
         });
     }
 
-
-
-    private void showProducts(){
+    private void showProducts() {
         List<String> skuList = new ArrayList<>();
         skuList.add(getString(R.string.IAP_ITEM_remove_ads));
         skuList.add(getString(R.string.IAP_ITEM_pack_jumbo));
@@ -247,35 +220,30 @@ public class IAPActivity extends AdActivity implements PurchasesUpdatedListener,
         skuList.add(getString(R.string.IAP_ITEM_coin_240));
 
         ArrayList<QueryProductDetailsParams.Product> productList = new ArrayList<>();
-        for(String sku : skuList) {
-            productList.add(QueryProductDetailsParams.Product.newBuilder().setProductId(sku).setProductType(BillingClient.ProductType.INAPP).build());
+        for (String sku : skuList) {
+            productList.add(QueryProductDetailsParams.Product.newBuilder().setProductId(sku)
+                    .setProductType(BillingClient.ProductType.INAPP).build());
         }
 
         QueryProductDetailsParams params = QueryProductDetailsParams.newBuilder().setProductList(productList).build();
         billingClient.queryProductDetailsAsync(params, productDetailsResponseListener);
     }
 
-
-
-
     ProductDetailsResponseListener productDetailsResponseListener = new ProductDetailsResponseListener() {
         @Override
         public void onProductDetailsResponse(@NonNull BillingResult billingResult, @NonNull List<ProductDetails> list) {
-            if(list == null){
+            if (list == null) {
                 androidShoppingProcessor.reportItemRetrivalError(-100);
                 return;
             }
 
-            if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                 androidShoppingProcessor.returnShoppingItems(list);
-            }else {
+            } else {
                 androidShoppingProcessor.reportItemRetrivalError(billingResult.getResponseCode());
             }
         }
     };
-
-
-
 
     @Override
     protected void onDestroy() {
@@ -287,15 +255,9 @@ public class IAPActivity extends AdActivity implements PurchasesUpdatedListener,
         super.onDestroy();
     }
 
-
-
     /**************************************************************************************************************************************************************************/
 
-
-
-
     class AndroidShoppingProcessor implements ShoppingProcessor {
-
 
         public boolean purchasedRemovedAds;
         private String removeAdsPrice = "";
@@ -318,16 +280,14 @@ public class IAPActivity extends AdActivity implements PurchasesUpdatedListener,
             shoppingCallback.onShoppingItemsError(code);
         }
 
-
         @Override
         public void reportTransactionError(int code) {
             shoppingCallback.onTransactionError(code);
         }
 
+        public void returnShoppingItems(List<ProductDetails> list) {
 
-        public void returnShoppingItems(List<ProductDetails> list){
-
-            if(list == null) {
+            if (list == null) {
                 shoppingCallback.onShoppingItemsError(-1);
                 return;
             }
@@ -338,57 +298,52 @@ public class IAPActivity extends AdActivity implements PurchasesUpdatedListener,
 
             Collections.reverse(list);
 
-            for(ProductDetails skuDetails : list){
-                items.add(new ShoppingItem(skuDetails.getProductId(), skuDetails.getOneTimePurchaseOfferDetails().getFormattedPrice(), skuDetails.getTitle()));
+            for (ProductDetails skuDetails : list) {
+                items.add(new ShoppingItem(skuDetails.getProductId(),
+                        skuDetails.getOneTimePurchaseOfferDetails().getFormattedPrice(), skuDetails.getTitle()));
             }
 
             shoppingCallback.onShoppingItemsReady(items);
 
         }
 
-
-
-
-        public void makeAPurchase(final String sku){
-            //Gdx.app.log("iap", "purchase this:" + sku);
+        public void makeAPurchase(final String sku) {
+            // Gdx.app.log("iap", "purchase this:" + sku);
             startPurchase(sku);
         }
 
+        @Override
+        public void restorePurchases() {
+            queryPurchases();
+        }
 
+        public void hasMadeAPurchase(String sku, boolean newPurchase) {
 
-        public void hasMadeAPurchase(String sku, boolean newPurchase){
-
-            if(sku.equals(getString(R.string.IAP_ITEM_remove_ads))) {
-               // Gdx.app.log("purchase", "yes");
+            if (sku.equals(getString(R.string.IAP_ITEM_remove_ads))) {
+                // Gdx.app.log("purchase", "yes");
                 purchasedRemovedAds = true;
                 isInterstitialEnabled = false;
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(IAPActivity.this);
                 preferences.edit().putBoolean(keyRemoveAdsPurchased, true).apply();
-            }else{
-                //Gdx.app.log("purchase", "no");
+            } else {
+                // Gdx.app.log("purchase", "no");
             }
 
-            if(newPurchase && shoppingCallback != null) {
+            if (newPurchase && shoppingCallback != null) {
                 shoppingCallback.onPurchase(sku);
-                //Log.d("iap", "has made a purchase:" + sku + ", new: " + newPurchase);
+                // Log.d("iap", "has made a purchase:" + sku + ", new: " + newPurchase);
             }
         }
-
-
-
 
         @Override
         public boolean isRemoveAdsPurchased() {
             return purchasedRemovedAds;
         }
 
-
-
         @Override
         public String getRemoveAdsPrice() {
             return removeAdsPrice;
         }
-
 
     };
 }
