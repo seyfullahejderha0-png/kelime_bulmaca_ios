@@ -60,8 +60,7 @@ public class IOSLauncher extends IOSApplication.Delegate {
         config.orientationLandscape = false;
         config.useAccelerometer = false;
         config.useCompass = false;
-        // config.hdpiMode = HdpiMode.Pixels; // Skipping for now to ensure build
-        // success if import fails
+        config.hdpiMode = com.badlogic.gdx.graphics.glutils.HdpiMode.Pixels;
 
         // Initialize Managers
         adManager = new IOSAdManager();
