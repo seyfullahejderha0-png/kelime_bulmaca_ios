@@ -241,6 +241,12 @@ public class GameController{
         saveDataBeforeLetterAnimation(foundWord);
         gameScreen.runSmoke(level.comboCount);
         checkCorrectWordCellsForBoostersBeforeAnimation(foundWord);
+        
+        // Feed the pet
+        if(gameScreen.doodiePet != null) {
+            gameScreen.doodiePet.eat(foundWord.answer.length() * 10); // arbitrary ink amount
+        }
+
         int levelIndex = level.index;
         checkIfLevelEnded();
         animateCorrectAnswer(foundWord, levelIndex);
@@ -447,6 +453,11 @@ public class GameController{
                 GameData.saveComboCount(0);
                 GameData.saveComboReward(0);
 
+                // Celebrate
+                if(gameScreen.doodiePet != null) {
+                    gameScreen.doodiePet.happy(); 
+                }
+
                 gameScreen.levelFinished();
 
                 terminateDialTutorial();
@@ -567,6 +578,11 @@ public class GameController{
 
     private void wrongAnswer(){
         preview.shake();
+
+        // Sad Pet
+        if(gameScreen.doodiePet != null) {
+            gameScreen.doodiePet.sad();
+        }
 
         Word error = new Word();
         error.error = true;

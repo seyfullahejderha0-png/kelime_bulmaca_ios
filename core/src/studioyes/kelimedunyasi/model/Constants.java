@@ -23,6 +23,9 @@ public class Constants {
     public static final String KEY_GOLD_PACK_CONSUMED               = "KEY_GOLD_PACK_CONSUMED";
 
     public static final String KEY_SELECTED_LANGUAGE                = "KEY_SELECTED_LANGUAGE";
+    public static final String KEY_PET_LEVEL                        = "KEY_PET_LEVEL";
+    public static final String KEY_PET_INK                          = "KEY_PET_INK";
+
     public static final String KEY_LAST_WHEEL_SPIN_TIME             = "KEY_LAST_WHEEL_SPIN_TIME";
 
     public static final String KEY_COIN_COUNT                       = "KEY_COIN_COUNT";

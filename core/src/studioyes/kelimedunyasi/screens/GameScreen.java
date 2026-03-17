@@ -122,6 +122,7 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
     public int nextBoosterType;
     private Label goldPackBubbleLabel;
 
+    public studioyes.kelimedunyasi.ui.pet.DoodiePet doodiePet;
 
     private RemoveAdsDialog removeAdsDialog;
     public Image comboLight;;
@@ -160,6 +161,12 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
 
         gameController = new GameController();
         gameController.setGameScreen(this);
+        
+        // Add Pet to screen
+        doodiePet = new studioyes.kelimedunyasi.ui.pet.DoodiePet(wordConnectGame.resourceManager);
+        // Position it near the combo display or slightly above the dial logic dictates
+        doodiePet.setPosition(stage.getWidth() - doodiePet.getWidth() - 20, stage.getHeight() * 0.4f);
+        stage.addActor(doodiePet);
 
     }
 

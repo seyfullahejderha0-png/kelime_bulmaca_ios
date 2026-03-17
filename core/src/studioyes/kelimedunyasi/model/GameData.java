@@ -53,6 +53,26 @@ public class GameData {
         preferences.flush();
     }
 
+    public static int getPetLevel() {
+        return Gdx.app.getPreferences(Constants.PREFS_NAME).getInteger(Constants.KEY_PET_LEVEL, 1);
+    }
+
+    public static void savePetLevel(int level) {
+        Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
+        preferences.putInteger(Constants.KEY_PET_LEVEL, level);
+        preferences.flush();
+    }
+
+    public static int getPetInk() {
+        return Gdx.app.getPreferences(Constants.PREFS_NAME).getInteger(Constants.KEY_PET_INK, 0);
+    }
+
+    public static void savePetInk(int ink) {
+        Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
+        preferences.putInteger(Constants.KEY_PET_INK, ink);
+        preferences.flush();
+    }
+
     public static int findFirstIncompleteLevel() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
         return preferences.getInteger(getLocaleAwareKey(Constants.KEY_LAST_INCOMPLETE_LEVEL), 0);
