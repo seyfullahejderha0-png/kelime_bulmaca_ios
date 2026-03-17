@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetLoaderParameters;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.AssetLoader;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 
@@ -177,6 +179,19 @@ public class ResourceManager implements Disposable {
 
     public void unload(String fileName) {
         manager.unload(fileName);
+    }
+
+    public TextureRegion getAtlasRegion(String regionName) {
+        // We assume the main atlas is loaded. If multiple, we might need more logic.
+        // But for this game, AtlasRegions usually pulls from the single main atlas.
+        // Let's find the atlas first.
+        Array<TextureAtlas> atlases = new Array<>();
+        manager.getAll(TextureAtlas.class, atlases);
+        for (TextureAtlas atlas : atlases) {
+            TextureAtlas.AtlasRegion region = atlas.findRegion(regionName);
+            if (region != null) return region;
+        }
+        return null;
     }
 
     public void clear() {

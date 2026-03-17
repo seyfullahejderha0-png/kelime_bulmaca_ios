@@ -31,6 +31,8 @@ import studioyes.kelimedunyasi.ui.dialogs.ConfirmDialog;
 import studioyes.kelimedunyasi.ui.tutorial.Tutorial;
 
 import studioyes.kelimedunyasi.util.UiUtil;
+import studioyes.kelimedunyasi.ui.dialogs.pet.AccessoryStoreDialog;
+import com.badlogic.gdx.graphics.Color;
 
 
 public class IntroScreen extends BaseScreen{
@@ -38,6 +40,7 @@ public class IntroScreen extends BaseScreen{
 
     private Image logo;
     public TextButton playButton;
+    private TextButton storeButton;
 
 
     public IntroScreen(WordConnectGame wordConnectGame) {
@@ -91,6 +94,7 @@ public class IntroScreen extends BaseScreen{
 
         if(LanguageManager.locale.LevelCount > 0) {
             createPlayButton(firstIncompleteLevel);
+            createStoreButton();
         }else {
             //Gdx.app.log("game.log", "You haven't generated any levels!");
             return;
@@ -153,6 +157,35 @@ public class IntroScreen extends BaseScreen{
         });
     }
 
+    private void createStoreButton() {
+        TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
+        buttonStyle.font = wordConnectGame.resourceManager.get(ResourceManager.fontSemiBold, BitmapFont.class);
+        buttonStyle.fontColor = Color.YELLOW;
+        buttonStyle.up = new NinePatchDrawable(NinePatches.play_r_up);
+        buttonStyle.down = new NinePatchDrawable(NinePatches.play_r_down);
+
+        storeButton = new TextButton("Doodie Store", buttonStyle);
+        storeButton.getLabel().setFontScale(0.5f);
+        storeButton.setTransform(true);
+        storeButton.setOrigin(Align.center);
+        storeButton.setScale(0);
+        
+        // Position it below the play button
+        storeButton.setX((stage.getWidth() - storeButton.getWidth()) * 0.5f);
+        storeButton.setY(stage.getHeight() * 0.12f);
+        
+        stage.addActor(storeButton);
+
+        storeButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                AccessoryStoreDialog dialog = new AccessoryStoreDialog(600, 800, IntroScreen.this);
+                stage.addActor(dialog);
+                dialog.show();
+            }
+        });
+    }
+
 
 
 
@@ -163,7 +196,8 @@ public class IntroScreen extends BaseScreen{
         topPanel.addAction(Actions.moveBy(0, -topPanel.getHeight(), 0.2f, studioyes.kelimedunyasi.actions.Interpolation.backOut));
 
         UiUtil.actorAnimIn(logo, 0.2f, null);
-        UiUtil.actorAnimIn(playButton, 0.3f, animateInFinished);
+        UiUtil.actorAnimIn(playButton, 0.3f, null);
+        UiUtil.actorAnimIn(storeButton, 0.4f, animateInFinished);
     }
 
 
@@ -206,7 +240,8 @@ public class IntroScreen extends BaseScreen{
     private void animateOut(Runnable callback){
         topPanel.addAction(Actions.moveBy(0, topPanel.getHeight(), 0.2f, studioyes.kelimedunyasi.actions.Interpolation.backIn));
         UiUtil.actorAnimOut(logo, 0.1f, null);
-        UiUtil.actorAnimOut(playButton, 0.2f, 0.08f, callback);
+        UiUtil.actorAnimOut(playButton, 0.2f, 0.08f, null);
+        UiUtil.actorAnimOut(storeButton, 0.3f, 0.08f, callback);
     }
 
 

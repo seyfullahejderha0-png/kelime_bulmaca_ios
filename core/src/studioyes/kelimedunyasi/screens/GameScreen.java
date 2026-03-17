@@ -42,7 +42,6 @@ import studioyes.kelimedunyasi.ui.dial.DialButton;
 import studioyes.kelimedunyasi.ui.dialogs.AlertDialog;
 import studioyes.kelimedunyasi.ui.dialogs.BaseDialog;
 import studioyes.kelimedunyasi.ui.dialogs.RemoveAdsDialog;
-import studioyes.kelimedunyasi.ui.dialogs.WatchAndEarnDialogSonrakiSeviye;
 import studioyes.kelimedunyasi.ui.dialogs.bonus_words.BonusWordsCompleteDialog;
 import studioyes.kelimedunyasi.ui.dialogs.bonus_words.BonusWordsIncompleteDialog;
 import studioyes.kelimedunyasi.ui.hint.HintComet;
@@ -123,6 +122,8 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
     private Label goldPackBubbleLabel;
 
     public studioyes.kelimedunyasi.ui.pet.DoodiePet doodiePet;
+    public studioyes.kelimedunyasi.model.PetQuest petQuest;
+    public studioyes.kelimedunyasi.ui.pet.SpeechBubble speechBubble;
 
     private RemoveAdsDialog removeAdsDialog;
     public Image comboLight;;
@@ -167,6 +168,10 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
         // Position it more to the right to avoid board overlap
         doodiePet.setPosition(stage.getWidth() - doodiePet.getWidth() - 10, stage.getHeight() * 0.45f);
         stage.addActor(doodiePet);
+
+        speechBubble = new studioyes.kelimedunyasi.ui.pet.SpeechBubble(wordConnectGame.resourceManager, "");
+        speechBubble.setPosition(doodiePet.getX() - 100, doodiePet.getY() + doodiePet.getHeight() * 0.8f);
+        stage.addActor(speechBubble);
 
     }
 
@@ -1357,6 +1362,16 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
 
         lockOrUnlockHintButtons();
         tempComboReward = 0;
+        if(gameController.level.index % 3 == 0) { // Every 3 levels for now, or use MathUtils.random
+            petQuest = studioyes.kelimedunyasi.model.PetQuest.generateRandomQuest(level.index);
+            if(speechBubble != null) {
+                speechBubble.show(petQuest.getQuestDescription());
+            }
+        } else {
+            petQuest = null;
+            if(speechBubble != null) speechBubble.hide();
+        }
+
         showUI();
     }
 
@@ -2399,5 +2414,40 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
 
     }
 
+
+    public void progressQuest(String word, boolean isBonus) {
+        if (petQuest == null || petQuest.isCompleted()) return;
+
+        if (petQuest.progress(word, isBonus)) {
+            // Updated bubble or show some progress effect
+            if (petQuest.isCompleted()) {
+                awardQuestReward();
+            } else {
+                if (speechBubble != null) {
+                    speechBubble.show(petQuest.getCurrentAmount() + "/" + petQuest.getTargetAmount() + " " + petQuest.getQuestDescription());
+                }
+            }
+        }
+    }
+
+    private void awardQuestReward() {
+        if (petQuest == null) return;
+
+        int coins = petQuest.getCoinReward();
+        int xp = petQuest.getXpReward();
+
+        // Show success message in bubble
+        if (speechBubble != null) {
+            speechBubble.show("Harika! İşte ödülün!");
+        }
+
+        // Award coins
+        awardPetCoinReward(coins, doodiePet.getX() + doodiePet.getOriginX(), doodiePet.getY() + doodiePet.getOriginY());
+
+        // Award XP (Ink)
+        if (doodiePet != null) {
+            doodiePet.eat(xp);
+        }
+    }
 
 }

@@ -25,6 +25,8 @@ public class Constants {
     public static final String KEY_SELECTED_LANGUAGE                = "KEY_SELECTED_LANGUAGE";
     public static final String KEY_PET_LEVEL                        = "KEY_PET_LEVEL";
     public static final String KEY_PET_INK                          = "KEY_PET_INK";
+    public static final String KEY_OWNED_ACCESSORIES                = "KEY_OWNED_ACCESSORIES";
+    public static final String KEY_EQUIPPED_ACCESSORIES              = "KEY_EQUIPPED_ACCESSORIES";
 
     public static final String KEY_LAST_WHEEL_SPIN_TIME             = "KEY_LAST_WHEEL_SPIN_TIME";
 

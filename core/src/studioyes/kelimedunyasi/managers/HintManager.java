@@ -24,6 +24,10 @@ public class HintManager {
         preferences.flush();
     }
 
+    public static void spendCoins(int amount) {
+        setCoinCount(getRemainingCoins() - amount);
+    }
+
 
 
 

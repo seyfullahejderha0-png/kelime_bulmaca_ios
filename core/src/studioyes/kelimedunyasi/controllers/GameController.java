@@ -250,6 +250,12 @@ public class GameController{
         int levelIndex = level.index;
         checkIfLevelEnded();
         animateCorrectAnswer(foundWord, levelIndex);
+
+        // Progress Pet Quest
+        if(gameScreen.petQuest != null) {
+            gameScreen.progressQuest(foundWord.answer, false);
+        }
+
         dial.clearSelection();
         preview.setDirty();
         preview.fadeOut();
@@ -1060,6 +1066,12 @@ public class GameController{
             if(b == 1){
                 GameData.incrementFoundBonusWordCount();
                 animateNewExtraWord();
+
+                // Progress Pet Quest for bonus words
+                if(gameScreen.petQuest != null) {
+                    gameScreen.progressQuest(answer, true);
+                }
+
                 if(boardView.bomb != null) numExtraWordsEarnedThisLevel++;
             }else{
                 if(gameScreen.extraWordsButton.animating) return true;

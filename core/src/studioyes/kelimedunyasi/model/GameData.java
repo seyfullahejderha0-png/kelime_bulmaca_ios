@@ -649,11 +649,71 @@ public class GameData {
         ConfigProcessor.muted = muted;
     }
 
+    public static String getEquippedColor() {
+        return Gdx.app.getPreferences(Constants.PREFS_NAME).getString(getLocaleAwareKey("KEY_PET_EQUIPPED_COLOR"), "FFFFFF");
+    }
+
+    public static void saveEquippedColor(String hex) {
+        Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
+        preferences.putString(getLocaleAwareKey("KEY_PET_EQUIPPED_COLOR"), hex);
+        preferences.flush();
+    }
+
     public static void saveLastRewardedAdTime(long time) {
         Gdx.app.getPreferences(Constants.PREFS_NAME).putLong(Constants.KEY_LAST_REWARDED_AD_TIME, time).flush();
     }
 
     public static long getLastRewardedAdTime() {
         return Gdx.app.getPreferences(Constants.PREFS_NAME).getLong(Constants.KEY_LAST_REWARDED_AD_TIME, 0);
+    }
+
+    public static HashSet<Integer> getOwnedAccessories() {
+        Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
+        String json = preferences.getString(Constants.KEY_OWNED_ACCESSORIES, "[]");
+        JsonValue doc = jsonReader.parse(json);
+        HashSet<Integer> owned = new HashSet<>();
+        for (int i = 0; i < doc.size; i++) {
+            owned.add(doc.get(i).asInt());
+        }
+        return owned;
+    }
+
+    public static void saveOwnedAccessory(int accessoryId) {
+        HashSet<Integer> owned = getOwnedAccessories();
+        owned.add(accessoryId);
+        JsonValue doc = new JsonValue(JsonValue.ValueType.array);
+        for (Integer id : owned) {
+            doc.addChild(new JsonValue(id));
+        }
+        saveJsonDocument(doc, Constants.KEY_OWNED_ACCESSORIES);
+    }
+
+    public static Map<PetAccessory.Category, Integer> getEquippedAccessories() {
+        Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
+        String json = preferences.getString(Constants.KEY_EQUIPPED_ACCESSORIES, "{}");
+        JsonValue doc = jsonReader.parse(json);
+        Map<PetAccessory.Category, Integer> equipped = new HashMap<>();
+        for (int i = 0; i < doc.size; i++) {
+            JsonValue jv = doc.get(i);
+            try {
+                equipped.put(PetAccessory.Category.valueOf(jv.name), jv.asInt());
+            } catch (Exception e) {}
+        }
+        return equipped;
+    }
+
+    public static void saveEquippedAccessory(PetAccessory.Category category, int accessoryId) {
+        Map<PetAccessory.Category, Integer> equipped = getEquippedAccessories();
+        if (accessoryId <= 0) {
+            equipped.remove(category);
+        } else {
+            equipped.put(category, accessoryId);
+        }
+        
+        JsonValue doc = new JsonValue(JsonValue.ValueType.object);
+        for (Map.Entry<PetAccessory.Category, Integer> entry : equipped.entrySet()) {
+            doc.addChild(entry.getKey().name(), new JsonValue(entry.getValue()));
+        }
+        saveJsonDocument(doc, Constants.KEY_EQUIPPED_ACCESSORIES);
     }
 }

@@ -19,6 +19,7 @@ import studioyes.kelimedunyasi.graphics.AtlasRegions;
 import studioyes.kelimedunyasi.managers.ResourceManager;
 import studioyes.kelimedunyasi.screens.GameScreen;
 import studioyes.kelimedunyasi.model.GameData;
+import studioyes.kelimedunyasi.model.PetAccessory;
 
 
 public class DoodiePet extends Group {
@@ -41,6 +42,7 @@ public class DoodiePet extends Group {
     private Image petImage;
     private ProgressBar inkMeter;
     private Label levelDisplay;
+    private java.util.Map<PetAccessory.Category, Image> accessoryImages;
     
     // XP rules
     private int currentLevel;
@@ -56,8 +58,10 @@ public class DoodiePet extends Group {
         this.currentState = PetState.IDLE;
         
         loadXP();
+        accessoryImages = new java.util.HashMap<>();
         createAnimations();
         createUI(resourceManager);
+        applyCustomizations();
         
         setSize(petImage.getWidth() * 1.5f, petImage.getHeight() + inkMeter.getHeight() + 40); 
         setOrigin(Align.center);
@@ -138,7 +142,72 @@ public class DoodiePet extends Group {
         if(currentAnim != null) {
             TextureRegion frame = currentAnim.getKeyFrame(stateTime);
             ((com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable) petImage.getDrawable()).setRegion(frame);
+            
+            // Sync accessory positions and origins if they were to move or scale with the pet
+            // For now they are children of the group, so they stay in place relative to this group.
         }
+    }
+
+    public void applyCustomizations() {
+        // Apply color
+        String hex = GameData.getEquippedColor();
+        petImage.setColor(Color.valueOf(hex));
+
+        // Apply accessories
+        java.util.Map<PetAccessory.Category, Integer> equipped = GameData.getEquippedAccessories();
+        
+        // Clear old ones
+        for (Image img : accessoryImages.values()) {
+            img.remove();
+        }
+        accessoryImages.clear();
+
+        for (PetAccessory.Category cat : PetAccessory.Category.values()) {
+            if (cat == PetAccessory.Category.COLOR) continue;
+            
+            Integer accId = equipped.get(cat);
+            if (accId != null && accId > 0) {
+                PetAccessory acc = PetAccessory.getById(accId);
+                if (acc != null) {
+                    addAccessoryOverlay(acc);
+                }
+            }
+        }
+    }
+
+    private void addAccessoryOverlay(PetAccessory acc) {
+        TextureRegion region = gameScreen.wordConnectGame.resourceManager.getAtlasRegion(acc.getRegionName());
+        if (region == null) return;
+
+        Image accImg = new Image(region);
+        accImg.setOrigin(Align.center);
+        
+        // Approximate placement logic - user will refine these
+        // In a real app, each accessory might have specific offset data
+        float x = 0;
+        float y = 0;
+        
+        switch(acc.getCategory()) {
+            case HAT:
+                x = (petImage.getWidth() - accImg.getWidth()) / 2f;
+                y = petImage.getHeight() * 0.8f;
+                break;
+            case GLASSES:
+                x = (petImage.getWidth() - accImg.getWidth()) / 2f;
+                y = petImage.getHeight() * 0.55f;
+                break;
+            case BOWTIE:
+                x = (petImage.getWidth() - accImg.getWidth()) / 2f;
+                y = petImage.getHeight() * 0.2f;
+                break;
+            default:
+                // Other categories (COLOR, CLOTHING) don't have standard positions yet
+                break;
+        }
+        
+        accImg.setPosition(x, y);
+        addActor(accImg);
+        accessoryImages.put(acc.getCategory(), accImg);
     }
     
     private Animation<TextureRegion> getAnimationForState(PetState state) {
