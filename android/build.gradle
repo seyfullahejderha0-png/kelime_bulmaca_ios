@@ -31,8 +31,8 @@ android {
         minSdkVersion 23
         targetSdkVersion 35
         ndkVersion "29.0.14206865"
-        versionCode 48
-        versionName "1.0.47"
+        versionCode 49
+        versionName "1.0.48"
         multiDexEnabled true
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a"   // 🔥 ZORUNLU
