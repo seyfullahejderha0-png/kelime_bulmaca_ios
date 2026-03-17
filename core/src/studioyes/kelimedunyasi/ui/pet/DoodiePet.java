@@ -9,9 +9,12 @@ import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 
+import studioyes.kelimedunyasi.config.UIConfig;
 import studioyes.kelimedunyasi.graphics.AtlasRegions;
 import studioyes.kelimedunyasi.managers.ResourceManager;
 import studioyes.kelimedunyasi.model.GameData;
@@ -35,10 +38,14 @@ public class DoodiePet extends Group {
 
     private Image petImage;
     private ProgressBar inkMeter;
+    private Label levelDisplay;
     
     // XP rules
+    private int currentLevel;
     private int currentInk;
     private int inkRequiredForNextLevel;
+
+    private float growthScaleFactor = 1.0f;
 
     public DoodiePet(ResourceManager resourceManager) {
         this.stateTime = 0f;
@@ -46,15 +53,17 @@ public class DoodiePet extends Group {
         
         loadXP();
         createAnimations();
-        createUI();
+        createUI(resourceManager);
         
-        setSize(petImage.getWidth(), petImage.getHeight() + inkMeter.getHeight() + 20); // total height includes meter
+        setSize(petImage.getWidth() * 1.5f, petImage.getHeight() + inkMeter.getHeight() + 40); 
         setOrigin(Align.center);
     }
 
     private void loadXP() {
+        currentLevel = GameData.getPetLevel();
         currentInk = GameData.getPetInk();
-        inkRequiredForNextLevel = calculateRequiredInk(GameData.getPetLevel());
+        inkRequiredForNextLevel = calculateRequiredInk(currentLevel);
+        growthScaleFactor = 1.0f + (currentLevel * 0.02f); // 2% growth per level
     }
     
     private int calculateRequiredInk(int level) {
@@ -84,19 +93,28 @@ public class DoodiePet extends Group {
         sleepAnimation = idleAnimation;
     }
 
-    private void createUI() {
+    private void createUI(ResourceManager resourceManager) {
         petImage = new Image();
         updatePetImageRegion();
         // Position pet image at bottom of the group
         petImage.setPosition(0, 0); 
+        petImage.setScale(growthScaleFactor);
         this.addActor(petImage);
 
         // Simple ink meter on top of the pet
         inkMeter = new ProgressBar(AtlasRegions.bonus_bar_bg, AtlasRegions.bonus_words_bar_track);
         inkMeter.setSize(petImage.getWidth() * 0.8f, 20); // Scale relative to pet
-        inkMeter.setPosition((petImage.getWidth() - inkMeter.getWidth()) / 2f, petImage.getHeight() + 10);
+        inkMeter.setPosition((petImage.getWidth() - inkMeter.getWidth()) / 2f, petImage.getHeight() + 20);
         updateInkMeterDisplay();
         this.addActor(inkMeter);
+
+        // Level Label
+        String font = UIConfig.LEVEL_NUMBER_TEXT_USE_SHADOW_FONT ? ResourceManager.fontSemiBoldShadow : ResourceManager.fontSemiBold;
+        Label.LabelStyle style = new Label.LabelStyle(resourceManager.get(font, BitmapFont.class), UIConfig.LEVEL_NUMBER_TEXT_COLOR);
+        levelDisplay = new Label("Lv." + currentLevel, style);
+        levelDisplay.setFontScale(0.6f);
+        levelDisplay.setPosition(inkMeter.getX() + inkMeter.getWidth() + 10, inkMeter.getY() - 5);
+        this.addActor(levelDisplay);
     }
     
     private void updatePetImageRegion() {
@@ -228,16 +246,55 @@ public class DoodiePet extends Group {
     private void checkLevelUp() {
         if(currentInk >= inkRequiredForNextLevel) {
             currentInk -= inkRequiredForNextLevel; // rollover
-            int lvl = GameData.getPetLevel() + 1;
-            GameData.savePetLevel(lvl);
+            currentLevel++;
+            GameData.savePetLevel(currentLevel);
             GameData.savePetInk(currentInk);
-            inkRequiredForNextLevel = calculateRequiredInk(lvl);
+            inkRequiredForNextLevel = calculateRequiredInk(currentLevel);
             
+            levelDisplay.setText("Lv." + currentLevel);
             updateInkMeterDisplay();
-            happy(); // celebrate level up
             
-            // TODO: In future, changing Level might trigger changing the AtlasRegion array for evolution
+            // Check for evolution milestone
+            if (currentLevel == 11 || currentLevel == 26 || currentLevel == 51) {
+                playEvolutionEffect();
+            } else {
+                happy(); // regular level up celebration
+                applyGrowth();
+            }
         }
+    }
+
+    private void applyGrowth() {
+        growthScaleFactor = 1.0f + (currentLevel * 0.02f);
+        petImage.addAction(Actions.scaleTo(growthScaleFactor, growthScaleFactor, 0.5f, Interpolation.swingOut));
+    }
+
+    private void playEvolutionEffect() {
+        // Epic evolution animation
+        petImage.clearActions();
+        
+        Action rotate = Actions.rotateBy(720, 1f, Interpolation.sine);
+        Action scaleUp = Actions.scaleTo(growthScaleFactor * 1.5f, growthScaleFactor * 1.5f, 0.5f, Interpolation.pow5In);
+        Action colorFlash = Actions.sequence(
+            Actions.color(Color.WHITE, 0.1f),
+            Actions.color(Color.GOLD, 0.1f),
+            Actions.color(Color.WHITE, 0.1f)
+        );
+        
+        Action finalState = Actions.run(new Runnable() {
+            @Override
+            public void run() {
+                // Here we would swap to new textures for the stage
+                // For now, just reset scale to the new normal
+                applyGrowth();
+                happy();
+            }
+        });
+
+        petImage.addAction(Actions.sequence(
+            Actions.parallel(rotate, scaleUp, Actions.repeat(3, colorFlash)),
+            finalState
+        ));
     }
 
     private void updateInkMeterDisplay() {
