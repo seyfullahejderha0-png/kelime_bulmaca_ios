@@ -166,9 +166,15 @@ public class IntroScreen extends BaseScreen{
         storeButton.setOrigin(Align.center);
         storeButton.setScale(0);
 
-        // Position it at the top left, relative to topPanel
-        storeButton.setX(stage.getWidth() * 0.05f);
-        storeButton.setY(stage.getHeight() - topPanel.getHeight() * 0.8f);
+        // Make it match the size of the settings button (~60-80) by setting the image size
+        float targetSize = 60f;
+        storeButton.getImage().setSize(targetSize, targetSize);
+        storeButton.getImage().setScaling(com.badlogic.gdx.utils.Scaling.fit);
+        storeButton.setSize(targetSize, targetSize);
+
+        // Position it at the top left, align with settings icon visually
+        storeButton.setX(stage.getWidth() * 0.05f); // Left margin
+        storeButton.setY(stage.getHeight() - topPanel.getHeight() * 0.85f - storeButton.getHeight());
 
         stage.addActor(storeButton);
 

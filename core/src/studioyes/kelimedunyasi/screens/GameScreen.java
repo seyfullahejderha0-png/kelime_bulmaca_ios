@@ -165,12 +165,12 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
         
         // Add Pet to screen
         doodiePet = new studioyes.kelimedunyasi.ui.pet.DoodiePet(wordConnectGame, this);
-        // Position it more to the right to avoid board overlap (aligning with right-side hints)
-        doodiePet.setPosition(stage.getWidth() - doodiePet.getWidth() * 1.5f, stage.getHeight() * 0.45f);
+        // Position it back to the right, behind the hint buttons for alignment
+        doodiePet.setPosition(stage.getWidth() - doodiePet.getWidth() * 0.9f, stage.getHeight() * 0.45f);
         stage.addActor(doodiePet);
 
         speechBubble = new studioyes.kelimedunyasi.ui.pet.SpeechBubble(wordConnectGame.resourceManager, "");
-        speechBubble.setPosition(doodiePet.getX() - 120, doodiePet.getY() + doodiePet.getHeight() * 0.7f);
+        speechBubble.setPosition(doodiePet.getX() - 150, doodiePet.getY() + doodiePet.getHeight() * 0.7f);
         stage.addActor(speechBubble);
 
     }
@@ -1362,7 +1362,11 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
 
         lockOrUnlockHintButtons();
         tempComboReward = 0;
-        if(gameController.level.index % 3 == 0) { // Every 3 levels for now, or use MathUtils.random
+        
+        // level.index is 0-based. Level 1 is index 0. Level 3 is index 2.
+        // We want quests on Level 3, 6, 9... which are indices 2, 5, 8...
+        // So (index + 1) % 3 == 0
+        if((gameController.level.index + 1) % 3 == 0) { 
             petQuest = studioyes.kelimedunyasi.model.PetQuest.generateRandomQuest(level.index);
             if(speechBubble != null) {
                 // Remove immediate show() call, let it be handled when UI animates in or quest triggers

@@ -60,7 +60,7 @@ public class AccessoryStoreDialog extends BaseDialog {
 
         // Pet Preview Area
         Table petTable = new Table();
-        petTable.add(petPreview).size(petPreview.getWidth() * 0.8f, petPreview.getHeight() * 0.8f);
+        petTable.add(petPreview).size(content.getWidth() * 0.4f, content.getHeight() * 0.4f);
         root.add(petTable).pad(10).row();
 
         // Coins
@@ -92,8 +92,11 @@ public class AccessoryStoreDialog extends BaseDialog {
 
         // Content
         contentTable = new Table();
+        contentTable.top(); // Align items to the top to prevent centering layout glitches
         scrollPane = new ScrollPane(contentTable);
-        root.add(scrollPane).grow().pad(20).row();
+        scrollPane.setScrollingDisabled(true, false); // Only allow vertical scrolling
+        scrollPane.setOverscroll(false, false);
+        root.add(scrollPane).grow().pad(20).padTop(0).row();
 
         // Close button
         setCloseButton();
@@ -183,7 +186,7 @@ public class AccessoryStoreDialog extends BaseDialog {
                 itemRow.add(buyBtn).size(120, 50).pad(10);
             }
 
-            contentTable.add(itemRow).growX().pad(5).row();
+            contentTable.add(itemRow).growX().pad(5).padBottom(15).row();
         }
     }
 
