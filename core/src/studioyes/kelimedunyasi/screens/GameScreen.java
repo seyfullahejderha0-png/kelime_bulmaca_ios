@@ -164,7 +164,7 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
         gameController.setGameScreen(this);
         
         // Add Pet to screen
-        doodiePet = new studioyes.kelimedunyasi.ui.pet.DoodiePet(this);
+        doodiePet = new studioyes.kelimedunyasi.ui.pet.DoodiePet(wordConnectGame, this);
         // Position it more to the right to avoid board overlap
         doodiePet.setPosition(stage.getWidth() - doodiePet.getWidth() - 10, stage.getHeight() * 0.45f);
         stage.addActor(doodiePet);

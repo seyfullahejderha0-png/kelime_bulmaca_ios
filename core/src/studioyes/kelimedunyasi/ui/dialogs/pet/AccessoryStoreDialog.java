@@ -10,10 +10,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
-import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 
 import java.util.HashSet;
@@ -26,7 +24,9 @@ import studioyes.kelimedunyasi.managers.HintManager;
 import studioyes.kelimedunyasi.model.GameData;
 import studioyes.kelimedunyasi.model.PetAccessory;
 import studioyes.kelimedunyasi.screens.BaseScreen;
+import studioyes.kelimedunyasi.screens.GameScreen;
 import studioyes.kelimedunyasi.ui.dialogs.BaseDialog;
+import studioyes.kelimedunyasi.ui.pet.DoodiePet;
 
 public class AccessoryStoreDialog extends BaseDialog {
 
@@ -35,12 +35,17 @@ public class AccessoryStoreDialog extends BaseDialog {
     private Label coinLabel;
     private PetAccessory.Category currentTab = PetAccessory.Category.HAT;
     private ResourceManager resourceManager;
+    private DoodiePet petPreview;
 
     public AccessoryStoreDialog(float width, float height, BaseScreen screen) {
         super(width, height, screen);
         this.resourceManager = screen.wordConnectGame.resourceManager;
         
-        content.setSize(width * 0.9f, height * 0.8f);
+        GameScreen gs = (screen instanceof GameScreen) ? (GameScreen) screen : null;
+        petPreview = new DoodiePet(screen.wordConnectGame, gs);
+        petPreview.setScale(0.8f);
+        
+        content.setSize(width * 0.9f, height * 0.82f);
         setContentBackground();
         
         createUI();
@@ -54,7 +59,12 @@ public class AccessoryStoreDialog extends BaseDialog {
         // Title
         Label.LabelStyle titleStyle = new Label.LabelStyle(resourceManager.get(ResourceManager.fontSemiBold, BitmapFont.class), Color.WHITE);
         Label title = new Label("Doodie Store", titleStyle);
-        root.add(title).pad(20).row();
+        root.add(title).pad(10).row();
+
+        // Pet Preview Area
+        Table petTable = new Table();
+        petTable.add(petPreview).size(petPreview.getWidth() * 0.8f, petPreview.getHeight() * 0.8f);
+        root.add(petTable).pad(10).row();
 
         // Coins
         coinLabel = new Label("Coins: " + HintManager.getRemainingCoins(), titleStyle);
@@ -154,6 +164,7 @@ public class AccessoryStoreDialog extends BaseDialog {
                         if (item.getCategory() == PetAccessory.Category.COLOR) {
                             GameData.saveEquippedColor(item.getRegionName());
                         }
+                        petPreview.applyCustomizations();
                         refreshStoreItems();
                     }
                 });
@@ -187,5 +198,16 @@ public class AccessoryStoreDialog extends BaseDialog {
 
     private Label.LabelStyle getLabelStyle() {
         return new Label.LabelStyle(resourceManager.get(ResourceManager.fontSemiBold, BitmapFont.class), Color.WHITE);
+    }
+
+    @Override
+    public void hide() {
+        super.hide();
+        if (screen instanceof GameScreen) {
+            GameScreen gs = (GameScreen) screen;
+            if (gs.doodiePet != null) {
+                gs.doodiePet.applyCustomizations();
+            }
+        }
     }
 }

@@ -51,9 +51,9 @@ public class DoodiePet extends Group {
 
     private float growthScaleFactor = 1.0f;
 
-    public DoodiePet(GameScreen gameScreen) {
+    public DoodiePet(studioyes.kelimedunyasi.WordConnectGame game, GameScreen gameScreen) {
         this.gameScreen = gameScreen;
-        ResourceManager resourceManager = gameScreen.wordConnectGame.resourceManager;
+        ResourceManager resourceManager = game.resourceManager;
         this.stateTime = 0f;
         this.currentState = PetState.IDLE;
         
