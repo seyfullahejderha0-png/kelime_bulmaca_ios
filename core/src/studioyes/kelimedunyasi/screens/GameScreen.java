@@ -164,8 +164,8 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
         
         // Add Pet to screen
         doodiePet = new studioyes.kelimedunyasi.ui.pet.DoodiePet(this);
-        // Position it near the combo display or slightly above the dial logic dictates
-        doodiePet.setPosition(stage.getWidth() - doodiePet.getWidth() - 20, stage.getHeight() * 0.4f);
+        // Position it more to the right to avoid board overlap
+        doodiePet.setPosition(stage.getWidth() - doodiePet.getWidth() - 10, stage.getHeight() * 0.45f);
         stage.addActor(doodiePet);
 
     }
@@ -2169,6 +2169,7 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
         time += 0.1f;
         UiUtil.actorAnimIn(rocketHintBtn, time, null);
         UiUtil.actorAnimIn(rocket, time, null);
+        UiUtil.actorAnimIn(doodiePet, time, null);
         UiUtil.actorAnimIn(singleRandomHintBtn, time, null);
         UiUtil.actorAnimIn(dial, time, null);
 
@@ -2209,6 +2210,7 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
         time += 0.1f;
         UiUtil.actorAnimOut(rocketHintBtn, time, null);
         UiUtil.actorAnimOut(rocket, time, null);
+        UiUtil.actorAnimOut(doodiePet, time, null);
         UiUtil.actorAnimOut(singleRandomHintBtn, time, null);
         UiUtil.actorAnimOut(dial, time, null);
 
@@ -2243,6 +2245,10 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
                     BaseDialog baseDialog = (BaseDialog)dialog;
                     baseDialog.hide();
                 }
+            }
+
+            if(doodiePet != null) {
+                doodiePet.setVisible(false);
             }
 
             if(levelEndView == null) {
