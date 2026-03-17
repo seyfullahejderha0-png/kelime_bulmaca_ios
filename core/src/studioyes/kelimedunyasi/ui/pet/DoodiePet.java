@@ -17,6 +17,7 @@ import com.badlogic.gdx.utils.Array;
 import studioyes.kelimedunyasi.config.UIConfig;
 import studioyes.kelimedunyasi.graphics.AtlasRegions;
 import studioyes.kelimedunyasi.managers.ResourceManager;
+import studioyes.kelimedunyasi.screens.GameScreen;
 import studioyes.kelimedunyasi.model.GameData;
 
 
@@ -29,6 +30,7 @@ public class DoodiePet extends Group {
     private PetState currentState;
 
     private float stateTime;
+    private GameScreen gameScreen;
 
     private Animation<TextureRegion> idleAnimation;
     private Animation<TextureRegion> eatAnimation;
@@ -47,7 +49,9 @@ public class DoodiePet extends Group {
 
     private float growthScaleFactor = 1.0f;
 
-    public DoodiePet(ResourceManager resourceManager) {
+    public DoodiePet(GameScreen gameScreen) {
+        this.gameScreen = gameScreen;
+        ResourceManager resourceManager = gameScreen.wordConnectGame.resourceManager;
         this.stateTime = 0f;
         this.currentState = PetState.IDLE;
         
@@ -253,6 +257,11 @@ public class DoodiePet extends Group {
             
             levelDisplay.setText("Lv." + currentLevel);
             updateInkMeterDisplay();
+
+            // Reward player with coins
+            if (gameScreen != null) {
+                gameScreen.awardPetCoinReward(50, getX() + getWidth() / 2f, getY() + getHeight() / 2f);
+            }
             
             // Check for evolution milestone
             if (currentLevel == 11 || currentLevel == 26 || currentLevel == 51) {

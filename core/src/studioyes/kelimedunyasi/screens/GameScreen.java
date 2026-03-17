@@ -163,7 +163,7 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
         gameController.setGameScreen(this);
         
         // Add Pet to screen
-        doodiePet = new studioyes.kelimedunyasi.ui.pet.DoodiePet(wordConnectGame.resourceManager);
+        doodiePet = new studioyes.kelimedunyasi.ui.pet.DoodiePet(this);
         // Position it near the combo display or slightly above the dial logic dictates
         doodiePet.setPosition(stage.getWidth() - doodiePet.getWidth() - 20, stage.getHeight() * 0.4f);
         stage.addActor(doodiePet);
@@ -484,6 +484,17 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
         int currentCoins = HintManager.getRemainingCoins();
         HintManager.setCoinCount(currentCoins + GameConfig.NUMBER_OF_COINS_EARNED_FOR_HITTING_UFO);
         topPanel.coinView.createCoinAnimation(GameConfig.NUMBER_OF_COINS_EARNED_FOR_HITTING_UFO, pos.x, pos.y, null);
+    }
+
+    public void awardPetCoinReward(int amount, float x, float y) {
+        int currentCoins = HintManager.getRemainingCoins();
+        HintManager.setCoinCount(currentCoins + amount);
+        
+        // Visual animation - using 10 coins for a better look without overwhelming the screen
+        Vector2 pos = stage.getRoot().localToActorCoordinates(topPanel.coinView, new Vector2(x, y));
+        
+        topPanel.coinView.createCoinAnimation(10, pos.x, pos.y, null);
+        topPanel.coinView.update(currentCoins + amount);
     }
 
 
