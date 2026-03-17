@@ -305,6 +305,32 @@ public class DoodiePet extends Group {
         });
         petImage.addAction(Actions.sequence(spin, returnToIdle));
     }
+
+    public void questCompleted() {
+        currentState = PetState.HAPPY;
+        stateTime = 0f;
+        
+        petImage.clearActions();
+        
+        // Triple jump with scaling
+        Action jump = Actions.sequence(
+            Actions.parallel(Actions.moveBy(0, 40, 0.15f, Interpolation.circleOut), Actions.scaleTo(1.3f, 1.3f, 0.15f)),
+            Actions.parallel(Actions.moveBy(0, -40, 0.15f, Interpolation.circleIn), Actions.scaleTo(1.0f, 1.0f, 0.15f))
+        );
+        
+        Action celebration = Actions.sequence(
+            jump, jump, jump,
+            Actions.rotateBy(720, 0.6f, Interpolation.circleOut),
+            Actions.run(new Runnable() {
+                @Override
+                public void run() {
+                    setIdle();
+                }
+            })
+        );
+        
+        petImage.addAction(celebration);
+    }
     
     public void sleep() {
         if(currentState != PetState.SLEEP) {

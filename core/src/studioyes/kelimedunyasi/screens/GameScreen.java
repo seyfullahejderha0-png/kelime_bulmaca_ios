@@ -2466,6 +2466,7 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
         // Award XP (Ink)
         if (doodiePet != null) {
             doodiePet.eat(xp);
+            doodiePet.questCompleted(); // Show special celebration for quest completion
         }
     }
 
