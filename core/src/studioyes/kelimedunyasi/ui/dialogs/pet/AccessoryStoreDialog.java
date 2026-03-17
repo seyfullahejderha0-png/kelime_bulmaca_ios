@@ -45,8 +45,9 @@ public class AccessoryStoreDialog extends BaseDialog {
         petPreview = new DoodiePet(screen.wordConnectGame, gs);
         petPreview.setScale(0.8f);
         
-        content.setSize(width * 0.9f, height * 0.82f);
+        content.setSize(width * 0.95f, height * 0.88f);
         setContentBackground();
+        setTitleLabel("Doodie Store");
         
         createUI();
     }
@@ -54,12 +55,8 @@ public class AccessoryStoreDialog extends BaseDialog {
     private void createUI() {
         Table root = new Table();
         root.setFillParent(true);
+        root.padTop(60).padBottom(20); // Pad top because of the absolute placed close/title
         content.addActor(root);
-
-        // Title
-        Label.LabelStyle titleStyle = new Label.LabelStyle(resourceManager.get(ResourceManager.fontSemiBold, BitmapFont.class), Color.WHITE);
-        Label title = new Label("Doodie Store", titleStyle);
-        root.add(title).pad(10).row();
 
         // Pet Preview Area
         Table petTable = new Table();
@@ -67,7 +64,8 @@ public class AccessoryStoreDialog extends BaseDialog {
         root.add(petTable).pad(10).row();
 
         // Coins
-        coinLabel = new Label("Coins: " + HintManager.getRemainingCoins(), titleStyle);
+        Label.LabelStyle coinStyle = new Label.LabelStyle(resourceManager.get(ResourceManager.fontSemiBold, BitmapFont.class), Color.WHITE);
+        coinLabel = new Label("Coins: " + HintManager.getRemainingCoins(), coinStyle);
         coinLabel.setFontScale(0.7f);
         root.add(coinLabel).right().padRight(40).row();
 

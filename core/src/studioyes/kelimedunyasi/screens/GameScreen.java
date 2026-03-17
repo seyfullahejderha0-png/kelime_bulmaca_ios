@@ -165,12 +165,12 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
         
         // Add Pet to screen
         doodiePet = new studioyes.kelimedunyasi.ui.pet.DoodiePet(wordConnectGame, this);
-        // Position it more to the right to avoid board overlap
-        doodiePet.setPosition(stage.getWidth() - doodiePet.getWidth() - 10, stage.getHeight() * 0.45f);
+        // Position it more to the right to avoid board overlap (aligning with right-side hints)
+        doodiePet.setPosition(stage.getWidth() - doodiePet.getWidth() * 1.5f, stage.getHeight() * 0.45f);
         stage.addActor(doodiePet);
 
         speechBubble = new studioyes.kelimedunyasi.ui.pet.SpeechBubble(wordConnectGame.resourceManager, "");
-        speechBubble.setPosition(doodiePet.getX() - 100, doodiePet.getY() + doodiePet.getHeight() * 0.8f);
+        speechBubble.setPosition(doodiePet.getX() - 120, doodiePet.getY() + doodiePet.getHeight() * 0.7f);
         stage.addActor(speechBubble);
 
     }
@@ -1365,7 +1365,8 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
         if(gameController.level.index % 3 == 0) { // Every 3 levels for now, or use MathUtils.random
             petQuest = studioyes.kelimedunyasi.model.PetQuest.generateRandomQuest(level.index);
             if(speechBubble != null) {
-                speechBubble.show(petQuest.getQuestDescription());
+                // Remove immediate show() call, let it be handled when UI animates in or quest triggers
+                // speechBubble.show(petQuest.getQuestDescription());
             }
         } else {
             petQuest = null;
@@ -2191,6 +2192,20 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
         time += 0.1f;
         UiUtil.actorAnimIn(extraWordsButton, time, null);
         UiUtil.actorAnimIn(multiRandomHintBtn, time, null);
+        
+        // Ensure speech bubble animates *after* game is fully ready to prevent freezes during stage setup
+        if (petQuest != null && speechBubble != null) {
+            stage.addAction(Actions.sequence(
+                Actions.delay(time + 0.5f),
+                Actions.run(new Runnable() {
+                    @Override
+                    public void run() {
+                        speechBubble.show(petQuest.getQuestDescription());
+                    }
+                })
+            ));
+        }
+
 
         time += 0.1f;
         UiUtil.actorAnimIn(shuffleButton, time, null);

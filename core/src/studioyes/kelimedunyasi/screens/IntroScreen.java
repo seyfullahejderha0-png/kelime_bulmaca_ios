@@ -8,9 +8,12 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.TimeUtils;
 
@@ -32,7 +35,7 @@ import studioyes.kelimedunyasi.ui.tutorial.Tutorial;
 
 import studioyes.kelimedunyasi.util.UiUtil;
 import studioyes.kelimedunyasi.ui.dialogs.pet.AccessoryStoreDialog;
-import com.badlogic.gdx.graphics.Color;
+
 
 
 public class IntroScreen extends BaseScreen{
@@ -40,7 +43,7 @@ public class IntroScreen extends BaseScreen{
 
     private Image logo;
     public TextButton playButton;
-    private TextButton storeButton;
+    private ImageButton storeButton;
 
 
     public IntroScreen(WordConnectGame wordConnectGame) {
@@ -158,28 +161,21 @@ public class IntroScreen extends BaseScreen{
     }
 
     private void createStoreButton() {
-        TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
-        buttonStyle.font = wordConnectGame.resourceManager.get(ResourceManager.fontSemiBold, BitmapFont.class);
-        buttonStyle.fontColor = Color.YELLOW;
-        buttonStyle.up = new NinePatchDrawable(NinePatches.play_r_up);
-        buttonStyle.down = new NinePatchDrawable(NinePatches.play_r_down);
-
-        storeButton = new TextButton("Doodie Store", buttonStyle);
-        storeButton.getLabel().setFontScale(0.5f);
+        storeButton = new ImageButton(new TextureRegionDrawable(AtlasRegions.giftbox_closed));
         storeButton.setTransform(true);
         storeButton.setOrigin(Align.center);
         storeButton.setScale(0);
-        
-        // Position it below the play button
-        storeButton.setX((stage.getWidth() - storeButton.getWidth()) * 0.5f);
-        storeButton.setY(stage.getHeight() * 0.12f);
-        
+
+        // Position it at the top left, relative to topPanel
+        storeButton.setX(stage.getWidth() * 0.05f);
+        storeButton.setY(stage.getHeight() - topPanel.getHeight() * 0.8f);
+
         stage.addActor(storeButton);
 
         storeButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                AccessoryStoreDialog dialog = new AccessoryStoreDialog(600, 800, IntroScreen.this);
+                AccessoryStoreDialog dialog = new AccessoryStoreDialog(stage.getWidth(), stage.getHeight(), IntroScreen.this);
                 stage.addActor(dialog);
                 dialog.show();
             }
@@ -197,7 +193,13 @@ public class IntroScreen extends BaseScreen{
 
         UiUtil.actorAnimIn(logo, 0.2f, null);
         UiUtil.actorAnimIn(playButton, 0.3f, null);
-        UiUtil.actorAnimIn(storeButton, 0.4f, animateInFinished);
+        if(storeButton != null) {
+            UiUtil.actorAnimIn(storeButton, 0.4f, animateInFinished);
+            // Re-adjust position matching topPanel animation if necessary
+            storeButton.addAction(Actions.moveBy(0, -topPanel.getHeight(), 0.2f, studioyes.kelimedunyasi.actions.Interpolation.backOut));
+        } else {
+            stage.addAction(Actions.sequence(Actions.delay(0.4f), Actions.run(animateInFinished)));
+        }
     }
 
 
@@ -241,7 +243,12 @@ public class IntroScreen extends BaseScreen{
         topPanel.addAction(Actions.moveBy(0, topPanel.getHeight(), 0.2f, studioyes.kelimedunyasi.actions.Interpolation.backIn));
         UiUtil.actorAnimOut(logo, 0.1f, null);
         UiUtil.actorAnimOut(playButton, 0.2f, 0.08f, null);
-        UiUtil.actorAnimOut(storeButton, 0.3f, 0.08f, callback);
+        if(storeButton != null) {
+            storeButton.addAction(Actions.moveBy(0, topPanel.getHeight(), 0.2f, studioyes.kelimedunyasi.actions.Interpolation.backIn));
+            UiUtil.actorAnimOut(storeButton, 0.3f, 0.08f, callback);
+        } else {
+            stage.addAction(Actions.sequence(Actions.delay(0.38f), Actions.run(callback)));
+        }
     }
 
 
