@@ -669,11 +669,13 @@ public class GameData {
 
     public static HashSet<Integer> getOwnedAccessories() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
-        String json = preferences.getString(Constants.KEY_OWNED_ACCESSORIES, "[]");
+        String json = preferences.getString("KEY_OWNED_ACCESSORIES", "[]");
         JsonValue doc = jsonReader.parse(json);
         HashSet<Integer> owned = new HashSet<>();
-        for (int i = 0; i < doc.size; i++) {
-            owned.add(doc.get(i).asInt());
+        if (doc != null && doc.isArray()) {
+            for (int i = 0; i < doc.size; i++) {
+                owned.add(doc.get(i).asInt());
+            }
         }
         return owned;
     }
@@ -685,19 +687,23 @@ public class GameData {
         for (Integer id : owned) {
             doc.addChild(new JsonValue(id));
         }
-        saveJsonDocument(doc, Constants.KEY_OWNED_ACCESSORIES);
+        Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
+        preferences.putString("KEY_OWNED_ACCESSORIES", doc.toJson(JsonWriter.OutputType.json));
+        preferences.flush();
     }
 
     public static Map<PetAccessory.Category, Integer> getEquippedAccessories() {
         Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
-        String json = preferences.getString(Constants.KEY_EQUIPPED_ACCESSORIES, "{}");
+        String json = preferences.getString("KEY_EQUIPPED_ACCESSORIES", "{}");
         JsonValue doc = jsonReader.parse(json);
         Map<PetAccessory.Category, Integer> equipped = new HashMap<>();
-        for (int i = 0; i < doc.size; i++) {
-            JsonValue jv = doc.get(i);
-            try {
-                equipped.put(PetAccessory.Category.valueOf(jv.name), jv.asInt());
-            } catch (Exception e) {}
+        if (doc != null && doc.isObject()) {
+            for (int i = 0; i < doc.size; i++) {
+                JsonValue jv = doc.get(i);
+                try {
+                    equipped.put(PetAccessory.Category.valueOf(jv.name), jv.asInt());
+                } catch (Exception e) {}
+            }
         }
         return equipped;
     }
@@ -714,6 +720,8 @@ public class GameData {
         for (Map.Entry<PetAccessory.Category, Integer> entry : equipped.entrySet()) {
             doc.addChild(entry.getKey().name(), new JsonValue(entry.getValue()));
         }
-        saveJsonDocument(doc, Constants.KEY_EQUIPPED_ACCESSORIES);
+        Preferences preferences = Gdx.app.getPreferences(Constants.PREFS_NAME);
+        preferences.putString("KEY_EQUIPPED_ACCESSORIES", doc.toJson(JsonWriter.OutputType.json));
+        preferences.flush();
     }
 }

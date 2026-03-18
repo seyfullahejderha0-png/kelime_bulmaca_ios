@@ -64,7 +64,7 @@ public class AccessoryStoreDialog extends BaseDialog {
         root.add(petTable).pad(10).row();
 
         // Coins
-        Label.LabelStyle coinStyle = new Label.LabelStyle(resourceManager.get(ResourceManager.fontSemiBold, BitmapFont.class), Color.WHITE);
+        Label.LabelStyle coinStyle = new Label.LabelStyle(resourceManager.get(ResourceManager.fontSemiBold, BitmapFont.class), Color.DARK_GRAY);
         coinLabel = new Label("Coins: " + HintManager.getRemainingCoins(), coinStyle);
         coinLabel.setFontScale(0.7f);
         root.add(coinLabel).right().padRight(40).row();
@@ -76,7 +76,7 @@ public class AccessoryStoreDialog extends BaseDialog {
             
             TextButton.TextButtonStyle tabStyle = new TextButton.TextButtonStyle();
             tabStyle.font = resourceManager.get(ResourceManager.fontSemiBold, BitmapFont.class);
-            tabStyle.fontColor = Color.LIGHT_GRAY;
+            tabStyle.fontColor = Color.DARK_GRAY;
             
             final TextButton btn = new TextButton(cat.name(), tabStyle);
             btn.addListener(new ClickListener() {
@@ -200,13 +200,15 @@ public class AccessoryStoreDialog extends BaseDialog {
 
     private TextButton.TextButtonStyle getButtonStyle() {
         TextButton.TextButtonStyle style = new TextButton.TextButtonStyle();
+        style.up = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(AtlasRegions.btn_oval_up);
+        style.down = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(AtlasRegions.btn_oval_down);
         style.font = resourceManager.get(ResourceManager.fontSemiBold, BitmapFont.class);
         style.fontColor = Color.WHITE;
         return style;
     }
 
     private Label.LabelStyle getLabelStyle() {
-        return new Label.LabelStyle(resourceManager.get(ResourceManager.fontSemiBold, BitmapFont.class), Color.WHITE);
+        return new Label.LabelStyle(resourceManager.get(ResourceManager.fontSemiBold, BitmapFont.class), Color.DARK_GRAY);
     }
 
     @Override

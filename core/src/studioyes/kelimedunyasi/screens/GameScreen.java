@@ -1367,8 +1367,35 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
         if(level.index > 0 && level.index % 3 == 0) { 
             petQuest = studioyes.kelimedunyasi.model.PetQuest.generateRandomQuest(level.index);
             if(speechBubble != null) {
-                // Ensure it shows immediately or at least gets the text set
+                // Ensure Doodie and Speech Bubble appear over the board
+                doodiePet.toFront();
+                speechBubble.toFront();
+                
+                float safeX = stage.getWidth() - doodiePet.getWidth() * 0.55f;
+                float safeY = stage.getHeight() * 0.45f;
+                float centerX = stage.getWidth() / 2f - doodiePet.getWidth() / 2f;
+                float centerY = stage.getHeight() * 0.5f;
+
+                doodiePet.clearActions();
+                doodiePet.addAction(Actions.sequence(
+                    Actions.moveTo(centerX, centerY, 0.5f, Interpolation.pow3Out),
+                    Actions.delay(8f),
+                    Actions.moveTo(safeX, safeY, 0.5f, Interpolation.pow3In)
+                ));
+
+                float bubbleSafeX = safeX - 150;
+                float bubbleSafeY = safeY + doodiePet.getHeight() * 0.7f;
+                float bubbleCenterX = centerX - 150;
+                float bubbleCenterY = centerY + doodiePet.getHeight() * 0.7f;
+
+                speechBubble.setPosition(bubbleSafeX, bubbleSafeY);
                 speechBubble.show(petQuest.getQuestDescription());
+                
+                speechBubble.addAction(Actions.sequence(
+                    Actions.moveTo(bubbleCenterX, bubbleCenterY, 0.5f, Interpolation.pow3Out),
+                    Actions.delay(7.5f),
+                    Actions.moveTo(bubbleSafeX, bubbleSafeY, 0.5f, Interpolation.pow3In)
+                ));
             }
         } else {
             petQuest = null;
