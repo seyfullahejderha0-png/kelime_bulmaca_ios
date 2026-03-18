@@ -162,7 +162,8 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
 
         // Initialize Pet components BEFORE GameController/createLevel
         doodiePet = new studioyes.kelimedunyasi.ui.pet.DoodiePet(wordConnectGame, this);
-        doodiePet.setPosition(stage.getWidth() - doodiePet.getWidth() * 0.75f, stage.getHeight() * 0.45f);
+        // Position it back to the right, even further (0.55f) to avoid any board overlap
+        doodiePet.setPosition(stage.getWidth() - doodiePet.getWidth() * 0.55f, stage.getHeight() * 0.45f);
         stage.addActor(doodiePet);
 
         speechBubble = new studioyes.kelimedunyasi.ui.pet.SpeechBubble(wordConnectGame.resourceManager, "");

@@ -76,9 +76,9 @@ public class TopPanel extends Group {
             btnStore.setX(btnMenu.getX() + btnMenu.getWidth() * 1.3f);
             btnStore.setY(btnMenu.getY());
             
-            btnStore.addListener(new ChangeListener() {
+            btnStore.addListener(new com.badlogic.gdx.scenes.scene2d.utils.ClickListener() {
                 @Override
-                public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
+                public void clicked(com.badlogic.gdx.scenes.scene2d.InputEvent event, float x, float y) {
                     AccessoryStoreDialog dialog = new AccessoryStoreDialog(screen.stage.getWidth(), screen.stage.getHeight(), screen);
                     screen.stage.addActor(dialog);
                     dialog.show();

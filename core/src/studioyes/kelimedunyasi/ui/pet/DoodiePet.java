@@ -106,7 +106,7 @@ public class DoodiePet extends Group {
         updatePetImageRegion();
         // Position pet image at bottom of the group
         petImage.setPosition(0, 0); 
-        petImage.setScale(growthScaleFactor * 1.3f); // Base scale increase
+        petImage.setScale(growthScaleFactor * 1.15f); // Reduced from 1.3f
         this.addActor(petImage);
 
         // Simple ink meter on top of the pet

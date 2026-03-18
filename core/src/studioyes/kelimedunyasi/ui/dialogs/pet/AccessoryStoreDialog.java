@@ -134,8 +134,16 @@ public class AccessoryStoreDialog extends BaseDialog {
                 colorBox.setColor(Color.valueOf(item.getRegionName()));
                 itemRow.add(colorBox).size(64).pad(10);
             } else {
-                Image icon = new Image(resourceManager.getAtlasRegion(item.getRegionName()));
-                itemRow.add(icon).size(64).pad(10);
+                com.badlogic.gdx.graphics.g2d.TextureRegion region = resourceManager.getAtlasRegion(item.getRegionName());
+                if (region != null) {
+                    Image icon = new Image(region);
+                    itemRow.add(icon).size(64).pad(10);
+                } else {
+                    // Fallback if region not found
+                    Image fallback = new Image(AtlasRegions.rect);
+                    fallback.setColor(Color.GRAY);
+                    itemRow.add(fallback).size(64).pad(10);
+                }
             }
 
             itemRow.add(new Label(item.getName(), getLabelStyle())).expandX().left().padLeft(20);
