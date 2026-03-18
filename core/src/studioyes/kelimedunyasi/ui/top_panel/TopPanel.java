@@ -61,6 +61,11 @@ public class TopPanel extends Group {
 
         boolean inEu = screen.wordConnectGame.adManager != null && screen.wordConnectGame.adManager.isUserInEU();
         if(ConfigProcessor.isMenuEnabled(inEu, GameConfig.availableLanguages.size() > 1)) {
+            btnMenu = new ImageButton(new TextureRegionDrawable(AtlasRegions.settings_up), new TextureRegionDrawable(AtlasRegions.settings_down));
+            addActor(btnMenu);
+            if(backBtn != null) btnMenu.setX(backBtn.getX() + backBtn.getWidth() * 1.2f);
+            else btnMenu.setX(0);
+
             btnMenu.setY((getHeight() - btnMenu.getHeight()) * 0.5f);
             
             // Add Store Button next to Menu button
