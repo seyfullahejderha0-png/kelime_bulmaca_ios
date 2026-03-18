@@ -62,7 +62,7 @@ public class SpeechBubble extends Group {
         clearActions();
         addAction(Actions.sequence(
             Actions.scaleTo(1f, 1f, 0.3f, studioyes.kelimedunyasi.actions.Interpolation.backOut),
-            Actions.delay(3f),
+            Actions.delay(8f),
             Actions.scaleTo(0f, 0f, 0.3f, studioyes.kelimedunyasi.actions.Interpolation.backIn),
             Actions.visible(false)
         ));
