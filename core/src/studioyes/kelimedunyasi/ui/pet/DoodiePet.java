@@ -63,7 +63,7 @@ public class DoodiePet extends Group {
         createUI(resourceManager);
         applyCustomizations();
         
-        setSize(petImage.getWidth() * 1.5f, petImage.getHeight() + inkMeter.getHeight() + 40); 
+        setSize(petImage.getWidth() * 2.0f, petImage.getHeight() + inkMeter.getHeight() + 80); 
         setOrigin(Align.center);
     }
 
@@ -106,7 +106,7 @@ public class DoodiePet extends Group {
         updatePetImageRegion();
         // Position pet image at bottom of the group
         petImage.setPosition(0, 0); 
-        petImage.setScale(growthScaleFactor);
+        petImage.setScale(growthScaleFactor * 1.3f); // Base scale increase
         this.addActor(petImage);
 
         // Simple ink meter on top of the pet
@@ -120,8 +120,9 @@ public class DoodiePet extends Group {
         String font = UIConfig.LEVEL_NUMBER_TEXT_USE_SHADOW_FONT ? ResourceManager.fontSemiBoldShadow : ResourceManager.fontSemiBold;
         Label.LabelStyle style = new Label.LabelStyle(resourceManager.get(font, BitmapFont.class), UIConfig.LEVEL_NUMBER_TEXT_COLOR);
         levelDisplay = new Label("Lv." + currentLevel, style);
-        levelDisplay.setFontScale(0.6f);
-        levelDisplay.setPosition(inkMeter.getX() + inkMeter.getWidth() + 10, inkMeter.getY() - 5);
+        levelDisplay.setWidth(inkMeter.getWidth());
+        levelDisplay.setAlignment(Align.center);
+        levelDisplay.setPosition(inkMeter.getX(), inkMeter.getY() + inkMeter.getHeight() + 5); 
         this.addActor(levelDisplay);
     }
     

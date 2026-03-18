@@ -165,14 +165,13 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
         
         // Add Pet to screen
         doodiePet = new studioyes.kelimedunyasi.ui.pet.DoodiePet(wordConnectGame, this);
-        // Position it back to the right, behind the hint buttons for alignment
-        doodiePet.setPosition(stage.getWidth() - doodiePet.getWidth() * 0.9f, stage.getHeight() * 0.45f);
+        // Position it back to the right, even further to avoid any board overlap
+        doodiePet.setPosition(stage.getWidth() - doodiePet.getWidth() * 0.75f, stage.getHeight() * 0.45f);
         stage.addActor(doodiePet);
 
         speechBubble = new studioyes.kelimedunyasi.ui.pet.SpeechBubble(wordConnectGame.resourceManager, "");
         speechBubble.setPosition(doodiePet.getX() - 150, doodiePet.getY() + doodiePet.getHeight() * 0.7f);
         stage.addActor(speechBubble);
-
     }
 
 
@@ -1369,8 +1368,8 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
         if((gameController.level.index + 1) % 3 == 0) { 
             petQuest = studioyes.kelimedunyasi.model.PetQuest.generateRandomQuest(level.index);
             if(speechBubble != null) {
-                // Remove immediate show() call, let it be handled when UI animates in or quest triggers
-                // speechBubble.show(petQuest.getQuestDescription());
+                // Ensure it shows immediately or at least gets the text set
+                speechBubble.show(petQuest.getQuestDescription());
             }
         } else {
             petQuest = null;

@@ -13,6 +13,7 @@ import studioyes.kelimedunyasi.graphics.AtlasRegions;
 import studioyes.kelimedunyasi.managers.ResourceManager;
 import studioyes.kelimedunyasi.screens.BaseScreen;
 import studioyes.kelimedunyasi.screens.GameScreen;
+import studioyes.kelimedunyasi.ui.dialogs.pet.AccessoryStoreDialog;
 import studioyes.kelimedunyasi.util.UiUtil;
 
 
@@ -24,6 +25,7 @@ public class TopPanel extends Group {
     public BaseScreen screen;
     public ImageButton btnMenu;
     public ImageButton backBtn;
+    public ImageButton btnStore;
     private float width;
 
 
@@ -59,12 +61,24 @@ public class TopPanel extends Group {
 
         boolean inEu = screen.wordConnectGame.adManager != null && screen.wordConnectGame.adManager.isUserInEU();
         if(ConfigProcessor.isMenuEnabled(inEu, GameConfig.availableLanguages.size() > 1)) {
-            btnMenu = new ImageButton(new TextureRegionDrawable(AtlasRegions.settings_up), new TextureRegionDrawable(AtlasRegions.settings_down));
-            addActor(btnMenu);
-            if(backBtn != null) btnMenu.setX(backBtn.getX() + backBtn.getWidth() * 1.2f);
-            else btnMenu.setX(0);
-
             btnMenu.setY((getHeight() - btnMenu.getHeight()) * 0.5f);
+            
+            // Add Store Button next to Menu button
+            btnStore = new ImageButton(new TextureRegionDrawable(AtlasRegions.giftbox_closed));
+            addActor(btnStore);
+            btnStore.setSize(btnMenu.getWidth(), btnMenu.getHeight());
+            btnStore.getImage().setScaling(com.badlogic.gdx.utils.Scaling.fit);
+            btnStore.setX(btnMenu.getX() + btnMenu.getWidth() * 1.3f);
+            btnStore.setY(btnMenu.getY());
+            
+            btnStore.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
+                    AccessoryStoreDialog dialog = new AccessoryStoreDialog(screen.stage.getWidth(), screen.stage.getHeight(), screen);
+                    screen.stage.addActor(dialog);
+                    dialog.show();
+                }
+            });
         }
 
         if(topComboDisplay != null ) {

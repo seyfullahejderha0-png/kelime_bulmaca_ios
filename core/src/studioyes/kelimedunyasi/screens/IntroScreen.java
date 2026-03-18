@@ -43,7 +43,7 @@ public class IntroScreen extends BaseScreen{
 
     private Image logo;
     public TextButton playButton;
-    private ImageButton storeButton;
+    private Tutorial tutorial;
 
 
     public IntroScreen(WordConnectGame wordConnectGame) {
@@ -97,7 +97,6 @@ public class IntroScreen extends BaseScreen{
 
         if(LanguageManager.locale.LevelCount > 0) {
             createPlayButton(firstIncompleteLevel);
-            createStoreButton();
         }else {
             //Gdx.app.log("game.log", "You haven't generated any levels!");
             return;
@@ -160,33 +159,7 @@ public class IntroScreen extends BaseScreen{
         });
     }
 
-    private void createStoreButton() {
-        storeButton = new ImageButton(new TextureRegionDrawable(AtlasRegions.giftbox_closed));
-        storeButton.setTransform(true);
-        storeButton.setOrigin(Align.center);
-        storeButton.setScale(0);
 
-        // Make it match the size of the settings button (~60-80) by setting the image size
-        float targetSize = 60f;
-        storeButton.getImage().setSize(targetSize, targetSize);
-        storeButton.getImage().setScaling(com.badlogic.gdx.utils.Scaling.fit);
-        storeButton.setSize(targetSize, targetSize);
-
-        // Position it at the top left, align with settings icon visually
-        storeButton.setX(stage.getWidth() * 0.05f); // Left margin
-        storeButton.setY(stage.getHeight() - topPanel.getHeight() * 0.85f - storeButton.getHeight());
-
-        stage.addActor(storeButton);
-
-        storeButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                AccessoryStoreDialog dialog = new AccessoryStoreDialog(stage.getWidth(), stage.getHeight(), IntroScreen.this);
-                stage.addActor(dialog);
-                dialog.show();
-            }
-        });
-    }
 
 
 
@@ -198,14 +171,7 @@ public class IntroScreen extends BaseScreen{
         topPanel.addAction(Actions.moveBy(0, -topPanel.getHeight(), 0.2f, studioyes.kelimedunyasi.actions.Interpolation.backOut));
 
         UiUtil.actorAnimIn(logo, 0.2f, null);
-        UiUtil.actorAnimIn(playButton, 0.3f, null);
-        if(storeButton != null) {
-            UiUtil.actorAnimIn(storeButton, 0.4f, animateInFinished);
-            // Re-adjust position matching topPanel animation if necessary
-            storeButton.addAction(Actions.moveBy(0, -topPanel.getHeight(), 0.2f, studioyes.kelimedunyasi.actions.Interpolation.backOut));
-        } else {
-            stage.addAction(Actions.sequence(Actions.delay(0.4f), Actions.run(animateInFinished)));
-        }
+        UiUtil.actorAnimIn(playButton, 0.3f, animateInFinished);
     }
 
 
@@ -248,13 +214,7 @@ public class IntroScreen extends BaseScreen{
     private void animateOut(Runnable callback){
         topPanel.addAction(Actions.moveBy(0, topPanel.getHeight(), 0.2f, studioyes.kelimedunyasi.actions.Interpolation.backIn));
         UiUtil.actorAnimOut(logo, 0.1f, null);
-        UiUtil.actorAnimOut(playButton, 0.2f, 0.08f, null);
-        if(storeButton != null) {
-            storeButton.addAction(Actions.moveBy(0, topPanel.getHeight(), 0.2f, studioyes.kelimedunyasi.actions.Interpolation.backIn));
-            UiUtil.actorAnimOut(storeButton, 0.3f, 0.08f, callback);
-        } else {
-            stage.addAction(Actions.sequence(Actions.delay(0.38f), Actions.run(callback)));
-        }
+        UiUtil.actorAnimOut(playButton, 0.2f, 0.08f, callback);
     }
 
 
