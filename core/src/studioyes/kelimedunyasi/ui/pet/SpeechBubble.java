@@ -17,14 +17,13 @@ public class SpeechBubble extends Group {
     private Label label;
 
     public SpeechBubble(ResourceManager resourceManager, String text) {
-        // Use roundRectRegion for a simple bubble
-        background = new Image(new NinePatchDrawable(NinePatches.rrect));
-        background.setColor(new Color(1f, 1f, 1f, 0.9f));
+        background = new Image(new NinePatchDrawable(NinePatches.round_rect_shadow));
+        background.setColor(studioyes.kelimedunyasi.config.UIConfig.INTERACTIVE_TUTORIAL_TEXT_BG_COLOR);
         addActor(background);
 
         Label.LabelStyle style = new Label.LabelStyle(
                 resourceManager.get(ResourceManager.fontSemiBold, BitmapFont.class),
-                Color.BLACK);
+                Color.WHITE);
         
         label = new Label(text, style);
         label.setWrap(true);

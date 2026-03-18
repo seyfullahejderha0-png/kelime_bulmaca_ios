@@ -1365,7 +1365,7 @@ public class GameScreen extends BaseScreen implements ShowDictionaryEvent {
         // level.index is 0-based. Level 1 is index 0. Level 4 is index 3.
         // "After playing 3 levels" -> Level 4, 7, 10... (indices 3, 6, 9...)
         if(level.index > 0 && level.index % 3 == 0) { 
-            petQuest = studioyes.kelimedunyasi.model.PetQuest.generateRandomQuest(level.index);
+            petQuest = studioyes.kelimedunyasi.model.PetQuest.generateRandomQuest(level);
             if(speechBubble != null) {
                 // Ensure Doodie and Speech Bubble appear over the board
                 doodiePet.toFront();

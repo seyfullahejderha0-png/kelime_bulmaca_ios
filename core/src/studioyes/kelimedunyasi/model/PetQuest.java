@@ -27,23 +27,47 @@ public class PetQuest {
         this.completed = false;
     }
 
-    public static PetQuest generateRandomQuest(int levelIndex) {
-        int typeIndex = MathUtils.random(2);
+    public static PetQuest generateRandomQuest(Level level) {
+        String[] words = level.getWordsAsString();
+        int maxLength = 0;
+        com.badlogic.gdx.utils.Array<Character> validLetters = new com.badlogic.gdx.utils.Array<>();
+        
+        for (String w : words) {
+            if (w == null) continue;
+            if (w.length() > maxLength) maxLength = w.length();
+            for (char c : w.toCharArray()) {
+                if (!validLetters.contains(c, false)) {
+                    validLetters.add(c);
+                }
+            }
+        }
+        
+        com.badlogic.gdx.utils.Array<Integer> availableTypes = new com.badlogic.gdx.utils.Array<>();
+        availableTypes.add(1); // FIND_BONUS_WORDS is always possible if there are extra words
+
+        if (maxLength >= 4) {
+            availableTypes.add(0); // FIND_LONG_WORDS (Target 4 or 5)
+        }
+        if (validLetters.size > 0) {
+            availableTypes.add(2); // FIND_WORDS_WITH_LETTER
+        }
+        
+        int typeIndex = availableTypes.random();
         PetQuest quest;
         
         switch (typeIndex) {
             case 0: // FIND_LONG_WORDS
                 quest = new PetQuest(QuestType.FIND_LONG_WORDS, MathUtils.random(1, 2));
-                quest.targetLength = 5; // Can be adjusted based on level difficulty
+                quest.targetLength = MathUtils.random(4, Math.min(5, maxLength)); 
                 break;
             case 1: // FIND_BONUS_WORDS
                 quest = new PetQuest(QuestType.FIND_BONUS_WORDS, MathUtils.random(1, 2));
                 break;
             case 2: // FIND_WORDS_WITH_LETTER
             default:
+                char targetChar = validLetters.random();
                 quest = new PetQuest(QuestType.FIND_WORDS_WITH_LETTER, MathUtils.random(1, 2));
-                // Pick a common letter for the level might be better, but let's start simple
-                quest.targetLetter = 'A'; 
+                quest.targetLetter = targetChar; 
                 break;
         }
         return quest;

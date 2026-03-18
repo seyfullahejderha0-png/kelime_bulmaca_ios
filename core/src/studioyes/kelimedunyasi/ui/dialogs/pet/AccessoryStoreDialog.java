@@ -200,8 +200,15 @@ public class AccessoryStoreDialog extends BaseDialog {
 
     private TextButton.TextButtonStyle getButtonStyle() {
         TextButton.TextButtonStyle style = new TextButton.TextButtonStyle();
-        style.up = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(AtlasRegions.btn_oval_up);
-        style.down = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(AtlasRegions.btn_oval_down);
+        
+        com.badlogic.gdx.graphics.g2d.NinePatch upPatch = new com.badlogic.gdx.graphics.g2d.NinePatch(NinePatches.flat_btn);
+        upPatch.setColor(Color.valueOf("4CAF50"));
+        style.up = new com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable(upPatch);
+        
+        com.badlogic.gdx.graphics.g2d.NinePatch downPatch = new com.badlogic.gdx.graphics.g2d.NinePatch(NinePatches.flat_btn);
+        downPatch.setColor(Color.valueOf("388E3C"));
+        style.down = new com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable(downPatch);
+        
         style.font = resourceManager.get(ResourceManager.fontSemiBold, BitmapFont.class);
         style.fontColor = Color.WHITE;
         return style;
